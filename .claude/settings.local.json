@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/download/bayanialert-prototype/**)",
+      "Bash(dir \"d:\\\\download\\\\bayanialert-prototype\")",
+      "Bash(cd C:\\\\Users\\\\ruzel\\\\OneDrive\\\\Desktop\\\\BayaniAlert-Web-App\\\\src *)",
+      "WebFetch(domain:127.0.0.1)",
+      "Bash(Get-Content src/main.jsx)",
+      "Bash(npx kill-port *)",
+      "Bash(node -e \"try { require\\('./src/main.jsx'\\); console.log\\('main.jsx syntax OK'\\); } catch\\(e\\) { console.error\\('Syntax error:', e.message\\); }\")",
+      "Bash(start http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5173/src/index.css)",
+      "Bash(curl -s \"http://localhost:5173/\")",
+      "Bash(curl -s http://127.0.0.1:5500/bayanialert-prototype/index.html)",
+      "Bash(curl -s http://127.0.0.1:5500/bayanialert-prototype/style.css)"
+    ]
+  }
+}
