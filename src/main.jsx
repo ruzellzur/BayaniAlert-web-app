@@ -17,6 +17,11 @@ import AdminPuroks from './pages/admin/AdminPuroks';
 import AdminEvac from './pages/admin/AdminEvac';
 import ResourceDetail from './pages/ResourceDetail';
 import MessageThread from './pages/MessageThread';
+import WeatherHistory from './pages/WeatherHistory';
+import EvacDetail from './pages/EvacDetail';
+import MyRequests from './pages/MyRequests';
+import EditProfile from './pages/EditProfile';
+import Directory from './pages/Directory';
 import './index.css';
 
 function ProtectedRoute({ children, adminOnly = false }) {
@@ -75,6 +80,11 @@ function AppRoutes() {
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/resource/:id" element={<ProtectedRoute><ResourceDetail /></ProtectedRoute>} />
         <Route path="/thread/:id" element={<ProtectedRoute><MessageThread /></ProtectedRoute>} />
+        <Route path="/weather-history" element={<ProtectedRoute><WeatherHistory /></ProtectedRoute>} />
+        <Route path="/evac/:id" element={<ProtectedRoute><EvacDetail /></ProtectedRoute>} />
+        <Route path="/requests" element={<ProtectedRoute><MyRequests /></ProtectedRoute>} />
+        <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+        <Route path="/directory" element={<ProtectedRoute><Directory /></ProtectedRoute>} />
 
         {/* Admin routes */}
         <Route path="/admin/approvals" element={<ProtectedRoute adminOnly><AdminApprovals /></ProtectedRoute>} />

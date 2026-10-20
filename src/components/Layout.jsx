@@ -87,6 +87,10 @@ export default function Layout() {
         }
 
         @media (min-width: 900px) {
+          .shell {
+            display: flex;
+            align-items: stretch;
+          }
           .app {
             flex: 1;
             min-width: 0;
@@ -101,6 +105,17 @@ export default function Layout() {
             min-height: 100vh;
             overflow: visible;
             flex: 1;
+          }
+          body.authed .screen {
+            overflow-y: visible;
+            padding: 6px 44px 60px;
+            max-width: 640px;
+          }
+          body.authed #screen-home,
+          body.authed #screen-board,
+          body.authed #screen-map,
+          body.authed #screen-announcements {
+            max-width: 1180px;
           }
         }
 

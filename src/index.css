@@ -471,8 +471,26 @@ textarea.compose {
 
 /* Mobile Responsiveness */
 @media (min-width: 560px) {
-  .app-shell:not(.authenticated) {
+  body:not(.authed) {
     background: var(--surface-alt);
+  }
+
+  body:not(.authed) .welcome-body {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  body:not(.authed) .value-row {
+    max-width: 640px;
+    margin: 0 0 6px;
+  }
+
+  body:not(.authed) .welcome-cta-row {
+    max-width: 420px;
+  }
+
+  body:not(.authed) .guest-info {
+    max-width: 640px;
   }
 }
 

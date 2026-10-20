@@ -55,32 +55,19 @@ export default function MyRequests() {
 
       {/* Sent Tab */}
       {tab === 'sent' && (
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <div className="card">
           {filteredSentRequests.length === 0 ? (
             <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>
               No requests sent yet
             </p>
           ) : (
             filteredSentRequests.map((req, i) => (
-              <div key={i} className="req-card" style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '12px 0',
-                borderTop: i > 0 ? '1px solid var(--border)' : 'none'
-              }}>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{req.item}</div>
-                  <div className="small muted" style={{ marginTop: 2 }}>Requested from {req.owner}</div>
+              <div key={i} className="req-card">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="name">{req.item}</div>
+                  <div className="meta">Requested from {req.owner}</div>
                 </div>
-                <span className={`status-badge ${req.status}`} style={{
-                  padding: '4px 10px',
-                  borderRadius: 8,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  background: req.status === 'pending' ? 'var(--surface-alt)' : 'var(--safe)',
-                  color: req.status === 'pending' ? 'var(--ink-soft)' : '#fff'
-                }}>
+                <span className={`status-badge ${req.status}`}>
                   {req.status === 'pending' ? 'Pending' : 'Accepted'}
                 </span>
               </div>
@@ -91,24 +78,19 @@ export default function MyRequests() {
 
       {/* Received Tab */}
       {tab === 'received' && (
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <div className="card">
           {receivedRequests.length === 0 ? (
             <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>
               No requests received
             </p>
           ) : (
             receivedRequests.map((req) => (
-              <div key={req.id} className="req-card" style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '12px 0',
-              }}>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{req.item}</div>
-                  <div className="small muted" style={{ marginTop: 2 }}>Requested by {req.requester}</div>
+              <div key={req.id} className="req-card">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="name">{req.item}</div>
+                  <div className="meta">Requested by {req.requester}</div>
                 </div>
-                <div className="row" style={{ gap: 6 }}>
+                <div className="row" style={{ gap: 6, flexShrink: 0 }}>
                   <button className="btn btn-safe btn-sm">Accept</button>
                   <button className="btn btn-ghost btn-sm">Decline</button>
                 </div>
@@ -125,6 +107,57 @@ export default function MyRequests() {
           justify-content: space-between;
           gap: 10px;
           padding: 18px 20px 14px;
+        }
+
+        .req-card {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          padding: 14px 0;
+          border-top: 1px solid var(--border);
+        }
+
+        .req-card:first-child {
+          border-top: none;
+          padding-top: 0;
+        }
+
+        .req-card .name {
+          font-weight: 600;
+          font-size: 13.5px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .req-card .meta {
+          font-size: 11.5px;
+          color: var(--ink-soft);
+          margin-top: 2px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .status-badge {
+          padding: 4px 10px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 600;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        .status-badge.pending {
+          background: var(--surface-alt);
+          color: var(--ink-soft);
+        }
+
+        .status-badge.accepted,
+        .status-badge.approved {
+          background: var(--safe);
+          color: #fff;
         }
 
         @media (min-width: 900px) {
