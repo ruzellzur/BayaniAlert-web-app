@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Button, Card, Input } from '../components/ui';
+import { PageContainer, Section } from '../components/layout/PageContainer';
 
 export default function Announcements() {
   const navigate = useNavigate();
@@ -36,129 +38,194 @@ export default function Announcements() {
   const e0 = evacCenters[0] || { cap: 0, max: 400 };
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <PageContainer>
       {/* Topbar */}
-      <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>Announcements</h2>
-        </div>
+      <div className="ann-topbar">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/home')}
+          aria-label="Go back"
+        >
+          ←
+        </Button>
+        <h2>Announcements</h2>
+      </div>
+
+      {/* Role Switcher */}
+      <div className="role-switch">
+        <button
+          className={view === 'resident' ? 'active' : ''}
+          onClick={() => setView('resident')}
+        >
+          Resident view
+        </button>
+        <button
+          className={view === 'official' ? 'active' : ''}
+          onClick={() => setView('official')}
+        >
+          Official view
+        </button>
       </div>
 
       <div className="ann-grid">
         <div>
-          {/* Role Switcher */}
-          <div className="role-switch">
-            <button className={view === 'resident' ? 'active' : ''} onClick={() => setView('resident')}>Resident view</button>
-            <button className={view === 'official' ? 'active' : ''} onClick={() => setView('official')}>Official view</button>
-          </div>
-
           {/* Capacity Widget */}
-          <div className="card">
-            <div className="row between">
-              <span style={{ fontWeight: 600, fontSize: '13.5px' }}>Evacuation center capacity</span>
-              <span className="small muted">{e0.cap} / {e0.max}</span>
+          <Card padding="md">
+            <div className="cap-header">
+              <span className="cap-label">Evacuation center capacity</span>
+              <span className="cap-value">{e0.cap} / {e0.max}</span>
             </div>
             <div className="cap-bar">
-              <div className="cap-fill" style={{ width: `${(e0.cap / e0.max) * 100}%` }}></div>
+              <div
+                className="cap-fill"
+                style={{ width: `${(e0.cap / e0.max) * 100}%` }}
+              />
             </div>
-          </div>
+          </Card>
 
           {/* Compose Form (Officials Only) */}
           {view === 'official' && canAnnounce && (
-            <div style={{ marginTop: 16 }}>
-              <div className="card stack">
-                <textarea
-                  className="compose"
-                  rows={3}
-                  placeholder="Post an update for the barangay…"
-                  value={composeText}
-                  onChange={(e) => setComposeText(e.target.value)}
-                />
-                <button className="btn btn-accent btn-block" onClick={handlePost}>Post announcement</button>
-              </div>
-            </div>
+            <Card padding="md" className="compose-card">
+              <textarea
+                className="compose-textarea"
+                rows={3}
+                placeholder="Post an update for the barangay…"
+                value={composeText}
+                onChange={(e) => setComposeText(e.target.value)}
+              />
+              <Button
+                variant="accent"
+                block
+                onClick={handlePost}
+                disabled={!composeText.trim()}
+              >
+                Post announcement
+              </Button>
+            </Card>
           )}
         </div>
 
         <div>
           {/* Search */}
-          <input
-            type="text"
+          <Input
             placeholder="Search announcements…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{
-              width: '100%',
-              marginBottom: 12,
-              padding: '11px 14px',
-              borderRadius: 12,
-              border: '1.5px solid var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--ink)',
-              fontFamily: 'var(--font-body)',
-              fontSize: 13.5
-            }}
           />
 
           {/* Announcement Feed */}
-          <div className="card" id="annFeed">
+          <Card padding="md">
             {filteredAnnouncements.length === 0 ? (
-              <p className="small muted" style={{ textAlign: 'center', padding: '14px 0' }}>No announcements match your search.</p>
+              <p className="empty-state">No announcements match your search.</p>
             ) : (
               filteredAnnouncements.map((ann, i) => (
-                <div key={i} className="post">
-                  <div className="post-head">
-                    <span className="who">{ann.who}</span>
-                    <span className="time">{ann.time}</span>
-                    {i < announcements.length && canAnnounce && (
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--danger)', padding: '4px 8px', marginLeft: 'auto' }}
-                        onClick={() => {
-                          if (confirm('Delete this announcement?')) {
-                            deleteAnnouncement(i);
-                          }
-                        }}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                  <p>{ann.text}</p>
-                </div>
+                <AnnouncementPost
+                  key={i}
+                  announcement={ann}
+                  canDelete={i < announcements.length && canAnnounce}
+                  onDelete={() => {
+                    if (confirm('Delete this announcement?')) {
+                      deleteAnnouncement(i);
+                    }
+                  }}
+                />
               ))
             )}
-          </div>
+          </Card>
         </div>
       </div>
 
       <style>{`
-        .topbar {
+        .ann-topbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          gap: var(--space-3);
+          padding: var(--space-2) 0 var(--space-4);
+        }
+        .ann-topbar h2 {
+          font-size: var(--text-lg);
+          font-weight: 600;
+          margin: 0;
+        }
+        .role-switch {
+          display: flex;
+          background: var(--surface-alt);
+          border-radius: var(--radius-lg);
+          padding: var(--space-1);
+          margin-bottom: var(--space-4);
+        }
+        .role-switch button {
+          flex: 1;
+          border: none;
+          background: transparent;
+          padding: var(--space-2) var(--space-3);
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: 600;
+          color: var(--ink-soft);
+          cursor: pointer;
+          transition: all var(--duration-fast);
+        }
+        .role-switch button.active {
+          background: var(--surface);
+          color: var(--ink);
+          box-shadow: var(--elevation-1);
         }
         .ann-grid {
           display: block;
         }
+        .cap-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: var(--space-2);
+        }
+        .cap-label {
+          font-weight: 600;
+          font-size: var(--text-sm);
+        }
+        .cap-value {
+          font-size: var(--text-sm);
+          color: var(--ink-soft);
+        }
         .cap-bar {
           height: 9px;
-          border-radius: 999px;
+          border-radius: var(--radius-full);
           background: var(--surface-alt);
           overflow: hidden;
-          margin-top: 10px;
           box-shadow: inset 0 1px 3px rgba(0,0,0,0.10);
         }
         .cap-fill {
           height: 100%;
-          border-radius: 999px;
+          border-radius: var(--radius-full);
           background: var(--grad-safe);
+          transition: width var(--duration-base);
+        }
+        .compose-card {
+          margin-top: var(--space-4);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-3);
+        }
+        .compose-textarea {
+          width: 100%;
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: var(--space-3);
+          font-family: var(--font-body);
+          font-size: var(--text-sm);
+          resize: none;
+          background: var(--surface);
+          color: var(--ink);
+          transition: border-color var(--duration-fast);
+        }
+        .compose-textarea:focus {
+          outline: none;
+          border-color: var(--primary);
         }
         .post {
-          padding: 14px 0;
+          padding: var(--space-3) 0;
           border-top: 1px solid var(--border);
         }
         .post:first-child {
@@ -168,65 +235,34 @@ export default function Announcements() {
         .post-head {
           display: flex;
           align-items: center;
-          gap: 8px;
-          margin-bottom: 6px;
+          gap: var(--space-2);
+          margin-bottom: var(--space-2);
         }
-        .post-head .who {
+        .post-who {
           font-weight: 600;
-          font-size: 13.5px;
+          font-size: var(--text-sm);
         }
-        .post-head .time {
-          font-size: 11px;
+        .post-time {
+          font-size: var(--text-xs);
           color: var(--ink-soft);
         }
-        .post p {
-          font-size: 13.5px;
+        .post-text {
+          font-size: var(--text-sm);
           line-height: 1.5;
           color: var(--ink);
         }
-        .role-switch {
-          display: flex;
-          background: var(--surface-alt);
-          border-radius: 12px;
-          padding: 3px;
-          margin-bottom: 16px;
-        }
-        .role-switch button {
-          flex: 1;
-          border: none;
-          background: transparent;
-          padding: 9px;
-          border-radius: 10px;
-          font-size: 12.5px;
-          font-weight: 600;
+        .empty-state {
+          text-align: center;
+          padding: var(--space-4) 0;
           color: var(--ink-soft);
-          cursor: pointer;
-        }
-        .role-switch button.active {
-          background: var(--surface);
-          color: var(--ink);
-          box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-        }
-        textarea.compose {
-          width: 100%;
-          border: 1.5px solid var(--border);
-          border-radius: 14px;
-          padding: 12px;
-          font-family: var(--font-body);
-          font-size: 13.5px;
-          resize: none;
-          background: var(--surface);
-          color: var(--ink);
+          font-size: var(--text-sm);
         }
 
         @media (min-width: 900px) {
-          .topbar {
-            padding: 26px 0 20px;
-          }
           .ann-grid {
             display: grid;
             grid-template-columns: 1fr 1.5fr;
-            gap: 26px;
+            gap: var(--space-6);
             align-items: start;
           }
           .ann-grid > div:first-child .card {
@@ -235,6 +271,30 @@ export default function Announcements() {
           }
         }
       `}</style>
+    </PageContainer>
+  );
+}
+
+function AnnouncementPost({ announcement, canDelete, onDelete }) {
+  const { who, time, text } = announcement;
+
+  return (
+    <div className="post">
+      <div className="post-head">
+        <span className="post-who">{who}</span>
+        <span className="post-time">{time}</span>
+        {canDelete && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDelete}
+            style={{ color: 'var(--danger)', marginLeft: 'auto', padding: '4px 8px' }}
+          >
+            Delete
+          </Button>
+        )}
+      </div>
+      <p className="post-text">{text}</p>
     </div>
   );
 }

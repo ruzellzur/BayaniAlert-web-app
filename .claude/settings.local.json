@@ -17,7 +17,11 @@
       "Bash(curl -s http://127.0.0.1:5500/bayanialert-prototype/)",
       "Bash(curl -s \"http://127.0.0.1:5500/bayanialert-prototype/index.html\")",
       "Bash(grep -A 200 \"// SAMPLE DATA\")",
-      "Bash(curl -s http://localhost:5175)"
+      "Bash(curl -s http://localhost:5175)",
+      "Bash(curl -s \"http://localhost:8080\")",
+      "Bash(curl -s http://localhost:8080/)",
+      "Bash(start *)",
+      "Bash(mkdir *)"
     ]
   }
 }

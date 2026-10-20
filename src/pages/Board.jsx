@@ -1,54 +1,54 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Button, Card, Chip } from '../components/ui';
+import { PageContainer } from '../components/layout/PageContainer';
+import Brand from '../components/Brand';
 
+/**
+ * Resource Board Page
+ *
+ * Modern design system UI on top of the ORIGINAL functionality — nothing removed:
+ * - Search across item name, owner and description
+ * - "My requests" shortcut to /requests
+ * - Per-card Request button (calls requestItem)
+ * - Add-resource form with category chips, description AND pickup location
+ * - "shared" counter pill
+ */
 export default function Board() {
   const navigate = useNavigate();
   const { user, resources, addResource, requestItem } = useApp();
+
   const [filter, setFilter] = useState('all');
-  const [search, setSearch] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
+  const [query, setQuery] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newResource, setNewResource] = useState({
     name: '',
-    category: 'power',
+    cat: 'power',
     desc: '',
-    location: ''
+    location: '',
   });
   const [errors, setErrors] = useState({});
 
+  const categories = [
+    { id: 'all', label: 'All', icon: '📦' },
+    { id: 'power', label: 'Power', icon: '⚡' },
+    { id: 'water', label: 'Water', icon: '💧' },
+    { id: 'tools', label: 'Tools', icon: '🔧' },
+    { id: 'firstaid', label: 'First Aid', icon: '🏥' },
+    { id: 'transport', label: 'Transport', icon: '🚗' },
+  ];
+
   const filteredResources = resources.filter((r) => {
     const matchesFilter = filter === 'all' || r.cat === filter;
-    const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase()) ||
-      r.owner.toLowerCase().includes(search.toLowerCase()) ||
-      (r.desc && r.desc.toLowerCase().includes(search.toLowerCase()));
-    return matchesFilter && matchesSearch;
+    const q = query.trim().toLowerCase();
+    const matches =
+      !q ||
+      r.name.toLowerCase().includes(q) ||
+      (r.owner || '').toLowerCase().includes(q) ||
+      (r.desc || '').toLowerCase().includes(q);
+    return matchesFilter && matches;
   });
-
-  const validate = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) {
-      newErrors.name = 'Give your item a name first';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    addResource({
-      name: formData.name,
-      owner: `${user?.name || 'You'} · ${user?.purok || 'Purok 3'}`,
-      cat: formData.category,
-      dist: 'You',
-      desc: formData.desc || 'No additional description.',
-    });
-
-    setShowModal(false);
-    setFormData({ name: '', category: 'power', desc: '', location: '' });
-    setErrors({});
-  };
 
   const getCategoryIcon = (cat) => {
     const icons = {
@@ -61,205 +61,385 @@ export default function Board() {
     return icons[cat] || icons.tools;
   };
 
+  const handleAddResource = (e) => {
+    e.preventDefault();
+
+    if (!newResource.name.trim()) {
+      setErrors({ name: 'Give your item a name first' });
+      return;
+    }
+
+    const descParts = [newResource.desc.trim()];
+    if (newResource.location.trim()) {
+      descParts.push(`Pickup: ${newResource.location.trim()}`);
+    }
+
+    addResource({
+      name: newResource.name.trim(),
+      owner: `${user?.name || 'You'} · ${user?.purok || 'Purok 3'}`,
+      cat: newResource.cat,
+      dist: 'You',
+      desc: descParts.filter(Boolean).join(' · ') || 'No additional description.',
+    });
+
+    setNewResource({ name: '', cat: 'power', desc: '', location: '' });
+    setErrors({});
+    setShowAddForm(false);
+  };
+
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <PageContainer variant="dashboard" className="board-page">
       {/* Topbar */}
       <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>Resource board</h2>
-        </div>
+        <Brand />
         <div className="topbar-right">
-          <button className="btn btn-ghost btn-sm" onClick={() => navigate('/requests')}>My requests</button>
           <span className="brgy-pill">{resources.length} shared</span>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/requests')}>
+            My requests
+          </Button>
+          <Button variant="accent" size="sm" onClick={() => setShowAddForm(!showAddForm)}>
+            {showAddForm ? 'Cancel' : '+ List item'}
+          </Button>
         </div>
       </div>
 
-      <div className="screen-head" style={{ marginTop: 2 }}>
-        <p className="sub">Borrow what you need, lend what you can spare — arrange pickup with your neighbor.</p>
+      <div className="board-head">
+        <h2>Resource board</h2>
+        <p className="sub">
+          Borrow what you need, lend what you can spare — arrange pickup with your
+          neighbor.
+        </p>
       </div>
 
       {/* Search */}
-      <input
-        type="text"
-        placeholder="Search items, e.g. generator, water…"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{
-          width: '100%',
-          marginBottom: 12,
-          padding: '11px 14px',
-          borderRadius: 12,
-          border: '1.5px solid var(--border)',
-          background: 'var(--surface)',
-          color: 'var(--ink)',
-          fontFamily: 'var(--font-body)',
-          fontSize: 13.5
-        }}
-      />
+      <div className="board-search">
+        <input
+          type="text"
+          placeholder="Find items, e.g. generator, water…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="Find resources"
+        />
+      </div>
 
-      {/* Category Chips */}
-      <div className="chip-row">
-        {['all', 'power', 'water', 'tools', 'firstaid', 'transport'].map((cat) => (
-          <span
-            key={cat}
-            className={`chip ${filter === cat ? 'active' : ''}`}
-            onClick={() => setFilter(cat)}
-          >
-            {cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
-          </span>
-        ))}
+      {/* Add Resource Form */}
+      {showAddForm && (
+        <Card padding="md" className="add-form">
+          <form onSubmit={handleAddResource}>
+            <div className="form-field">
+              <label htmlFor="res-name">Item name</label>
+              <input
+                id="res-name"
+                type="text"
+                value={newResource.name}
+                onChange={(e) => {
+                  setNewResource((prev) => ({ ...prev, name: e.target.value }));
+                  if (errors.name) setErrors({});
+                }}
+                placeholder="e.g. Rechargeable lamp"
+                aria-invalid={!!errors.name}
+                required
+              />
+              {errors.name && (
+                <span className="field-error" role="alert">
+                  {errors.name}
+                </span>
+              )}
+            </div>
+
+            <div className="form-field">
+              <label>Category</label>
+              <div className="chip-row">
+                {categories.filter((c) => c.id !== 'all').map((cat) => (
+                  <Chip
+                    key={cat.id}
+                    active={newResource.cat === cat.id}
+                    onClick={() => setNewResource((prev) => ({ ...prev, cat: cat.id }))}
+                  >
+                    {cat.icon} {cat.label}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="res-desc">Short description</label>
+              <textarea
+                id="res-desc"
+                value={newResource.desc}
+                onChange={(e) => setNewResource((prev) => ({ ...prev, desc: e.target.value }))}
+                placeholder="Condition, quantity, anything borrowers should know"
+                rows={3}
+              />
+            </div>
+
+            {/* Pickup location */}
+            <div className="form-field">
+              <label htmlFor="res-location">Pickup location</label>
+              <input
+                id="res-location"
+                type="text"
+                value={newResource.location}
+                onChange={(e) =>
+                  setNewResource((prev) => ({ ...prev, location: e.target.value }))
+                }
+                placeholder="Purok 3, near the chapel"
+              />
+            </div>
+
+            <div className="form-actions">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setShowAddForm(false);
+                  setErrors({});
+                }}
+                block
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="accent" block>
+                List item
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
+      {/* Filter Chips */}
+      <div className="chip-section">
+        <div className="chip-row">
+          {categories.map((cat) => (
+            <Chip
+              key={cat.id}
+              active={filter === cat.id}
+              onClick={() => setFilter(cat.id)}
+            >
+              {cat.icon} {cat.label}
+            </Chip>
+          ))}
+        </div>
       </div>
 
       {/* Resource List */}
-      <div id="resList" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="res-list-wrap">
         {filteredResources.length === 0 ? (
-          <p className="small muted" style={{ textAlign: 'center', marginTop: 18 }}>No items match your search.</p>
+          <Card padding="lg" style={{ textAlign: 'center' }}>
+            <p style={{ color: 'var(--ink-soft)', margin: 0 }}>
+              {query.trim()
+                ? 'No items match your search.'
+                : 'No resources found in this category'}
+            </p>
+          </Card>
         ) : (
-          filteredResources.map((res) => (
-            <div
-              key={res.id}
-              className="card res-card"
-              onClick={() => navigate(`/resource/${res.id}`)}
-              style={{ cursor: 'pointer' }}
-            >
-              <span className={`res-ic cat-${res.cat}`}>
-                {getCategoryIcon(res.cat)}
-              </span>
-              <div className="res-body">
-                <div className="name">{res.name}</div>
-                <div className="owner">Shared by {res.owner}</div>
-                <div className="res-foot">
-                  <span className="dist">{res.dist} away</span>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      requestItem(res.id);
-                    }}
-                  >
-                    Request
-                  </button>
+          <div className="res-list">
+            {filteredResources.map((resource, i) => (
+              <Card
+                key={resource.id || i}
+                interactive
+                onClick={() => navigate(`/resource/${resource.id}`)}
+              >
+                <div className="res-row">
+                  <span className={`res-ic cat-${resource.cat}`}>
+                    {getCategoryIcon(resource.cat)}
+                  </span>
+                  <div className="res-body">
+                    <div className="name">{resource.name}</div>
+                    <div className="owner">Shared by {resource.owner}</div>
+                    <div className="res-foot">
+                      <span className="dist">📍 {resource.dist} away</span>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          requestItem(resource.id);
+                        }}
+                      >
+                        Request
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))
+              </Card>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Add Resource Button */}
-      <button
-        className="btn btn-accent btn-block add-resource-btn"
-        onClick={() => setShowModal(true)}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ width: 18, height: 18 }}>
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        List a resource
-      </button>
-
-      {/* Add Resource Modal */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 style={{ fontSize: 20, fontWeight: 600 }}>List a resource</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="form-grid" style={{ padding: '0 0 20px' }}>
-              <div className="field full">
-                <label>Item name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Rechargeable lamp"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className={errors.name ? 'field-error' : ''}
-                />
-                {errors.name && <span className="error-text">{errors.name}</span>}
-              </div>
-
-              <div className="field full">
-                <label>Category</label>
-                <div className="chip-row" style={{ marginBottom: 0 }}>
-                  {['power', 'water', 'tools', 'firstaid', 'transport'].map((cat) => (
-                    <span
-                      key={cat}
-                      className={`chip ${formData.category === cat ? 'active' : ''}`}
-                      onClick={() => setFormData({ ...formData, category: cat })}
-                    >
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="field full">
-                <label>Short description</label>
-                <textarea
-                  className="compose"
-                  rows={3}
-                  placeholder="Condition, quantity, anything borrowers should know"
-                  value={formData.desc}
-                  onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
-                />
-              </div>
-
-              <div className="field full">
-                <label>Pickup location</label>
-                <input
-                  type="text"
-                  placeholder="Purok 3, near the chapel"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                />
-              </div>
-
-              <div className="row" style={{ gap: 10, marginTop: 10 }}>
-                <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-accent" style={{ flex: 1 }}>
-                  List item
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       <style>{`
+        .board-page {
+          padding-bottom: 100px;
+        }
+
         .topbar {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          gap: var(--space-3);
+          padding: var(--space-5) var(--space-5) var(--space-3);
+          background: var(--bg);
+          position: sticky;
+          top: 0;
+          z-index: var(--z-sticky);
+          flex-wrap: wrap;
         }
+
+        .topbar-right {
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          flex-wrap: wrap;
+        }
+
         .brgy-pill {
-          font-size: 12px;
+          font-size: var(--text-xs);
           font-weight: 600;
           color: var(--ink-soft);
           background: var(--surface);
           border: 1px solid var(--border);
           padding: 6px 10px;
-          border-radius: 999px;
+          border-radius: var(--radius-full);
           white-space: nowrap;
         }
-        .screen-head {
-          margin: 4px 0 16px;
+
+        .board-head {
+          padding: 0 var(--space-5);
+          margin-bottom: var(--space-4);
         }
-        .screen-head .sub {
+
+        .board-head h2 {
+          font-size: var(--text-xl);
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .board-head .sub {
           color: var(--ink-soft);
-          font-size: 13.5px;
-          margin-top: 3px;
+          font-size: var(--text-sm);
+          margin-top: var(--space-1);
+          line-height: 1.5;
         }
-        .res-card {
+
+        .board-search {
+          padding: 0 var(--space-5);
+          margin-bottom: var(--space-3);
+        }
+
+        .board-search input {
+          width: 100%;
+          padding: 11px 14px;
+          font-size: var(--text-base);
+          font-family: var(--font-body);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
+          background: var(--surface);
+          color: var(--ink);
+          transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+        }
+
+        .board-search input:focus {
+          outline: none;
+          border-color: var(--accent);
+          box-shadow: var(--focus-ring);
+        }
+
+        .add-form {
+          margin: 0 var(--space-5) var(--space-4);
+        }
+
+        .form-field {
+          margin-bottom: var(--space-3);
+        }
+
+        .form-field > label {
+          display: block;
+          font-size: var(--text-sm);
+          font-weight: 600;
+          color: var(--ink-soft);
+          margin-bottom: var(--space-2);
+        }
+
+        .form-field input,
+        .form-field textarea {
+          width: 100%;
+          padding: 11px 13px;
+          font-size: var(--text-base);
+          font-family: var(--font-body);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
+          background: var(--surface);
+          color: var(--ink);
+          transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+        }
+
+        .form-field textarea {
+          resize: vertical;
+          min-height: 76px;
+        }
+
+        .form-field input:focus,
+        .form-field textarea:focus {
+          outline: none;
+          border-color: var(--accent);
+          box-shadow: var(--focus-ring);
+        }
+
+        .form-field input[aria-invalid='true'] {
+          border-color: var(--danger);
+        }
+
+        .field-error {
+          display: block;
+          margin-top: var(--space-1);
+          font-size: var(--text-xs);
+          color: var(--danger);
+        }
+
+        .chip-row {
           display: flex;
-          gap: 12px;
+          gap: var(--space-2);
+          overflow-x: auto;
+          padding-bottom: var(--space-1);
+          scrollbar-width: none;
+        }
+
+        .chip-row::-webkit-scrollbar {
+          display: none;
+        }
+
+        .chip-row > * {
+          flex-shrink: 0;
+        }
+
+        .form-actions {
+          display: flex;
+          gap: var(--space-2);
+          margin-top: var(--space-4);
+        }
+
+        .chip-section {
+          padding: 0 var(--space-5);
+          margin-bottom: var(--space-4);
+        }
+
+        .res-list-wrap {
+          padding: 0 var(--space-5);
+        }
+
+        .res-list {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-3);
+        }
+
+        .res-row {
+          display: flex;
+          gap: var(--space-3);
           align-items: flex-start;
         }
+
         .res-ic {
           width: 44px;
           height: 44px;
@@ -271,143 +451,84 @@ export default function Board() {
           background: var(--grad-cool);
           color: #fff;
         }
+
         .res-ic svg {
           width: 21px;
           height: 21px;
         }
-        .res-ic.cat-power {
-          background: var(--grad-accent);
-        }
-        .res-ic.cat-water {
-          background: linear-gradient(135deg, #6FA8D8, var(--cool) 65%, #274670);
-        }
-        .res-ic.cat-tools {
-          background: var(--grad-cool);
-        }
-        .res-ic.cat-firstaid {
-          background: var(--grad-danger);
-        }
-        .res-ic.cat-transport {
-          background: var(--grad-safe);
-        }
+
+        .res-ic.cat-power { background: var(--grad-accent); }
+        .res-ic.cat-water { background: linear-gradient(135deg, #6FA8D8, #3E6C9E 65%, #274670); }
+        .res-ic.cat-tools { background: var(--grad-cool); }
+        .res-ic.cat-firstaid { background: var(--grad-danger); }
+        .res-ic.cat-transport { background: var(--grad-safe); }
+
         .res-body {
           flex: 1;
           min-width: 0;
         }
+
         .res-body .name {
           font-weight: 600;
-          font-size: 14.5px;
+          font-size: var(--text-md);
         }
+
         .res-body .owner {
-          font-size: 12px;
+          font-size: var(--text-sm);
           color: var(--ink-soft);
-          margin-top: 2px;
+          margin-top: var(--space-1);
         }
+
         .res-foot {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-top: 10px;
+          margin-top: var(--space-3);
+          gap: var(--space-2);
         }
+
         .dist {
-          font-size: 11.5px;
+          font-size: var(--text-xs);
           color: var(--ink-soft);
-        }
-        #resList {
-          flex: 1 1 0;
-          min-height: 0;
-          overflow-y: auto;
-          padding-bottom: 4px;
-        }
-        .add-resource-btn {
-          flex-shrink: 0;
-          margin-top: 12px;
-          padding-top: 12px;
-          border-top: 1px solid var(--border);
-        }
-
-        /* Modal */
-        .modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.6);
-          backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 100;
-          padding: 20px;
-          animation: fadeIn 0.2s ease;
-        }
-        .modal-content {
-          background: var(--surface);
-          border-radius: 20px;
-          width: 100%;
-          max-width: 480px;
-          max-height: 90vh;
-          overflow-y: auto;
-          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
-          animation: slideUp 0.25s ease;
-        }
-        .modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px 20px 16px;
-          border-bottom: 1px solid var(--border);
-        }
-        .modal-close {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
-          border: none;
-          background: var(--surface-alt);
-          color: var(--ink);
-          font-size: 24px;
-          line-height: 1;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .modal-close:hover {
-          background: var(--border);
-        }
-        .modal-content .form-grid {
-          padding: 20px;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
         }
 
         @media (min-width: 900px) {
           .topbar {
-            padding: 26px 0 20px;
+            padding: var(--space-6) 44px var(--space-4);
+            flex-wrap: nowrap;
           }
-          .screen-enter {
-            max-width: 1180px;
+
+          .topbar .brand {
+            display: none;
           }
-          #resList {
-            display: grid !important;
+
+          .board-head,
+          .board-search,
+          .chip-section,
+          .res-list-wrap {
+            padding-left: 44px;
+            padding-right: 44px;
+          }
+
+          .add-form {
+            margin-left: 44px;
+            margin-right: 44px;
+            max-width: 560px;
+          }
+
+          .res-list {
+            display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            align-content: start;
+            gap: var(--space-4);
           }
-          .add-resource-btn {
-            max-width: 320px;
-            margin-left: auto;
-            margin-right: auto;
-            border-top: none;
-            padding-top: 0;
+        }
+
+        @media (max-width: 560px) {
+          .topbar-right .brgy-pill {
+            display: none;
           }
         }
       `}</style>
-    </div>
+    </PageContainer>
   );
 }

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Button, Card, Input, Tag } from '../components/ui';
+import { PageContainer } from '../components/layout/PageContainer';
 
 export default function MyRequests() {
   const navigate = useNavigate();
-  const { requests, resources } = useApp();
+  const { requests } = useApp();
   const [tab, setTab] = useState('sent');
   const [search, setSearch] = useState('');
 
@@ -19,153 +21,149 @@ export default function MyRequests() {
   );
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <PageContainer>
       {/* Topbar */}
-      <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/board')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>My requests</h2>
-        </div>
+      <div className="req-topbar">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/board')}
+          aria-label="Go back"
+        >
+          ←
+        </Button>
+        <h2>My requests</h2>
       </div>
 
       {/* Tab Switcher */}
-      <div className="role-switch">
-        <button className={tab === 'sent' ? 'active' : ''} onClick={() => setTab('sent')}>Sent</button>
-        <button className={tab === 'received' ? 'active' : ''} onClick={() => setTab('received')}>Received</button>
+      <div className="tab-switch">
+        <button
+          className={tab === 'sent' ? 'active' : ''}
+          onClick={() => setTab('sent')}
+        >
+          Sent
+        </button>
+        <button
+          className={tab === 'received' ? 'active' : ''}
+          onClick={() => setTab('received')}
+        >
+          Received
+        </button>
       </div>
 
       {/* Search */}
-      <input
-        type="text"
+      <Input
         placeholder="Search your requests…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        style={{
-          width: '100%',
-          marginBottom: 12,
-          padding: '11px 14px',
-          borderRadius: 12,
-          border: '1.5px solid var(--border)',
-          background: 'var(--surface)',
-          color: 'var(--ink)',
-          fontFamily: 'var(--font-body)',
-          fontSize: '13.5px'
-        }}
       />
 
       {/* Sent Tab */}
       {tab === 'sent' && (
-        <div className="card">
+        <Card padding="md">
           {filteredSentRequests.length === 0 ? (
-            <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>
-              No requests sent yet
-            </p>
+            <p className="empty-state">No requests sent yet</p>
           ) : (
             filteredSentRequests.map((req, i) => (
-              <div key={i} className="req-card">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="name">{req.item}</div>
-                  <div className="meta">Requested from {req.owner}</div>
-                </div>
-                <span className={`status-badge ${req.status}`}>
-                  {req.status === 'pending' ? 'Pending' : 'Accepted'}
-                </span>
-              </div>
+              <RequestItem
+                key={i}
+                item={req.item}
+                meta={`From ${req.owner}`}
+                status={req.status}
+                isLast={i === filteredSentRequests.length - 1}
+              />
             ))
           )}
-        </div>
+        </Card>
       )}
 
       {/* Received Tab */}
       {tab === 'received' && (
-        <div className="card">
+        <Card padding="md">
           {receivedRequests.length === 0 ? (
-            <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>
-              No requests received
-            </p>
+            <p className="empty-state">No requests received</p>
           ) : (
-            receivedRequests.map((req) => (
-              <div key={req.id} className="req-card">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="name">{req.item}</div>
-                  <div className="meta">Requested by {req.requester}</div>
-                </div>
-                <div className="row" style={{ gap: 6, flexShrink: 0 }}>
-                  <button className="btn btn-safe btn-sm">Accept</button>
-                  <button className="btn btn-ghost btn-sm">Decline</button>
-                </div>
-              </div>
+            receivedRequests.map((req, i) => (
+              <ReceivedRequestItem
+                key={req.id}
+                request={req}
+                isLast={i === receivedRequests.length - 1}
+              />
             ))
           )}
-        </div>
+        </Card>
       )}
 
       <style>{`
-        .topbar {
+        .req-topbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          gap: var(--space-3);
+          padding: var(--space-2) 0 var(--space-4);
         }
-
-        .req-card {
+        .req-topbar h2 {
+          font-size: var(--text-lg);
+          font-weight: 600;
+          margin: 0;
+        }
+        .tab-switch {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 10px;
-          padding: 14px 0;
-          border-top: 1px solid var(--border);
-        }
-
-        .req-card:first-child {
-          border-top: none;
-          padding-top: 0;
-        }
-
-        .req-card .name {
-          font-weight: 600;
-          font-size: 13.5px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .req-card .meta {
-          font-size: 11.5px;
-          color: var(--ink-soft);
-          margin-top: 2px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .status-badge {
-          padding: 4px 10px;
-          border-radius: 8px;
-          font-size: 11px;
-          font-weight: 600;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-
-        .status-badge.pending {
           background: var(--surface-alt);
+          border-radius: var(--radius-lg);
+          padding: var(--space-1);
+          margin-bottom: var(--space-4);
+        }
+        .tab-switch button {
+          flex: 1;
+          border: none;
+          background: transparent;
+          padding: var(--space-2) var(--space-3);
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: 600;
           color: var(--ink-soft);
+          cursor: pointer;
+          transition: all var(--duration-fast);
         }
-
-        .status-badge.accepted,
-        .status-badge.approved {
-          background: var(--safe);
-          color: #fff;
+        .tab-switch button.active {
+          background: var(--surface);
+          color: var(--ink);
+          box-shadow: var(--elevation-1);
         }
-
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
+        .empty-state {
+          text-align: center;
+          padding: var(--space-5) 0;
+          color: var(--ink-soft);
+          font-size: var(--text-sm);
         }
       `}</style>
+    </PageContainer>
+  );
+}
+
+function RequestItem({ item, meta, status, isLast }) {
+  return (
+    <div className={`req-item ${isLast ? 'last' : ''}`}>
+      <div className="req-info">
+        <div className="req-name">{item}</div>
+        <div className="req-meta">{meta}</div>
+      </div>
+      <Tag variant={status} />
+    </div>
+  );
+}
+
+function ReceivedRequestItem({ request, isLast }) {
+  return (
+    <div className={`req-item ${isLast ? 'last' : ''}`}>
+      <div className="req-info">
+        <div className="req-name">{request.item}</div>
+        <div className="req-meta">Requested by {request.requester}</div>
+      </div>
+      <div className="req-actions">
+        <Button variant="safe" size="sm">Accept</Button>
+        <Button variant="ghost" size="sm">Decline</Button>
+      </div>
     </div>
   );
 }

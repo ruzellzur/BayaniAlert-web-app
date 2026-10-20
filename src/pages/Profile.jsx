@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Button } from '../components/ui';
+import { PageContainer, Section } from '../components/layout/PageContainer';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -19,21 +21,26 @@ export default function Profile() {
   };
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <PageContainer>
       {/* Topbar */}
-      <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>{isOfficial ? 'My profile' : 'Household'}</h2>
-        </div>
+      <div className="prof-topbar">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/home')}
+          aria-label="Go back"
+        >
+          ←
+        </Button>
+        <h2>{isOfficial ? 'My profile' : 'Household'}</h2>
       </div>
 
       {/* Profile Header */}
       <div className="prof-head">
         <div className="avatar">{user?.initials || 'RG'}</div>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 15.5 }}>{user?.officialName || user?.name || 'Ruzel G.'}</div>
-          <div className="muted small">
+          <div className="prof-name">{user?.officialName || user?.name || 'Ruzel G.'}</div>
+          <div className="prof-subtitle">
             {isOfficial
               ? `${user?.position || 'Kagawad'} · ${user?.purok || 'Purok 3'}`
               : `Household #${user?.household || '142'} · ${user?.purok || 'Purok 3'}`
@@ -43,116 +50,95 @@ export default function Profile() {
       </div>
 
       {/* Info Card */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        {isOfficial ? (
-          <>
-            <div className="list-item">
-              <span>Position</span>
-              <span className="val">{user?.position || 'Kagawad'}</span>
-            </div>
-            <div className="list-item">
-              <span>Assigned zone</span>
-              <span className="val">{user?.purok || 'Purok 3'}</span>
-            </div>
-            <div className="list-item">
-              <span>Office contact</span>
-              <span className="val">{user?.officeContact || '0917 500 1042'}</span>
-            </div>
-            <div className="list-item">
-              <span>Permissions</span>
-              <span className="val">
-                {[
+      <Section title={isOfficial ? "Official Information" : "Household Information"}>
+        <div className="info-list">
+          {isOfficial ? (
+            <>
+              <InfoItem label="Position" value={user?.position || 'Kagawad'} />
+              <InfoItem label="Assigned zone" value={user?.purok || 'Purok 3'} />
+              <InfoItem label="Office contact" value={user?.officeContact || '0917 500 1042'} />
+              <InfoItem
+                label="Permissions"
+                value={[
                   canAnnounce && 'Announcements',
                   canEvac && 'Evacuation centers',
                 ].filter(Boolean).join(', ') || 'View only'}
-              </span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="list-item">
-              <span>Family members</span>
-              <span className="val">{user?.size || '4'}</span>
-            </div>
-            <div className="list-item">
-              <span>Emergency contact</span>
-              <span className="val">{user?.contact || '0917 xxx xx42'}</span>
-            </div>
-            <div className="list-item">
-              <span>Address</span>
-              <span className="val">{user?.address || 'Purok 3, Blk 6'}</span>
-            </div>
-          </>
-        )}
-      </div>
+              />
+            </>
+          ) : (
+            <>
+              <InfoItem label="Family members" value={user?.size || '4'} />
+              <InfoItem label="Emergency contact" value={user?.contact || '0917 xxx xx42'} />
+              <InfoItem label="Address" value={user?.address || 'Purok 3, Blk 6'} />
+            </>
+          )}
+        </div>
+      </Section>
 
       {/* Quick Actions */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="list-item" onClick={() => navigate('/directory')} style={{ cursor: 'pointer' }}>
-          <span>Barangay hotlines</span>
-          <span className="val">›</span>
+      <Section title="Quick Actions">
+        <div className="action-list">
+          <ActionItem label="Barangay hotlines" onClick={() => navigate('/directory')} />
+          {!isOfficial && (
+            <ActionItem label="Edit household info" onClick={() => navigate('/edit-profile')} />
+          )}
         </div>
-        {!isOfficial && (
-          <div className="list-item" onClick={() => navigate('/edit-profile')} style={{ cursor: 'pointer' }}>
-            <span>Edit household info</span>
-            <span className="val">›</span>
-          </div>
-        )}
-      </div>
+      </Section>
 
       {/* Settings */}
-      <div className="section-label" style={{ marginTop: 4 }}>
-        <h3>Settings</h3>
-      </div>
-      <div className="card">
-        {canAnnounce && (
-          <div className="list-item" onClick={() => navigate('/announcements')} style={{ cursor: 'pointer' }}>
-            <span>Manage announcements</span>
-            <span className="val">›</span>
-          </div>
-        )}
-        {canEvac && (
-          <div className="list-item" onClick={() => navigate('/map')} style={{ cursor: 'pointer' }}>
-            <span>Manage evacuation centers</span>
-            <span className="val">›</span>
-          </div>
-        )}
-        <div className="list-item" onClick={cycleTheme} style={{ cursor: 'pointer' }}>
-          <span>Appearance</span>
-          <span className="val">{themeLabels[theme] || 'System'}</span>
+      <Section title="Settings">
+        <div className="action-list">
+          {canAnnounce && (
+            <ActionItem label="Manage announcements" onClick={() => navigate('/announcements')} />
+          )}
+          {canEvac && (
+            <ActionItem label="Manage evacuation centers" onClick={() => navigate('/map')} />
+          )}
+          <ActionItem
+            label="Appearance"
+            value={themeLabels[theme] || 'System'}
+            onClick={cycleTheme}
+          />
+          <ActionItem
+            label="Alert notifications"
+            value="On"
+            onClick={() => alert('Notification settings would open here')}
+          />
+          <ActionItem
+            label="Language"
+            value="Filipino / English"
+            onClick={() => alert('Language settings would open here')}
+          />
+          <ActionItem
+            label="Log out"
+            onClick={handleLogout}
+            danger
+          />
         </div>
-        <div className="list-item" onClick={() => alert('Notification settings would open here')} style={{ cursor: 'pointer' }}>
-          <span>Alert notifications</span>
-          <span className="val">On</span>
-        </div>
-        <div className="list-item" onClick={() => alert('Language settings would open here')} style={{ cursor: 'pointer' }}>
-          <span>Language</span>
-          <span className="val">Filipino / English</span>
-        </div>
-        <div className="list-item" onClick={handleLogout} style={{ cursor: 'pointer' }}>
-          <span>Log out</span>
-          <span className="val">›</span>
-        </div>
-      </div>
+      </Section>
 
       <style>{`
-        .topbar {
+        .prof-topbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          gap: var(--space-3);
+          padding: var(--space-2) 0 var(--space-2);
+        }
+        .prof-topbar h2 {
+          font-size: var(--text-lg);
+          font-weight: 600;
+          margin: 0;
         }
         .prof-head {
           display: flex;
           align-items: center;
-          gap: 14px;
-          padding: 6px 0 18px;
+          gap: var(--space-4);
+          padding: var(--space-2) 0 var(--space-6);
         }
         .prof-head .avatar {
           width: 56px;
           height: 56px;
-          border-radius: 16px;
+          border-radius: var(--radius-lg);
           background: var(--grad-primary);
           color: #fff;
           display: flex;
@@ -160,32 +146,86 @@ export default function Profile() {
           justify-content: center;
           font-family: var(--font-display);
           font-weight: 600;
-          font-size: 20px;
-          box-shadow: 0 6px 16px rgba(27,42,74,0.25);
+          font-size: var(--text-xl);
+          box-shadow: var(--elevation-3);
         }
-        .list-item {
+        .prof-name {
+          font-weight: 600;
+          font-size: var(--text-lg);
+        }
+        .prof-subtitle {
+          font-size: var(--text-sm);
+          color: var(--ink-soft);
+          margin-top: var(--space-1);
+        }
+        .info-list {
+          display: flex;
+          flex-direction: column;
+        }
+        .info-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 14px 0;
+          padding: var(--space-3) 0;
           border-top: 1px solid var(--border);
-          font-size: 13.5px;
-          font-weight: 600;
+          font-size: var(--text-sm);
         }
-        .list-item:first-child {
+        .info-item:first-child {
           border-top: none;
         }
-        .list-item .val {
+        .info-item .label {
+          font-weight: 600;
+        }
+        .info-item .value {
           color: var(--ink-soft);
           font-weight: 500;
         }
-
-        @media (min-width: 900px) {
-          .topbar {
-            padding: 26px 0 20px;
-          }
+        .action-list {
+          display: flex;
+          flex-direction: column;
+        }
+        .action-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-3) 0;
+          border-top: 1px solid var(--border);
+          font-size: var(--text-sm);
+          font-weight: 600;
+          cursor: pointer;
+          transition: opacity var(--duration-fast);
+        }
+        .action-item:hover {
+          opacity: 0.8;
+        }
+        .action-item:first-child {
+          border-top: none;
+        }
+        .action-item .chevron {
+          color: var(--ink-soft);
+        }
+        .action-item.danger {
+          color: var(--danger);
         }
       `}</style>
+    </PageContainer>
+  );
+}
+
+function InfoItem({ label, value }) {
+  return (
+    <div className="info-item">
+      <span className="label">{label}</span>
+      <span className="value">{value}</span>
+    </div>
+  );
+}
+
+function ActionItem({ label, value, onClick, danger }) {
+  return (
+    <div className={`action-item ${danger ? 'danger' : ''}`} onClick={onClick}>
+      <span>{label}</span>
+      <span className="chevron">{value || '›'}</span>
     </div>
   );
 }

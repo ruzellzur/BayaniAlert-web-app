@@ -1,0 +1,91 @@
+/* Design Tokens for BayaniAlert */
+/* These extend the existing CSS variables in index.css */
+
+:root {
+  /* Spacing Scale (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Typography Scale */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 15px;
+  --text-xl: 17px;
+  --text-2xl: 19px;
+  --text-3xl: 23px;
+  --text-4xl: 28px;
+  --text-5xl: 36px;
+  --text-6xl: 46px;
+
+  /* Line Heights */
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+
+  /* Elevation System */
+  --elevation-0: none;
+  --elevation-1: 0 2px 4px rgba(27, 42, 74, 0.04);
+  --elevation-2: 0 4px 12px rgba(27, 42, 74, 0.08);
+  --elevation-3: 0 8px 24px rgba(27, 42, 74, 0.12);
+  --elevation-4: 0 16px 48px rgba(27, 42, 74, 0.16);
+
+  /* Transition Timing */
+  --duration-instant: 50ms;
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+
+  /* Easing Functions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 0.6, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Z-Index Scale */
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-dropdown: 20;
+  --z-sticky: 30;
+  --z-fixed: 40;
+  --z-modal-backdrop: 50;
+  --z-modal: 60;
+  --z-popover: 70;
+  --z-tooltip: 80;
+  --z-toast: 90;
+  --z-max: 100;
+
+  /* Border Radius Scale */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+
+  /* Focus Ring */
+  --focus-ring: 0 0 0 3px rgba(226, 154, 59, 0.4);
+  --focus-ring-danger: 0 0 0 3px rgba(193, 68, 60, 0.4);
+  --focus-ring-safe: 0 0 0 3px rgba(63, 125, 88, 0.4);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --elevation-1: 0 2px 4px rgba(0, 0, 0, 0.12);
+    --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.24);
+    --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.36);
+    --elevation-4: 0 16px 48px rgba(0, 0, 0, 0.48);
+  }
+}

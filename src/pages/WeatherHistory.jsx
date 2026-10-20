@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { Button, Card } from '../components/ui';
+import { PageContainer, Section } from '../components/layout/PageContainer';
 
 export default function WeatherHistory() {
   const navigate = useNavigate();
@@ -19,87 +21,142 @@ export default function WeatherHistory() {
   ];
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <PageContainer>
       {/* Topbar */}
-      <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>Weather & alerts</h2>
-        </div>
+      <div className="weather-topbar">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/home')}
+          aria-label="Go back"
+        >
+          ←
+        </Button>
+        <h2>Weather &amp; alerts</h2>
       </div>
 
       {/* Next 6 Hours Forecast */}
-      <div className="section-label" style={{ marginTop: 0 }}>
-        <h3>Next 6 hours</h3>
-      </div>
-      <div className="forecast-strip" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: 6,
-        marginBottom: 18
-      }}>
-        {forecast.map((f, i) => (
-          <div key={i} className="fcell" style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 12,
-            padding: '10px 4px',
-            textAlign: 'center'
-          }}>
-            <div className="t small muted" style={{ marginBottom: 4 }}>{f.time}</div>
-            <div className="v" style={{ fontWeight: 600, fontSize: 15 }}>{f.temp}</div>
-          </div>
-        ))}
-      </div>
+      <Section title="Next 6 hours">
+        <div className="forecast-strip">
+          {forecast.map((f, i) => (
+            <div key={i} className="forecast-cell">
+              <div className="forecast-time">{f.time}</div>
+              <div className="forecast-temp">{f.temp}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
 
       {/* Advisory History */}
-      <div className="section-label" style={{ marginTop: 0 }}>
-        <h3>Advisory history</h3>
-      </div>
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-        {history.map((item, i) => (
-          <div key={i} className="hist-item" style={{
-            display: 'flex',
-            gap: 12,
-            padding: '12px 0',
-            borderTop: i > 0 ? '1px solid var(--border)' : 'none'
-          }}>
-            <span className="hist-dot" style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 11,
-              fontWeight: 700,
-              flexShrink: 0,
-              background: item.active ? 'var(--accent)' : 'var(--surface-alt)',
-              color: item.active ? 'var(--accent-ink)' : 'var(--ink-soft)'
-            }}>
-              {item.badge}
-            </span>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{item.label}</div>
-              <div className="muted small" style={{ marginTop: 2 }}>{item.time}</div>
-            </div>
-          </div>
-        ))}
+      <Section title="Advisory history">
+        <Card padding="md">
+          {history.map((item, i) => (
+            <HistoryItem key={i} item={item} isLast={i === history.length - 1} />
+          ))}
+        </Card>
+      </Section>
+
+      <style>{`
+        .weather-topbar {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          padding: var(--space-2) 0 var(--space-2);
+        }
+        .weather-topbar h2 {
+          font-size: var(--text-lg);
+          font-weight: 600;
+          margin: 0;
+        }
+        .forecast-strip {
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          gap: var(--space-2);
+        }
+        .forecast-cell {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: var(--space-2) var(--space-1);
+          text-align: center;
+          transition: all var(--duration-fast);
+        }
+        .forecast-cell:hover {
+          border-color: var(--primary);
+          box-shadow: var(--elevation-1);
+        }
+        .forecast-time {
+          font-size: var(--text-xs);
+          color: var(--ink-soft);
+          margin-bottom: var(--space-1);
+        }
+        .forecast-temp {
+          font-weight: 600;
+          font-size: var(--text-base);
+        }
+        @media (max-width: 560px) {
+          .forecast-strip {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+      `}</style>
+    </PageContainer>
+  );
+}
+
+function HistoryItem({ item, isLast }) {
+  return (
+    <div className={`history-item ${isLast ? 'last' : ''}`}>
+      <span
+        className="history-badge"
+        style={{
+          background: item.active ? 'var(--accent)' : 'var(--surface-alt)',
+          color: item.active ? 'var(--accent-ink)' : 'var(--ink-soft)'
+        }}
+      >
+        {item.badge}
+      </span>
+      <div className="history-info">
+        <div className="history-label">{item.label}</div>
+        <div className="history-time">{item.time}</div>
       </div>
 
       <style>{`
-        .topbar {
+        .history-item {
+          display: flex;
+          gap: var(--space-3);
+          padding: var(--space-3) 0;
+          border-top: 1px solid var(--border);
+        }
+        .history-item.last {
+          border-top: none;
+        }
+        .history-item:first-child {
+          border-top: none;
+          padding-top: 0;
+        }
+        .history-badge {
+          width: 32px;
+          height: 32px;
+          border-radius: var(--radius-md);
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          justify-content: center;
+          font-size: var(--text-xs);
+          font-weight: 700;
+          flex-shrink: 0;
         }
-
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
+        .history-info {
+          flex: 1;
+        }
+        .history-label {
+          font-weight: 600;
+          font-size: var(--text-sm);
+        }
+        .history-time {
+          font-size: var(--text-xs);
+          color: var(--ink-soft);
+          margin-top: var(--space-1);
         }
       `}</style>
     </div>

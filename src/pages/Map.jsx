@@ -1,18 +1,25 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Button, Card } from '../components/ui';
+import { PageContainer, Section } from '../components/layout/PageContainer';
 
 export default function Map() {
   const navigate = useNavigate();
   const { evacCenters } = useApp();
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <PageContainer>
       {/* Topbar */}
-      <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>Evacuation & flood map</h2>
-        </div>
+      <div className="map-topbar">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/home')}
+          aria-label="Go back"
+        >
+          ←
+        </Button>
+        <h2>Evacuation &amp; flood map</h2>
       </div>
 
       <div className="map-grid">
@@ -60,71 +67,79 @@ export default function Map() {
 
           {/* Legend */}
           <div className="legend">
-            <div className="item">
-              <span className="sw" style={{ background: '#C1443C' }}></span>
+            <div className="legend-item">
+              <span className="legend-swatch" style={{ background: '#C1443C' }}></span>
               Evacuation center
             </div>
-            <div className="item">
-              <span className="sw" style={{ background: '#E29A3B' }}></span>
+            <div className="legend-item">
+              <span className="legend-swatch" style={{ background: '#E29A3B' }}></span>
               Shared resource
             </div>
-            <div className="item">
-              <span className="sw" style={{ background: '#1B2A4A' }}></span>
+            <div className="legend-item">
+              <span className="legend-swatch" style={{ background: '#1B2A4A' }}></span>
               You are here
             </div>
-            <div className="item">
-              <span className="sw" style={{ background: '#A9CBDC' }}></span>
+            <div className="legend-item">
+              <span className="legend-swatch" style={{ background: '#A9CBDC' }}></span>
               Flood-prone area
             </div>
           </div>
         </div>
 
         <div>
-          {/* Nearest Evacuation Center */}
-          <div className="section-label" style={{ marginTop: 0 }}>
-            <h3>Nearest evacuation center</h3>
-          </div>
-          {evacCenters.map((center, i) => (
-            <div
-              key={i}
-              className="card row between"
-              onClick={() => navigate(`/evac/${i}`)}
-              style={{ cursor: 'pointer', marginBottom: i < evacCenters.length - 1 ? '10px' : 0 }}
-            >
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>{center.name}</div>
-                <div className="muted small" style={{ marginTop: 3 }}>
-                  {center.distLabel} · {center.cap} / {center.max} capacity
-                </div>
-              </div>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert('Directions would open here');
-                }}
+          {/* Nearest Evacuation Centers */}
+          <Section title="Nearest evacuation center">
+            {evacCenters.map((center, i) => (
+              <Card
+                key={i}
+                interactive
+                onClick={() => navigate(`/evac/${i}`)}
+                style={{ marginBottom: i < evacCenters.length - 1 ? 'var(--space-2)' : 0 }}
               >
-                Directions
-              </button>
-            </div>
-          ))}
+                <div className="evac-card">
+                  <div>
+                    <div className="evac-name">{center.name}</div>
+                    <div className="evac-meta">
+                      {center.distLabel} · {center.cap} / {center.max} capacity
+                    </div>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      alert('Directions would open here');
+                    }}
+                  >
+                    Directions
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </Section>
         </div>
       </div>
 
       <style>{`
-        .topbar {
+        .map-topbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          gap: var(--space-3);
+          padding: var(--space-2) 0 var(--space-4);
         }
+
+        .map-topbar h2 {
+          font-size: var(--text-lg);
+          font-weight: 600;
+          margin: 0;
+        }
+
         .map-grid {
           display: block;
         }
         .map-wrap {
           position: relative;
-          border-radius: 20px;
+          border-radius: var(--radius-xl);
           overflow: hidden;
           border: 1px solid var(--border);
           background: #DCE9E0;
@@ -138,35 +153,46 @@ export default function Map() {
         .legend {
           display: flex;
           flex-wrap: wrap;
-          gap: 14px;
-          margin-top: 14px;
+          gap: var(--space-3);
+          margin-top: var(--space-3);
         }
-        .legend .item {
+        .legend-item {
           display: flex;
           align-items: center;
-          gap: 7px;
-          font-size: 12px;
+          gap: var(--space-2);
+          font-size: var(--text-xs);
           color: var(--ink-soft);
           font-weight: 600;
         }
-        .legend .sw {
+        .legend-swatch {
           width: 11px;
           height: 11px;
-          border-radius: 4px;
+          border-radius: var(--radius-sm);
+        }
+        .evac-card {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .evac-name {
+          font-weight: 600;
+          font-size: var(--text-base);
+        }
+        .evac-meta {
+          font-size: var(--text-sm);
+          color: var(--ink-soft);
+          margin-top: var(--space-1);
         }
 
         @media (min-width: 900px) {
-          .topbar {
-            padding: 26px 0 20px;
-          }
           .map-grid {
             display: grid;
             grid-template-columns: 1.4fr 1fr;
-            gap: 26px;
+            gap: var(--space-6);
             align-items: start;
           }
         }
       `}</style>
-    </div>
+    </PageContainer>
   );
 }

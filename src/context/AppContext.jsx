@@ -50,11 +50,17 @@ const INITIAL_PENDING_OFFICIALS = [
   { id: 'p2', name: 'Liza Cruz', position: 'SK Chairperson', purok: 'Purok 2', status: 'pending' },
 ];
 
+const INITIAL_REQUESTS = [
+  { item: 'Gasoline-powered generator', owner: 'Mang Tonio · Purok 3', status: 'pending' },
+  { item: 'First aid kit (family size)', owner: 'Nurse Bel · Purok 2', status: 'accepted' },
+  { item: 'Multicab for evacuation trips', owner: 'Kap. Lira · Purok 1', status: 'declined' },
+];
+
 export function AppProvider({ children }) {
   const [user, setUser] = useState(null);
   const [myStatus, setMyStatus] = useState(null);
   const [resources, setResources] = useState(INITIAL_RESOURCES);
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState(INITIAL_REQUESTS);
   const [messages, setMessages] = useState({});
   const [evacCenters, setEvacCenters] = useState(INITIAL_EVACUATION_CENTERS);
   const [announcements, setAnnouncements] = useState([]);

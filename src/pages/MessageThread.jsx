@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Button, Input, Card } from '../components/ui';
+import { PageContainer } from '../components/layout/PageContainer';
 
 export default function MessageThread() {
   const { id } = useParams();
@@ -21,17 +23,22 @@ export default function MessageThread() {
 
   if (!resource) {
     return (
-      <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
-        <div className="topbar">
-          <div className="row" style={{ gap: 12 }}>
-            <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/board')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-            <h2 style={{ fontSize: 17 }}>Messages</h2>
-          </div>
+      <PageContainer>
+        <div className="thread-topbar">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/board')}
+            aria-label="Go back"
+          >
+            ←
+          </Button>
+          <h2>Messages</h2>
         </div>
-        <div className="card" style={{ marginTop: 20, textAlign: 'center' }}>
+        <Card padding="lg" style={{ textAlign: 'center', marginTop: 'var(--space-5)' }}>
           <p className="muted">Conversation not found</p>
-        </div>
-      </div>
+        </Card>
+      </PageContainer>
     );
   }
 
@@ -52,13 +59,18 @@ export default function MessageThread() {
   };
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <PageContainer>
       {/* Topbar */}
-      <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate(`/resource/${id}`)} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>{ownerName}</h2>
-        </div>
+      <div className="thread-topbar">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(`/resource/${id}`)}
+          aria-label="Go back"
+        >
+          ←
+        </Button>
+        <h2>{ownerName}</h2>
       </div>
 
       {/* Message Thread */}
@@ -73,30 +85,33 @@ export default function MessageThread() {
 
       {/* Message Input */}
       <div className="thread-input-row">
-        <input
-          type="text"
+        <Input
           placeholder="Type a message…"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
         />
-        <button className="btn btn-accent" onClick={handleSend}>Send</button>
+        <Button variant="accent" onClick={handleSend}>Send</Button>
       </div>
 
       <style>{`
-        .topbar {
+        .thread-topbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          gap: var(--space-3);
+          padding: var(--space-2) 0 var(--space-3);
+        }
+        .thread-topbar h2 {
+          font-size: var(--text-lg);
+          font-weight: 600;
+          margin: 0;
         }
         .thread-body {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: var(--space-2);
           min-height: 260px;
-          padding: 4px 2px 12px;
+          padding: var(--space-1) 0 var(--space-3);
         }
         .msg {
           display: flex;
@@ -112,51 +127,35 @@ export default function MessageThread() {
           align-items: flex-start;
         }
         .msg-bubble {
-          padding: 10px 14px;
-          border-radius: 14px;
-          font-size: 13.5px;
+          padding: var(--space-2) var(--space-3);
+          border-radius: var(--radius-lg);
+          font-size: var(--text-sm);
           line-height: 1.45;
         }
         .msg-user .msg-bubble {
           background: var(--grad-primary);
           color: var(--on-strong);
-          border-bottom-right-radius: 4px;
+          border-bottom-right-radius: var(--radius-sm);
         }
         .msg-owner .msg-bubble {
           background: var(--surface);
           border: 1px solid var(--border);
-          border-bottom-left-radius: 4px;
+          border-bottom-left-radius: var(--radius-sm);
         }
         .msg-time {
-          font-size: 10px;
+          font-size: var(--text-xs);
           color: var(--ink-soft);
-          margin-top: 3px;
+          margin-top: var(--space-1);
         }
         .thread-input-row {
           display: flex;
-          gap: 8px;
+          gap: var(--space-2);
           position: sticky;
           bottom: 0;
           background: var(--bg);
-          padding-top: 8px;
-        }
-        .thread-input-row input {
-          flex: 1;
-          padding: 11px 14px;
-          border-radius: 12px;
-          border: 1.5px solid var(--border);
-          background: var(--surface);
-          color: var(--ink);
-          font-family: var(--font-body);
-          font-size: 13.5px;
-        }
-
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
+          padding-top: var(--space-2);
         }
       `}</style>
-    </div>
+    </PageContainer>
   );
 }

@@ -178,6 +178,7 @@ export default function Layout() {
           display: flex;
           flex: 1;
           flex-direction: column;
+          padding: 2px 20px 100px;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
         }

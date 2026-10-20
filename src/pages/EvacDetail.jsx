@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Button, Card, Input } from '../components/ui';
+import { PageContainer, Section } from '../components/layout/PageContainer';
 
 export default function EvacDetail() {
   const { id } = useParams();
@@ -11,17 +13,22 @@ export default function EvacDetail() {
 
   if (!evac) {
     return (
-      <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
-        <div className="topbar">
-          <div className="row" style={{ gap: 12 }}>
-            <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/map')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-            <h2 style={{ fontSize: 17 }}>Evacuation center</h2>
-          </div>
+      <PageContainer>
+        <div className="evac-topbar">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/map')}
+            aria-label="Go back"
+          >
+            ←
+          </Button>
+          <h2>Evacuation center</h2>
         </div>
-        <div className="card" style={{ marginTop: 20, textAlign: 'center' }}>
+        <Card padding="lg" style={{ textAlign: 'center', marginTop: 'var(--space-5)' }}>
           <p className="muted">Evacuation center not found</p>
-        </div>
-      </div>
+        </Card>
+      </PageContainer>
     );
   }
 
@@ -38,106 +45,161 @@ export default function EvacDetail() {
   };
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <PageContainer>
       {/* Topbar */}
-      <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/map')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>Evacuation center</h2>
-        </div>
+      <div className="evac-topbar">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/map')}
+          aria-label="Go back"
+        >
+          ←
+        </Button>
+        <h2>Evacuation center</h2>
       </div>
 
       {/* Main Info Card */}
-      <div className="card" style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 600, fontSize: 16 }}>{evac.name}</div>
-        <div className="muted small" style={{ marginTop: 3 }}>{evac.addr}</div>
-        <div className="cap-bar" style={{ marginTop: 14 }}>
-          <div className="cap-fill" style={{ width: `${(evac.cap / evac.max) * 100}%` }}></div>
+      <Card padding="lg">
+        <div className="evac-name">{evac.name}</div>
+        <div className="evac-addr">{evac.addr}</div>
+        <div className="cap-bar">
+          <div
+            className="cap-fill"
+            style={{ width: `${(evac.cap / evac.max) * 100}%` }}
+          />
         </div>
-        <div className="row between" style={{ marginTop: 8 }}>
-          <span className="small muted">Capacity</span>
-          <span className="small muted">{evac.cap} / {evac.max}</span>
+        <div className="cap-labels">
+          <span className="cap-label">Capacity</span>
+          <span className="cap-value">{evac.cap} / {evac.max}</span>
         </div>
-      </div>
+      </Card>
 
       {/* Update Capacity (Officials Only) */}
       {isOfficial && canManageEvac && (
-        <>
-          <div className="section-label" style={{ marginTop: 0 }}>
-            <h3>Update capacity</h3>
-          </div>
-          <div className="card" style={{ marginBottom: 16 }}>
-            <div className="field" style={{ marginBottom: 10 }}>
-              <label>Current occupancy</label>
-              <input
-                type="number"
-                min="0"
-                defaultValue={evac.cap}
-                onChange={(e) => {
-                  const newCap = parseInt(e.target.value, 10);
-                  if (!isNaN(newCap)) {
-                    updateEvacCenter(evacCenters.indexOf(evac), { cap: newCap });
-                  }
-                }}
-              />
-            </div>
-            <button className="btn btn-accent btn-block" onClick={() => alert('Capacity updated!')}>
+        <Section title="Update capacity">
+          <Card padding="md">
+            <Input
+              label="Current occupancy"
+              type="number"
+              min="0"
+              defaultValue={evac.cap}
+              onChange={(e) => {
+                const newCap = parseInt(e.target.value, 10);
+                if (!isNaN(newCap)) {
+                  updateEvacCenter(evacCenters.indexOf(evac), { cap: newCap });
+                }
+              }}
+            />
+            <Button
+              variant="accent"
+              block
+              onClick={() => alert('Capacity updated!')}
+              style={{ marginTop: 'var(--space-3)' }}
+            >
               Save capacity
-            </button>
-          </div>
-        </>
+            </Button>
+          </Card>
+        </Section>
       )}
 
       {isOfficial && !canManageEvac && (
-        <p className="small muted" style={{ margin: '-4px 0 16px' }}>
+        <p className="permission-note">
           Your position doesn't include evacuation-center management. A Barangay Captain, Kagawad, or BDRRM Officer can update capacity here.
         </p>
       )}
 
       {/* On-site Amenities */}
-      <div className="section-label" style={{ marginTop: 0 }}>
-        <h3>On-site</h3>
-      </div>
-      <div className="card" style={{ marginBottom: 16 }}>
-        {evac.amenities.map((amenity, i) => (
-          <div key={i} className="list-item" style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '10px 0',
-            borderTop: i > 0 ? '1px solid var(--border)' : 'none'
-          }}>
-            <span>{amenity.name}</span>
-            <span className="small" style={{
-              fontWeight: 600,
-              color: getAmenityStatusColor(amenity.status)
-            }}>
-              {amenity.status}
-            </span>
-          </div>
-        ))}
-      </div>
+      <Section title="On-site">
+        <Card padding="md">
+          {evac.amenities.map((amenity, i) => (
+            <div key={i} className="amenity-item">
+              <span>{amenity.name}</span>
+              <span
+                className="amenity-status"
+                style={{ color: getAmenityStatusColor(amenity.status) }}
+              >
+                {amenity.status}
+              </span>
+            </div>
+          ))}
+        </Card>
+      </Section>
 
       {/* Get Directions Button */}
-      <button className="btn btn-primary btn-block" onClick={() => alert('Directions would open here')}>
+      <Button
+        variant="primary"
+        block
+        onClick={() => alert('Directions would open here')}
+      >
         Get directions
-      </button>
+      </Button>
 
       <style>{`
-        .topbar {
+        .evac-topbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          gap: var(--space-3);
+          padding: var(--space-2) 0 var(--space-4);
         }
-
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
+        .evac-topbar h2 {
+          font-size: var(--text-lg);
+          font-weight: 600;
+          margin: 0;
+        }
+        .evac-name {
+          font-weight: 600;
+          font-size: var(--text-lg);
+        }
+        .evac-addr {
+          font-size: var(--text-sm);
+          color: var(--ink-soft);
+          margin-top: var(--space-1);
+        }
+        .cap-bar {
+          height: 9px;
+          border-radius: var(--radius-full);
+          background: var(--surface-alt);
+          overflow: hidden;
+          margin-top: var(--space-4);
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.10);
+        }
+        .cap-fill {
+          height: 100%;
+          border-radius: var(--radius-full);
+          background: var(--grad-safe);
+          transition: width var(--duration-base);
+        }
+        .cap-labels {
+          display: flex;
+          justify-content: space-between;
+          margin-top: var(--space-2);
+        }
+        .cap-label, .cap-value {
+          font-size: var(--text-sm);
+          color: var(--ink-soft);
+        }
+        .permission-note {
+          font-size: var(--text-sm);
+          color: var(--ink-soft);
+          margin: calc(-1 * var(--space-1)) 0 var(--space-4);
+        }
+        .amenity-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-2) 0;
+          border-top: 1px solid var(--border);
+          font-size: var(--text-sm);
+        }
+        .amenity-item:first-child {
+          border-top: none;
+        }
+        .amenity-status {
+          font-weight: 600;
+          font-size: var(--text-xs);
         }
       `}</style>
-    </div>
+    </PageContainer>
   );
 }

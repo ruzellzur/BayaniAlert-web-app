@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Button, Card } from '../components/ui';
+import { PageContainer, Section } from '../components/layout/PageContainer';
 
 export default function ResourceDetail() {
   const { id } = useParams();
@@ -12,17 +14,22 @@ export default function ResourceDetail() {
 
   if (!resource) {
     return (
-      <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
-        <div className="topbar">
-          <div className="row" style={{ gap: 12 }}>
-            <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/board')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-            <h2 style={{ fontSize: 17 }}>Item details</h2>
-          </div>
+      <PageContainer>
+        <div className="detail-topbar">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/board')}
+            aria-label="Go back"
+          >
+            ←
+          </Button>
+          <h2>Item details</h2>
         </div>
-        <div className="card" style={{ marginTop: 20, textAlign: 'center' }}>
+        <Card padding="lg" style={{ textAlign: 'center', marginTop: 'var(--space-5)' }}>
           <p className="muted">Resource not found</p>
-        </div>
-      </div>
+        </Card>
+      </PageContainer>
     );
   }
 
@@ -49,82 +56,81 @@ export default function ResourceDetail() {
   const ownerInitials = ownerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <PageContainer>
       {/* Topbar */}
-      <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/board')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>Item details</h2>
-        </div>
+      <div className="detail-topbar">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/board')}
+          aria-label="Go back"
+        >
+          ←
+        </Button>
+        <h2>Item details</h2>
       </div>
 
       {/* Detail Hero */}
       <div className="detail-hero">
-        <span className={`res-ic cat-${resource.cat}`}>
+        <span className={`res-icon cat-${resource.cat}`}>
           {getCategoryIcon(resource.cat)}
         </span>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 17 }}>{resource.name}</div>
-          <div className="muted small" style={{ marginTop: 3 }}>{resource.dist} away</div>
+          <div className="detail-name">{resource.name}</div>
+          <div className="detail-dist">{resource.dist} away</div>
         </div>
       </div>
 
       {/* About Card */}
-      <div className="card" style={{ marginBottom: 14 }}>
-        <p className="small" style={{ marginBottom: 10, fontWeight: 600, color: 'var(--ink)' }}>About this item</p>
-        <p className="small muted" style={{ lineHeight: 1.6 }}>{resource.desc || 'No additional description provided.'}</p>
-      </div>
+      <Card padding="md">
+        <p className="about-label">About this item</p>
+        <p className="about-text">{resource.desc || 'No additional description provided.'}</p>
+      </Card>
 
       {/* Owner Section */}
-      <div className="section-label" style={{ marginTop: 0 }}>
-        <h3>Shared by</h3>
-      </div>
-      <div className="card owner-card" style={{ marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center' }}>
-        <span className="avatar" style={{
-          width: 40,
-          height: 40,
-          borderRadius: 12,
-          background: 'var(--grad-cool)',
-          color: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: 'var(--font-display)',
-          fontWeight: 600,
-          fontSize: 14,
-          flexShrink: 0
-        }}>
-          {ownerInitials}
-        </span>
-        <div>
-          <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{ownerName}</div>
-          <div className="muted small">Member since 2022 · {Math.floor(Math.random() * 20) + 1} items shared</div>
-        </div>
-      </div>
+      <Section title="Shared by">
+        <Card padding="md">
+          <div className="owner-card">
+            <span className="owner-avatar">{ownerInitials}</span>
+            <div>
+              <div className="owner-name">{ownerName}</div>
+              <div className="owner-meta">Member since 2022 · {Math.floor(Math.random() * 20) + 1} items shared</div>
+            </div>
+          </div>
+        </Card>
+      </Section>
 
       {/* Action Buttons */}
-      <button className="btn btn-primary btn-block" onClick={handleRequest}>Request this item</button>
-      <button className="btn btn-ghost btn-block" style={{ marginTop: 10 }} onClick={handleMessage}>Message owner</button>
+      <Button variant="primary" block onClick={handleRequest}>
+        Request this item
+      </Button>
+      <Button variant="ghost" block onClick={handleMessage} style={{ marginTop: 'var(--space-3)' }}>
+        Message owner
+      </Button>
 
       <style>{`
-        .topbar {
+        .detail-topbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          gap: var(--space-3);
+          padding: var(--space-2) 0;
+        }
+        .detail-topbar h2 {
+          font-size: var(--text-lg);
+          font-weight: 600;
+          margin: 0;
         }
         .detail-hero {
           display: flex;
           align-items: center;
-          gap: 14px;
-          padding: 14px 2px;
-          margin-bottom: 6px;
+          gap: var(--space-4);
+          padding: var(--space-4) 0;
+          margin-bottom: var(--space-2);
         }
-        .res-ic {
+        .res-icon {
           width: 48px;
           height: 48px;
-          border-radius: 14px;
+          border-radius: var(--radius-lg);
           flex-shrink: 0;
           display: flex;
           align-items: center;
@@ -132,32 +138,63 @@ export default function ResourceDetail() {
           background: var(--grad-cool);
           color: #fff;
         }
-        .res-ic svg {
+        .res-icon svg {
           width: 23px;
           height: 23px;
         }
-        .res-ic.cat-power { background: var(--grad-accent); }
-        .res-ic.cat-water { background: linear-gradient(135deg, #5FA8D3, #4A90B8); }
-        .res-ic.cat-tools { background: linear-gradient(135deg, #7B8794, #5C6370); }
-        .res-ic.cat-firstaid { background: linear-gradient(135deg, #E57373, #C1443C); }
-        .res-ic.cat-transport { background: linear-gradient(135deg, #81C784, #5FA864); }
-        .section-label {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin: 22px 0 10px;
-        }
-        .section-label h3 {
-          font-size: 15px;
+        .res-icon.cat-power { background: var(--grad-accent); }
+        .res-icon.cat-water { background: linear-gradient(135deg, #5FA8D3, #4A90B8); }
+        .res-icon.cat-tools { background: linear-gradient(135deg, #7B8794, #5C6370); }
+        .res-icon.cat-firstaid { background: linear-gradient(135deg, #E57373, #C1443C); }
+        .res-icon.cat-transport { background: linear-gradient(135deg, #81C784, #5FA864); }
+        .detail-name {
           font-weight: 600;
+          font-size: var(--text-xl);
         }
-
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
+        .detail-dist {
+          font-size: var(--text-sm);
+          color: var(--ink-soft);
+          margin-top: var(--space-1);
+        }
+        .about-label {
+          font-size: var(--text-sm);
+          font-weight: 600;
+          margin-bottom: var(--space-2);
+        }
+        .about-text {
+          font-size: var(--text-sm);
+          color: var(--ink-soft);
+          line-height: 1.6;
+        }
+        .owner-card {
+          display: flex;
+          gap: var(--space-3);
+          align-items: center;
+        }
+        .owner-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: var(--radius-lg);
+          background: var(--grad-cool);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: var(--font-display);
+          font-weight: 600;
+          font-size: var(--text-base);
+          flex-shrink: 0;
+        }
+        .owner-name {
+          font-weight: 600;
+          font-size: var(--text-sm);
+        }
+        .owner-meta {
+          font-size: var(--text-xs);
+          color: var(--ink-soft);
+          margin-top: var(--space-1);
         }
       `}</style>
-    </div>
+    </PageContainer>
   );
 }
