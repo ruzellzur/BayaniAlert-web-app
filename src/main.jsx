@@ -15,6 +15,8 @@ import Profile from './pages/Profile';
 import AdminApprovals from './pages/admin/AdminApprovals';
 import AdminPuroks from './pages/admin/AdminPuroks';
 import AdminEvac from './pages/admin/AdminEvac';
+import ResourceDetail from './pages/ResourceDetail';
+import MessageThread from './pages/MessageThread';
 import './index.css';
 
 function ProtectedRoute({ children, adminOnly = false }) {
@@ -71,6 +73,8 @@ function AppRoutes() {
         <Route path="/checkin" element={<ProtectedRoute><Checkin /></ProtectedRoute>} />
         <Route path="/announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/resource/:id" element={<ProtectedRoute><ResourceDetail /></ProtectedRoute>} />
+        <Route path="/thread/:id" element={<ProtectedRoute><MessageThread /></ProtectedRoute>} />
 
         {/* Admin routes */}
         <Route path="/admin/approvals" element={<ProtectedRoute adminOnly><AdminApprovals /></ProtectedRoute>} />

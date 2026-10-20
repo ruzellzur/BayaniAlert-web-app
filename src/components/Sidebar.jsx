@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { HomeIcon, BoardIcon, MapIcon, CheckinIcon, AnnounceIcon, ProfileIcon, LogoutIcon } from './icons';
+import Brand from './Brand';
 
 export function Sidebar() {
   const { user, logout } = useApp();
@@ -25,7 +26,7 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="side-brand">
-        <span className="word">Bayani<em>Alert</em></span>
+        <Brand />
       </div>
       <nav className="side-nav">
         {navItems.map((item) => (
@@ -186,7 +187,7 @@ export function AdminSidebar() {
   return (
     <aside className="sidebar">
       <div className="side-brand">
-        <span className="word">Bayani<em>Alert</em></span>
+        <Brand />
       </div>
       <nav className="side-nav">
         {navItems.map((item) => (

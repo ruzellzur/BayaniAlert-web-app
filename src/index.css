@@ -436,6 +436,12 @@ textarea.compose {
 /* Auth (login / register) */
 .auth-wrap { padding: 40px 20px; display: flex; flex-direction: column; gap: 18px; }
 .auth-visual { display: none; }
+
+/* Brand Logo */
+.brand { display: flex; align-items: baseline; gap: 6px; margin-bottom: 20px; }
+.brand .word { font-family: var(--font-display); font-weight: 600; font-size: 22px; }
+.brand .word em { font-style: italic; color: var(--accent); }
+
 .auth-head h2 { font-size: 23px; font-weight: 600; margin-top: 16px; }
 .auth-head p { color: var(--ink-soft); font-size: 13.5px; margin-top: 6px; line-height: 1.5; }
 .field { display: flex; flex-direction: column; gap: 6px; }

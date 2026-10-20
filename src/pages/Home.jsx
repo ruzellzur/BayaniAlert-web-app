@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import Brand from '../components/Brand';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export default function Home() {
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
       {/* Topbar */}
       <div className="topbar">
-        <div className="brand"><span className="word">Bayani<em>Alert</em></span></div>
+        <Brand />
         <div className="topbar-right">
           <span className="brgy-pill">Brgy. San Isidro</span>
           <button className="icon-btn" onClick={() => alert('No new notifications')} aria-label="Notifications">

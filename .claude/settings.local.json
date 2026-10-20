@@ -13,7 +13,10 @@
       "Bash(curl -s http://localhost:5173/src/index.css)",
       "Bash(curl -s \"http://localhost:5173/\")",
       "Bash(curl -s http://127.0.0.1:5500/bayanialert-prototype/index.html)",
-      "Bash(curl -s http://127.0.0.1:5500/bayanialert-prototype/style.css)"
+      "Bash(curl -s http://127.0.0.1:5500/bayanialert-prototype/style.css)",
+      "Bash(curl -s http://127.0.0.1:5500/bayanialert-prototype/)",
+      "Bash(curl -s \"http://127.0.0.1:5500/bayanialert-prototype/index.html\")",
+      "Bash(grep -A 200 \"// SAMPLE DATA\")"
     ]
   }
 }
