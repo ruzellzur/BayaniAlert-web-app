@@ -124,7 +124,7 @@ export function BottomNav() {
     { to: '/board', icon: <BoardIcon />, label: 'Board' },
     { to: '/map', icon: <MapIcon />, label: 'Map' },
     { to: '/checkin', icon: <CheckinIcon />, label: 'Check-in' },
-    { to: '/announcements', icon: <AnnounceIcon />, label: 'Alerts' },
+    { to: '/profile', icon: <ProfileIcon />, label: 'Me' },
   ];
 
   return (
