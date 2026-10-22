@@ -1,4 +1,5 @@
 import { useApp } from '../../context/AppContext';
+import PageContainer from '../../components/layout/PageContainer';
 
 export default function AdminPuroks() {
   const { puroks } = useApp();
@@ -7,13 +8,9 @@ export default function AdminPuroks() {
   const totalOfficials = puroks.reduce((sum, p) => sum + p.officials, 0);
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
-      {/* Topbar */}
-      <div className="topbar">
-        <h2 style={{ fontSize: 20 }}>Puroks / Zones</h2>
-      </div>
-
+    <PageContainer>
       <div className="screen-head">
+        <h2>Puroks / Zones</h2>
         <p className="sub">Manage barangay zones and view statistics.</p>
       </div>
 
@@ -49,30 +46,6 @@ export default function AdminPuroks() {
           </div>
         ))}
       </div>
-
-      <style>{`
-        .topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 0 14px;
-        }
-        .screen-head {
-          margin: 4px 0 16px;
-        }
-        .screen-head .sub {
-          color: var(--ink-soft);
-          font-size: 13.5px;
-          margin-top: 3px;
-        }
-
-        @media (min-width: 900px) {
-          .topbar {
-            padding: 26px 0 20px;
-          }
-        }
-      `}</style>
-    </div>
+    </PageContainer>
   );
 }

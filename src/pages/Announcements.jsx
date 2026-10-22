@@ -1,300 +1,196 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Button, Card, Input } from '../components/ui';
-import { PageContainer, Section } from '../components/layout/PageContainer';
+
+/**
+ * Announcements Page
+ *
+ * Markup matches the prototype's `#screen-announcements`:
+ *   .topbar > .row (mobile-back + h2)
+ *   .ann-grid
+ *     left:  .role-switch + #capWidgetCard + #composeWrap
+ *     right: #ann search input + #annFeed (.card of .post)
+ *
+ * All visual rules live in src/styles/prototype.css.
+ */
+const SEARCH_STYLE = {
+  width: '100%',
+  marginBottom: 12,
+  padding: '11px 14px',
+  borderRadius: 12,
+  border: '1.5px solid var(--border)',
+  background: 'var(--surface)',
+  color: 'var(--ink)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13.5,
+};
+
+const BASE_ANNOUNCEMENTS = [
+  {
+    who: 'Kagawad Reyes',
+    time: '25 min ago',
+    text: 'Evacuation center at San Isidro Elementary is now open. Bring your family ID and essentials.',
+  },
+  {
+    who: 'Brgy. Captain Lira',
+    time: '2 hr ago',
+    text: 'Free rubber boots and candles available at the covered court while supplies last.',
+  },
+  {
+    who: 'Kagawad Reyes',
+    time: 'Yesterday',
+    text: 'Please clear drainage canals near your homes before Friday. Bagyo is expected to strengthen over the weekend.',
+  },
+];
 
 export default function Announcements() {
   const navigate = useNavigate();
-  const { user, announcements, addAnnouncement, deleteAnnouncement, evacCenters } = useApp();
-  const [search, setSearch] = useState('');
-  const [view, setView] = useState(user?.role === 'official' ? 'official' : 'resident');
-  const [composeText, setComposeText] = useState('');
+  const { user, announcements, addAnnouncement, deleteAnnouncement, evacCenters, showToast } = useApp();
 
   const isOfficial = user?.role === 'official';
-  const canAnnounce = user?.permissions?.announce;
+  const canAnnounce = !!user?.permissions?.announce;
 
-  // Combine user announcements with base announcements
-  const allAnnouncements = [
-    ...announcements,
-    { who: 'Kagawad Reyes', time: '25 min ago', text: 'Evacuation center at San Isidro Elementary is now open. Bring your family ID and essentials.', color: 'danger' },
-    { who: 'Brgy. Captain Lira', time: '2 hr ago', text: 'Free rubber boots and candles available at the covered court while supplies last.', color: 'accent' },
-    { who: 'Kagawad Reyes', time: 'Yesterday', text: 'Please clear drainage canals near your homes before Friday. Bagyo is expected to strengthen over the weekend.', color: 'safe' },
-  ];
+  const [view, setView] = useState(isOfficial ? 'official' : 'resident');
+  const [composeText, setComposeText] = useState('');
+  const [query, setQuery] = useState('');
 
-  const filteredAnnouncements = allAnnouncements.filter(a =>
-    !search || a.text.toLowerCase().includes(search.toLowerCase()) || a.who.toLowerCase().includes(search.toLowerCase())
+  const e0 = evacCenters[0] || { cap: 0, max: 400 };
+  const capPct = Math.round((e0.cap / e0.max) * 100);
+
+  const all = announcements
+    .map((a, i) => ({ ...a, idx: i }))
+    .concat(BASE_ANNOUNCEMENTS.map((a) => ({ ...a, idx: -1 })));
+
+  const q = query.trim().toLowerCase();
+  const items = all.filter(
+    (a) => !q || a.text.toLowerCase().includes(q) || a.who.toLowerCase().includes(q)
   );
 
+  const showCompose = view === 'official' && canAnnounce;
+
   const handlePost = () => {
-    if (!composeText.trim()) {
-      alert('Write something to post first');
+    const text = composeText.trim();
+    if (!text) {
+      showToast?.('Write something to post first');
       return;
     }
-    addAnnouncement(composeText.trim());
+    addAnnouncement(text);
     setComposeText('');
   };
 
-  const e0 = evacCenters[0] || { cap: 0, max: 400 };
+  const handleDelete = (idx) => {
+    if (idx < 0) return;
+    if (window.confirm('Delete this announcement?')) deleteAnnouncement(idx);
+  };
 
   return (
-    <PageContainer>
+    <section className="screen active" id="screen-announcements">
       {/* Topbar */}
-      <div className="ann-topbar">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/home')}
-          aria-label="Go back"
-        >
-          ←
-        </Button>
-        <h2>Announcements</h2>
-      </div>
-
-      {/* Role Switcher */}
-      <div className="role-switch">
-        <button
-          className={view === 'resident' ? 'active' : ''}
-          onClick={() => setView('resident')}
-        >
-          Resident view
-        </button>
-        <button
-          className={view === 'official' ? 'active' : ''}
-          onClick={() => setView('official')}
-        >
-          Official view
-        </button>
+      <div className="topbar">
+        <div className="row" style={{ gap: 12 }}>
+          <button
+            className="btn-ghost btn btn-sm mobile-back"
+            onClick={() => navigate('/home')}
+            aria-label="Go back"
+            style={{ padding: '8px 10px' }}
+          >
+            ←
+          </button>
+          <h2 style={{ fontSize: 17 }}>Announcements</h2>
+        </div>
       </div>
 
       <div className="ann-grid">
         <div>
-          {/* Capacity Widget */}
-          <Card padding="md">
-            <div className="cap-header">
-              <span className="cap-label">Evacuation center capacity</span>
-              <span className="cap-value">{e0.cap} / {e0.max}</span>
+          {/* Role switch */}
+          <div className="role-switch">
+            <button
+              className={view === 'resident' ? 'active' : ''}
+              id="roleResident"
+              onClick={() => setView('resident')}
+            >
+              Resident view
+            </button>
+            <button
+              className={view === 'official' ? 'active' : ''}
+              id="roleOfficial"
+              onClick={() => setView('official')}
+            >
+              Official view
+            </button>
+          </div>
+
+          {/* Capacity widget */}
+          <div className="card" id="capWidgetCard">
+            <div className="row between">
+              <span style={{ fontWeight: 600, fontSize: 13.5 }}>Evacuation center capacity</span>
+              <span className="small muted" id="capWidgetText">
+                {e0.cap} / {e0.max}
+              </span>
             </div>
             <div className="cap-bar">
-              <div
-                className="cap-fill"
-                style={{ width: `${(e0.cap / e0.max) * 100}%` }}
-              />
+              <div className="cap-fill" id="capWidgetFill" style={{ width: `${capPct}%` }} />
             </div>
-          </Card>
+          </div>
 
-          {/* Compose Form (Officials Only) */}
-          {view === 'official' && canAnnounce && (
-            <Card padding="md" className="compose-card">
+          {/* Compose (official only) */}
+          <div id="composeWrap" style={{ display: showCompose ? 'block' : 'none', marginTop: 16 }}>
+            <div className="card stack">
               <textarea
-                className="compose-textarea"
-                rows={3}
+                className="compose"
+                id="announceInput"
+                rows="3"
                 placeholder="Post an update for the barangay…"
                 value={composeText}
                 onChange={(e) => setComposeText(e.target.value)}
               />
-              <Button
-                variant="accent"
-                block
-                onClick={handlePost}
-                disabled={!composeText.trim()}
-              >
+              <button className="btn btn-accent btn-block" onClick={handlePost}>
                 Post announcement
-              </Button>
-            </Card>
-          )}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div>
-          {/* Search */}
-          <Input
-            placeholder="Search announcements…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+          <input
+            type="text"
+            id="ann"
+            placeholder=" announcements…"
+            style={SEARCH_STYLE}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
           />
 
-          {/* Announcement Feed */}
-          <Card padding="md">
-            {filteredAnnouncements.length === 0 ? (
-              <p className="empty-state">No announcements match your search.</p>
-            ) : (
-              filteredAnnouncements.map((ann, i) => (
-                <AnnouncementPost
-                  key={i}
-                  announcement={ann}
-                  canDelete={i < announcements.length && canAnnounce}
-                  onDelete={() => {
-                    if (confirm('Delete this announcement?')) {
-                      deleteAnnouncement(i);
-                    }
-                  }}
-                />
+          <div className="card" id="annFeed">
+            {items.length ? (
+              items.map((a, i) => (
+                <div className="post" key={a.idx >= 0 ? 'ctx-' + a.idx : 'base-' + i}>
+                  <div className="post-head">
+                    <span className="who">{a.who}</span>
+                    <span className="time">{a.time}</span>
+                    {a.idx > -1 && isOfficial && (
+                      <span className="role-swap" data-role="official" style={{ marginLeft: 'auto' }}>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: 'var(--danger)', padding: '4px 8px' }}
+                          onClick={() => handleDelete(a.idx)}
+                        >
+                          Delete
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                  <p>{a.text}</p>
+                </div>
               ))
+            ) : (
+              <p className="small muted" style={{ textAlign: 'center', padding: '14px 0' }}>
+                No announcements match your search.
+              </p>
             )}
-          </Card>
+          </div>
         </div>
       </div>
-
-      <style>{`
-        .ann-topbar {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          padding: var(--space-2) 0 var(--space-4);
-        }
-        .ann-topbar h2 {
-          font-size: var(--text-lg);
-          font-weight: 600;
-          margin: 0;
-        }
-        .role-switch {
-          display: flex;
-          background: var(--surface-alt);
-          border-radius: var(--radius-lg);
-          padding: var(--space-1);
-          margin-bottom: var(--space-4);
-        }
-        .role-switch button {
-          flex: 1;
-          border: none;
-          background: transparent;
-          padding: var(--space-2) var(--space-3);
-          border-radius: var(--radius-md);
-          font-size: var(--text-sm);
-          font-weight: 600;
-          color: var(--ink-soft);
-          cursor: pointer;
-          transition: all var(--duration-fast);
-        }
-        .role-switch button.active {
-          background: var(--surface);
-          color: var(--ink);
-          box-shadow: var(--elevation-1);
-        }
-        .ann-grid {
-          display: block;
-        }
-        .cap-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--space-2);
-        }
-        .cap-label {
-          font-weight: 600;
-          font-size: var(--text-sm);
-        }
-        .cap-value {
-          font-size: var(--text-sm);
-          color: var(--ink-soft);
-        }
-        .cap-bar {
-          height: 9px;
-          border-radius: var(--radius-full);
-          background: var(--surface-alt);
-          overflow: hidden;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.10);
-        }
-        .cap-fill {
-          height: 100%;
-          border-radius: var(--radius-full);
-          background: var(--grad-safe);
-          transition: width var(--duration-base);
-        }
-        .compose-card {
-          margin-top: var(--space-4);
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-3);
-        }
-        .compose-textarea {
-          width: 100%;
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-lg);
-          padding: var(--space-3);
-          font-family: var(--font-body);
-          font-size: var(--text-sm);
-          resize: none;
-          background: var(--surface);
-          color: var(--ink);
-          transition: border-color var(--duration-fast);
-        }
-        .compose-textarea:focus {
-          outline: none;
-          border-color: var(--primary);
-        }
-        .post {
-          padding: var(--space-3) 0;
-          border-top: 1px solid var(--border);
-        }
-        .post:first-child {
-          border-top: none;
-          padding-top: 0;
-        }
-        .post-head {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          margin-bottom: var(--space-2);
-        }
-        .post-who {
-          font-weight: 600;
-          font-size: var(--text-sm);
-        }
-        .post-time {
-          font-size: var(--text-xs);
-          color: var(--ink-soft);
-        }
-        .post-text {
-          font-size: var(--text-sm);
-          line-height: 1.5;
-          color: var(--ink);
-        }
-        .empty-state {
-          text-align: center;
-          padding: var(--space-4) 0;
-          color: var(--ink-soft);
-          font-size: var(--text-sm);
-        }
-
-        @media (min-width: 900px) {
-          .ann-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: var(--space-6);
-            align-items: start;
-          }
-          .ann-grid > div:first-child .card {
-            position: sticky;
-            top: 100px;
-          }
-        }
-      `}</style>
-    </PageContainer>
-  );
-}
-
-function AnnouncementPost({ announcement, canDelete, onDelete }) {
-  const { who, time, text } = announcement;
-
-  return (
-    <div className="post">
-      <div className="post-head">
-        <span className="post-who">{who}</span>
-        <span className="post-time">{time}</span>
-        {canDelete && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDelete}
-            style={{ color: 'var(--danger)', marginLeft: 'auto', padding: '4px 8px' }}
-          >
-            Delete
-          </Button>
-        )}
-      </div>
-      <p className="post-text">{text}</p>
-    </div>
+    </section>
   );
 }

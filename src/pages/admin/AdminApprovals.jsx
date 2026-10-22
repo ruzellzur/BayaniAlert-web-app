@@ -1,4 +1,5 @@
 import { useApp } from '../../context/AppContext';
+import PageContainer from '../../components/layout/PageContainer';
 
 export default function AdminApprovals() {
   const { pendingOfficials, approveOfficial, declineOfficial } = useApp();
@@ -7,13 +8,9 @@ export default function AdminApprovals() {
   const processed = pendingOfficials.filter(p => p.status !== 'pending');
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
-      {/* Topbar */}
-      <div className="topbar">
-        <h2 style={{ fontSize: 20 }}>Pending Official Accounts</h2>
-      </div>
-
+    <PageContainer>
       <div className="screen-head">
+        <h2>Pending Official Accounts</h2>
         <p className="sub">Approve or reject barangay officials waiting to be verified.</p>
       </div>
 
@@ -54,7 +51,7 @@ export default function AdminApprovals() {
                   <div className="name">{official.name}</div>
                   <div className="meta">{official.position} · {official.purok}</div>
                 </div>
-                <span className={`tag tag-${official.status}`}>
+                <span className={`tag ${official.status === 'approved' ? 'tag-accepted' : 'tag-declined'}`}>
                   {official.status === 'approved' ? 'Accepted' : 'Declined'}
                 </span>
               </div>
@@ -62,59 +59,6 @@ export default function AdminApprovals() {
           </div>
         </>
       )}
-
-      <style>{`
-        .topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 0 14px;
-        }
-        .screen-head {
-          margin: 4px 0 16px;
-        }
-        .screen-head .sub {
-          color: var(--ink-soft);
-          font-size: 13.5px;
-          margin-top: 3px;
-        }
-        .req-card {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 10px;
-          padding: 14px 0;
-          border-top: 1px solid var(--border);
-        }
-        .req-card:first-child {
-          border-top: none;
-          padding-top: 0;
-        }
-        .req-card .name {
-          font-weight: 600;
-          font-size: 13.5px;
-        }
-        .req-card .meta {
-          font-size: 11.5px;
-          color: var(--ink-soft);
-          margin-top: 2px;
-        }
-        .tag-approved {
-          background: var(--safe-bg);
-          color: var(--safe);
-        }
-        .tag-rejected {
-          background: var(--danger-bg);
-          color: var(--danger);
-        }
-
-        @media (min-width: 900px) {
-          .topbar {
-            padding: 26px 0 20px;
-          }
-        }
-      `}</style>
-    </div>
+    </PageContainer>
   );
 }

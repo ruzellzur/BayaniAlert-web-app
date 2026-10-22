@@ -23,6 +23,7 @@ import MyRequests from './pages/MyRequests';
 import EditProfile from './pages/EditProfile';
 import Directory from './pages/Directory';
 import './index.css';
+import './styles/prototype.css';
 
 function ProtectedRoute({ children, adminOnly = false }) {
   const { user } = useApp();

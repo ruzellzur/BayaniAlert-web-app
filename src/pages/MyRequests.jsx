@@ -1,169 +1,152 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Button, Card, Input, Tag } from '../components/ui';
-import { PageContainer } from '../components/layout/PageContainer';
+
+/**
+ * My Requests Page
+ *
+ * Markup matches the prototype's `#screen-myRequests`:
+ *   .topbar > .row (mobile-back + h2)
+ *   .role-switch (Sent / Received)
+ *   #req input
+ *   .card (sent list) / .card (received list)
+ *     .req-card > .name + .meta + .tag
+ *
+ * All visual rules live in src/styles/prototype.css.
+ */
+const SEARCH_STYLE = {
+  width: '100%',
+  marginBottom: 12,
+  padding: '11px 14px',
+  borderRadius: 12,
+  border: '1.5px solid var(--border)',
+  background: 'var(--surface)',
+  color: 'var(--ink)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13.5,
+};
+
+const BASE_SENT = [
+  { item: 'Gasoline-powered generator', owner: 'Mang Tonio · Purok 3', status: 'pending' },
+  { item: 'First aid kit (family size)', owner: 'Nurse Bel · Purok 2', status: 'accepted' },
+  { item: 'Multicab for evacuation trips', owner: 'Kap. Lira · Purok 1', status: 'declined' },
+];
+
+function statusTag(status) {
+  if (status === 'accepted') return <span className="tag tag-accepted">Accepted</span>;
+  if (status === 'declined') return <span className="tag tag-declined">Declined</span>;
+  return <span className="tag tag-pending">Pending</span>;
+}
 
 export default function MyRequests() {
   const navigate = useNavigate();
-  const { requests } = useApp();
+  const { requests, showToast } = useApp();
   const [tab, setTab] = useState('sent');
-  const [search, setSearch] = useState('');
+  const [query, setQuery] = useState('');
+  const [received, setReceived] = useState([
+    { id: 'recvBolo', item: 'Steel bolo & rope', requester: 'Aling Nena · Purok 1', status: 'pending' },
+  ]);
 
-  // Mock received requests (in a real app, these would come from context)
-  const receivedRequests = [
-    { id: 'r1', item: 'Steel bolo & rope', requester: 'Aling Nena · Purok 1', status: 'pending' },
-  ];
-
-  const filteredSentRequests = requests.filter(r =>
-    r.item.toLowerCase().includes(search.toLowerCase()) ||
-    r.owner.toLowerCase().includes(search.toLowerCase())
+  const q = query.trim().toLowerCase();
+  const sentItems = (requests || []).concat(BASE_SENT).filter(
+    (r) =>
+      !q ||
+      (r.item || '').toLowerCase().includes(q) ||
+      (r.owner || '').toLowerCase().includes(q)
   );
+  const receivedItems = received.filter((r) => !q || r.item.toLowerCase().includes(q));
+
+  const respond = (id, action) => {
+    setReceived((list) =>
+      list.map((r) => (r.id === id ? { ...r, status: action === 'accept' ? 'accepted' : 'declined' } : r))
+    );
+    showToast?.(action === 'accept' ? 'Request accepted' : 'Request declined');
+  };
 
   return (
-    <PageContainer>
+    <section className="screen active" id="screen-myRequests">
       {/* Topbar */}
-      <div className="req-topbar">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/board')}
-          aria-label="Go back"
-        >
-          ←
-        </Button>
-        <h2>My requests</h2>
+      <div className="topbar">
+        <div className="row" style={{ gap: 12 }}>
+          <button
+            className="btn-ghost btn btn-sm mobile-back"
+            onClick={() => navigate('/board')}
+            aria-label="Go back"
+            style={{ padding: '8px 10px' }}
+          >
+            ←
+          </button>
+          <h2 style={{ fontSize: 17 }}>My requests</h2>
+        </div>
       </div>
 
-      {/* Tab Switcher */}
-      <div className="tab-switch">
-        <button
-          className={tab === 'sent' ? 'active' : ''}
-          onClick={() => setTab('sent')}
-        >
+      {/* Sent / Received */}
+      <div className="role-switch">
+        <button className={tab === 'sent' ? 'active' : ''} onClick={() => setTab('sent')}>
           Sent
         </button>
-        <button
-          className={tab === 'received' ? 'active' : ''}
-          onClick={() => setTab('received')}
-        >
+        <button className={tab === 'received' ? 'active' : ''} onClick={() => setTab('received')}>
           Received
         </button>
       </div>
 
-      {/* Search */}
-      <Input
-        placeholder="Search your requests…"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
+      <input
+        type="text"
+        id="req"
+        placeholder=" your requests…"
+        style={SEARCH_STYLE}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
       />
 
-      {/* Sent Tab */}
-      {tab === 'sent' && (
-        <Card padding="md">
-          {filteredSentRequests.length === 0 ? (
-            <p className="empty-state">No requests sent yet</p>
-          ) : (
-            filteredSentRequests.map((req, i) => (
-              <RequestItem
-                key={i}
-                item={req.item}
-                meta={`From ${req.owner}`}
-                status={req.status}
-                isLast={i === filteredSentRequests.length - 1}
-              />
-            ))
-          )}
-        </Card>
-      )}
-
-      {/* Received Tab */}
-      {tab === 'received' && (
-        <Card padding="md">
-          {receivedRequests.length === 0 ? (
-            <p className="empty-state">No requests received</p>
-          ) : (
-            receivedRequests.map((req, i) => (
-              <ReceivedRequestItem
-                key={req.id}
-                request={req}
-                isLast={i === receivedRequests.length - 1}
-              />
-            ))
-          )}
-        </Card>
-      )}
-
-      <style>{`
-        .req-topbar {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          padding: var(--space-2) 0 var(--space-4);
-        }
-        .req-topbar h2 {
-          font-size: var(--text-lg);
-          font-weight: 600;
-          margin: 0;
-        }
-        .tab-switch {
-          display: flex;
-          background: var(--surface-alt);
-          border-radius: var(--radius-lg);
-          padding: var(--space-1);
-          margin-bottom: var(--space-4);
-        }
-        .tab-switch button {
-          flex: 1;
-          border: none;
-          background: transparent;
-          padding: var(--space-2) var(--space-3);
-          border-radius: var(--radius-md);
-          font-size: var(--text-sm);
-          font-weight: 600;
-          color: var(--ink-soft);
-          cursor: pointer;
-          transition: all var(--duration-fast);
-        }
-        .tab-switch button.active {
-          background: var(--surface);
-          color: var(--ink);
-          box-shadow: var(--elevation-1);
-        }
-        .empty-state {
-          text-align: center;
-          padding: var(--space-5) 0;
-          color: var(--ink-soft);
-          font-size: var(--text-sm);
-        }
-      `}</style>
-    </PageContainer>
-  );
-}
-
-function RequestItem({ item, meta, status, isLast }) {
-  return (
-    <div className={`req-item ${isLast ? 'last' : ''}`}>
-      <div className="req-info">
-        <div className="req-name">{item}</div>
-        <div className="req-meta">{meta}</div>
+      {/* Sent list */}
+      <div className="card" style={tab === 'sent' ? undefined : { display: 'none' }}>
+        {sentItems.length ? (
+          sentItems.map((r, i) => (
+            <div className="req-card" key={i}>
+              <div>
+                <div className="name">{r.item}</div>
+                <div className="meta">From {r.owner}</div>
+              </div>
+              {statusTag(r.status)}
+            </div>
+          ))
+        ) : (
+          <p className="small muted" style={{ textAlign: 'center', padding: '14px 0' }}>
+            No requests match your search.
+          </p>
+        )}
       </div>
-      <Tag variant={status} />
-    </div>
-  );
-}
 
-function ReceivedRequestItem({ request, isLast }) {
-  return (
-    <div className={`req-item ${isLast ? 'last' : ''}`}>
-      <div className="req-info">
-        <div className="req-name">{request.item}</div>
-        <div className="req-meta">Requested by {request.requester}</div>
+      {/* Received list */}
+      <div className="card" style={tab === 'received' ? undefined : { display: 'none' }}>
+        {receivedItems.length ? (
+          receivedItems.map((r) => (
+            <div className="req-card" key={r.id}>
+              <div>
+                <div className="name">{r.item}</div>
+                <div className="meta">Requested by {r.requester}</div>
+              </div>
+              {r.status === 'pending' ? (
+                <div className="row" style={{ gap: 6 }}>
+                  <button className="btn btn-safe btn-sm" onClick={() => respond(r.id, 'accept')}>
+                    Accept
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => respond(r.id, 'decline')}>
+                    Decline
+                  </button>
+                </div>
+              ) : (
+                statusTag(r.status)
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="small muted" style={{ textAlign: 'center', padding: '14px 0' }}>
+            No requests match your search.
+          </p>
+        )}
       </div>
-      <div className="req-actions">
-        <Button variant="safe" size="sm">Accept</Button>
-        <Button variant="ghost" size="sm">Decline</Button>
-      </div>
-    </div>
+    </section>
   );
 }

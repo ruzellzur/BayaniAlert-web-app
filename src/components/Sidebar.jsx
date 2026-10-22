@@ -1,8 +1,20 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { HomeIcon, BoardIcon, MapIcon, CheckinIcon, AnnounceIcon, ProfileIcon, LogoutIcon } from './icons';
+import { HomeIcon, BoardIcon, MapIcon, CheckinIcon, AnnounceIcon, ProfileIcon } from './icons';
 import Brand from './Brand';
 
+/**
+ * Navigation components.
+ *
+ * All visual rules (.sidebar, .side-brand, .side-nav, .side-link,
+ * .side-foot, .side-house, .tabbar, .tab) come from
+ * src/styles/prototype.css, which is imported after index.css in main.jsx.
+ *
+ * The sidebar is hidden by default and revealed at >=900px by
+ * `body.authed .sidebar{display:flex}`; the tabbar is the inverse
+ * (`body.authed .tabbar{display:none !important}` at >=900px). Both body
+ * classes are toggled in main.jsx's AppRoutes().
+ */
 export function Sidebar() {
   const { user, logout } = useApp();
   const navigate = useNavigate();
@@ -41,7 +53,7 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="side-foot">
-        <div className="side-house" onClick={handleLogout} style={{ cursor: 'pointer' }}>
+        <div className="side-house" onClick={handleLogout}>
           <span className="av">{user.initials}</span>
           <div>
             <div className="nm">{user.name}</div>
@@ -51,118 +63,6 @@ export function Sidebar() {
           </div>
         </div>
       </div>
-
-      <style>{`
-        .sidebar {
-          display: none;
-          width: 252px;
-          flex-shrink: 0;
-          background: linear-gradient(180deg, var(--surface) 0%, var(--surface-alt) 100%);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border-right: 1px solid var(--border);
-          flex-direction: column;
-          padding: 22px 16px 18px;
-          position: sticky;
-          top: 0;
-          height: 100vh;
-        }
-        .side-brand {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-          padding: 6px 10px 22px;
-        }
-        .side-brand .word {
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 19px;
-        }
-        .side-brand .word em {
-          font-style: italic;
-          color: var(--accent);
-        }
-        .side-nav {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          margin-top: 6px;
-        }
-        .side-link {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 11px 12px;
-          border-radius: 12px;
-          color: var(--ink-soft);
-          font-weight: 600;
-          font-size: 13.5px;
-          cursor: pointer;
-          border: none;
-          background: none;
-          text-align: left;
-          width: 100%;
-          text-decoration: none;
-        }
-        .side-link svg {
-          width: 19px;
-          height: 19px;
-          flex-shrink: 0;
-        }
-        .side-link:hover {
-          background: var(--surface-alt);
-        }
-        .side-link.active {
-          background: var(--grad-primary);
-          color: var(--on-strong);
-          box-shadow: 0 4px 14px rgba(27,42,74,0.25);
-        }
-        .side-link.active svg {
-          stroke: var(--accent);
-        }
-        .side-foot {
-          margin-top: auto;
-          padding-top: 14px;
-          border-top: 1px solid var(--border);
-        }
-        .side-house {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 8px 10px;
-          border-radius: 12px;
-        }
-        .side-house:hover {
-          background: var(--surface-alt);
-        }
-        .side-house .av {
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          background: var(--grad-cool);
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 13px;
-        }
-        .side-house .nm {
-          font-size: 12.5px;
-          font-weight: 600;
-        }
-        .side-house .hh {
-          font-size: 11px;
-          color: var(--ink-soft);
-        }
-
-        @media (min-width: 900px) {
-          .sidebar {
-            display: flex;
-          }
-        }
-      `}</style>
     </aside>
   );
 }
@@ -202,7 +102,7 @@ export function AdminSidebar() {
         ))}
       </nav>
       <div className="side-foot">
-        <div className="side-house" onClick={handleLogout} style={{ cursor: 'pointer' }}>
+        <div className="side-house" onClick={handleLogout}>
           <span className="av">SA</span>
           <div>
             <div className="nm">System admin</div>
@@ -210,109 +110,6 @@ export function AdminSidebar() {
           </div>
         </div>
       </div>
-
-      <style>{`
-        .sidebar {
-          width: 252px;
-          flex-shrink: 0;
-          background: linear-gradient(180deg, var(--surface) 0%, var(--surface-alt) 100%);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border-right: 1px solid var(--border);
-          display: flex;
-          flex-direction: column;
-          padding: 22px 16px 18px;
-          position: sticky;
-          top: 0;
-          height: 100vh;
-        }
-        .side-brand {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-          padding: 6px 10px 22px;
-        }
-        .side-brand .word {
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 19px;
-        }
-        .side-brand .word em {
-          font-style: italic;
-          color: var(--accent);
-        }
-        .side-nav {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          margin-top: 6px;
-        }
-        .side-link {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 11px 12px;
-          border-radius: 12px;
-          color: var(--ink-soft);
-          font-weight: 600;
-          font-size: 13.5px;
-          cursor: pointer;
-          border: none;
-          background: none;
-          text-align: left;
-          width: 100%;
-          text-decoration: none;
-        }
-        .side-link svg {
-          width: 19px;
-          height: 19px;
-          flex-shrink: 0;
-        }
-        .side-link:hover {
-          background: var(--surface-alt);
-        }
-        .side-link.active {
-          background: var(--grad-primary);
-          color: var(--on-strong);
-          box-shadow: 0 4px 14px rgba(27,42,74,0.25);
-        }
-        .side-foot {
-          margin-top: auto;
-          padding-top: 14px;
-          border-top: 1px solid var(--border);
-        }
-        .side-house {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 8px 10px;
-          border-radius: 12px;
-        }
-        .side-house:hover {
-          background: var(--surface-alt);
-        }
-        .side-house .av {
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          background: var(--grad-cool);
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 13px;
-        }
-        .side-house .nm {
-          font-size: 12.5px;
-          font-weight: 600;
-        }
-        .side-house .hh {
-          font-size: 11px;
-          color: var(--ink-soft);
-        }
-      `}</style>
     </aside>
   );
 }
@@ -342,55 +139,6 @@ export function BottomNav() {
           {item.label}
         </NavLink>
       ))}
-
-      <style>{`
-        .tabbar {
-          position: fixed;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          display: flex;
-          justify-content: space-around;
-          align-items: stretch;
-          background: var(--surface);
-          border-top: 1px solid var(--border);
-          padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
-          z-index: 50;
-        }
-        .tab {
-          background: none;
-          border: none;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          color: var(--ink-soft);
-          font-size: 10.5px;
-          font-weight: 600;
-          padding: 6px 4px;
-          border-radius: 10px;
-          cursor: pointer;
-          flex: 1;
-          text-decoration: none;
-        }
-        .tab svg {
-          width: 21px;
-          height: 21px;
-        }
-        .tab.active {
-          background: linear-gradient(180deg, rgba(226,154,59,0.14), transparent);
-          color: var(--accent);
-        }
-        .tab.active svg {
-          stroke: var(--accent);
-        }
-
-        @media (min-width: 900px) {
-          .tabbar {
-            display: none !important;
-          }
-        }
-      `}</style>
     </nav>
   );
 }
@@ -418,55 +166,6 @@ export function AdminBottomNav() {
           {item.label}
         </NavLink>
       ))}
-
-      <style>{`
-        .tabbar {
-          position: fixed;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          display: flex;
-          justify-content: space-around;
-          align-items: stretch;
-          background: var(--surface);
-          border-top: 1px solid var(--border);
-          padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
-          z-index: 50;
-        }
-        .tab {
-          background: none;
-          border: none;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          color: var(--ink-soft);
-          font-size: 10.5px;
-          font-weight: 600;
-          padding: 6px 4px;
-          border-radius: 10px;
-          cursor: pointer;
-          flex: 1;
-          text-decoration: none;
-        }
-        .tab svg {
-          width: 21px;
-          height: 21px;
-        }
-        .tab.active {
-          background: linear-gradient(180deg, rgba(226,154,59,0.14), transparent);
-          color: var(--accent);
-        }
-        .tab.active svg {
-          stroke: var(--accent);
-        }
-
-        @media (min-width: 900px) {
-          .tabbar {
-            display: none !important;
-          }
-        }
-      `}</style>
     </nav>
   );
 }

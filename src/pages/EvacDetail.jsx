@@ -1,205 +1,175 @@
+import { useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Button, Card, Input } from '../components/ui';
-import { PageContainer, Section } from '../components/layout/PageContainer';
+
+/**
+ * Evacuation Center Detail Page
+ *
+ * Markup matches the prototype's `#screen-evacDetail`:
+ *   .topbar > .row (mobile-back + h2)
+ *   .card (name + addr + cap-bar + capacity row)
+ *   .role-swap[data-role=official] (update capacity form)
+ *   .role-swap[data-role=official] (no-permission note)
+ *   .section-label + .card#evacAmenities > .list-item
+ *   .btn.btn-primary.btn-block (get directions)
+ *
+ * All visual rules live in src/styles/prototype.css.
+ */
+const AMENITY_COLORS = {
+  Available: 'var(--safe)',
+  Limited: 'var(--accent)',
+  Unavailable: 'var(--danger)',
+};
+const AMENITY_CYCLE = ['Available', 'Limited', 'Unavailable'];
 
 export default function EvacDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { evacCenters, updateEvacCenter, user } = useApp();
+  const { evacCenters, updateEvacCenter, user, showToast } = useApp();
 
-  const evacId = parseInt(id, 10);
-  const evac = evacCenters[id] || evacCenters[0];
+  const index = parseInt(id, 10);
+  const evac = evacCenters[index] || evacCenters[0];
+  const capRef = useRef(null);
 
   if (!evac) {
     return (
-      <PageContainer>
-        <div className="evac-topbar">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/map')}
-            aria-label="Go back"
-          >
-            ←
-          </Button>
-          <h2>Evacuation center</h2>
+      <section className="screen active" id="screen-evacDetail">
+        <div className="topbar">
+          <div className="row" style={{ gap: 12 }}>
+            <button
+              className="btn-ghost btn btn-sm mobile-back"
+              onClick={() => navigate('/map')}
+              aria-label="Go back"
+              style={{ padding: '8px 10px' }}
+            >
+              ←
+            </button>
+            <h2 style={{ fontSize: 17 }}>Evacuation center</h2>
+          </div>
         </div>
-        <Card padding="lg" style={{ textAlign: 'center', marginTop: 'var(--space-5)' }}>
-          <p className="muted">Evacuation center not found</p>
-        </Card>
-      </PageContainer>
+        <div className="card">
+          <p className="small muted">Evacuation center not found.</p>
+        </div>
+      </section>
     );
   }
 
   const isOfficial = user?.role === 'official';
-  const canManageEvac = user?.permissions?.evac;
+  const canManageEvac = !!user?.permissions?.evac;
 
-  const getAmenityStatusColor = (status) => {
-    switch (status) {
-      case 'Available': return 'var(--safe)';
-      case 'Limited': return 'var(--accent)';
-      case 'Unavailable': return 'var(--danger)';
-      default: return 'var(--ink-soft)';
-    }
+  const saveCapacity = () => {
+    let val = parseInt(capRef.current?.value, 10);
+    if (isNaN(val) || val < 0) val = 0;
+    if (val > evac.max) val = evac.max;
+    updateEvacCenter(evacCenters.indexOf(evac), { cap: val });
+    showToast?.('Capacity updated');
   };
 
+  const cycleAmenity = (ai) => {
+    const a = evac.amenities[ai];
+    const next = AMENITY_CYCLE[(AMENITY_CYCLE.indexOf(a.status) + 1) % AMENITY_CYCLE.length];
+    updateEvacCenter(evacCenters.indexOf(evac), {
+      amenities: evac.amenities.map((x, k) => (k === ai ? { ...x, status: next } : x)),
+    });
+    showToast?.(a.name + ': ' + next);
+  };
+
+  const fillPct = Math.round((evac.cap / evac.max) * 100);
+
   return (
-    <PageContainer>
+    <section className="screen active" id="screen-evacDetail">
       {/* Topbar */}
-      <div className="evac-topbar">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/map')}
-          aria-label="Go back"
-        >
-          ←
-        </Button>
-        <h2>Evacuation center</h2>
+      <div className="topbar">
+        <div className="row" style={{ gap: 12 }}>
+          <button
+            className="btn-ghost btn btn-sm mobile-back"
+            onClick={() => navigate('/map')}
+            aria-label="Go back"
+            style={{ padding: '8px 10px' }}
+          >
+            ←
+          </button>
+          <h2 style={{ fontSize: 17 }}>Evacuation center</h2>
+        </div>
       </div>
 
-      {/* Main Info Card */}
-      <Card padding="lg">
-        <div className="evac-name">{evac.name}</div>
-        <div className="evac-addr">{evac.addr}</div>
-        <div className="cap-bar">
-          <div
-            className="cap-fill"
-            style={{ width: `${(evac.cap / evac.max) * 100}%` }}
-          />
+      {/* Main info card */}
+      <div className="card" style={{ marginBottom: 14 }}>
+        <div style={{ fontWeight: 600, fontSize: 16 }}>{evac.name}</div>
+        <div className="muted small" style={{ marginTop: 3 }}>{evac.addr}</div>
+        <div className="cap-bar" style={{ marginTop: 14 }}>
+          <div className="cap-fill" style={{ width: `${fillPct}%` }} />
         </div>
-        <div className="cap-labels">
-          <span className="cap-label">Capacity</span>
-          <span className="cap-value">{evac.cap} / {evac.max}</span>
+        <div className="row between" style={{ marginTop: 8 }}>
+          <span className="small muted">Capacity</span>
+          <span className="small muted">{evac.cap} / {evac.max}</span>
         </div>
-      </Card>
+      </div>
 
-      {/* Update Capacity (Officials Only) */}
+      {/* Update capacity — officials with evac permission */}
       {isOfficial && canManageEvac && (
-        <Section title="Update capacity">
-          <Card padding="md">
-            <Input
-              label="Current occupancy"
-              type="number"
-              min="0"
-              defaultValue={evac.cap}
-              onChange={(e) => {
-                const newCap = parseInt(e.target.value, 10);
-                if (!isNaN(newCap)) {
-                  updateEvacCenter(evacCenters.indexOf(evac), { cap: newCap });
-                }
-              }}
-            />
-            <Button
-              variant="accent"
-              block
-              onClick={() => alert('Capacity updated!')}
-              style={{ marginTop: 'var(--space-3)' }}
-            >
-              Save capacity
-            </Button>
-          </Card>
-        </Section>
-      )}
-
-      {isOfficial && !canManageEvac && (
-        <p className="permission-note">
-          Your position doesn't include evacuation-center management. A Barangay Captain, Kagawad, or BDRRM Officer can update capacity here.
-        </p>
-      )}
-
-      {/* On-site Amenities */}
-      <Section title="On-site">
-        <Card padding="md">
-          {evac.amenities.map((amenity, i) => (
-            <div key={i} className="amenity-item">
-              <span>{amenity.name}</span>
-              <span
-                className="amenity-status"
-                style={{ color: getAmenityStatusColor(amenity.status) }}
-              >
-                {amenity.status}
-              </span>
+        <div className="role-swap" data-role="official">
+          <div className="section-label" style={{ marginTop: 0 }}>
+            <h3>Update capacity</h3>
+          </div>
+          <div className="card" style={{ marginBottom: 16 }}>
+            <div className="field" style={{ marginBottom: 10 }}>
+              <label>Current occupancy</label>
+              <input
+                key={evac.name}
+                type="number"
+                ref={capRef}
+                min="0"
+                max={evac.max}
+                defaultValue={evac.cap}
+              />
             </div>
-          ))}
-        </Card>
-      </Section>
+            <button className="btn btn-accent btn-block" onClick={saveCapacity}>
+              Save capacity
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* Get Directions Button */}
-      <Button
-        variant="primary"
-        block
-        onClick={() => alert('Directions would open here')}
+      {/* Officials without evac permission */}
+      {isOfficial && !canManageEvac && (
+        <div className="role-swap" data-role="official">
+          <p className="small muted" style={{ margin: '-4px 0 16px' }}>
+            Your position doesn't include evacuation-center management. A Barangay
+            Captain, Kagawad, or BDRRM Officer can update capacity here.
+          </p>
+        </div>
+      )}
+
+      {/* On-site amenities */}
+      <div className="section-label" style={{ marginTop: 0 }}>
+        <h3>On-site</h3>
+        {isOfficial && canManageEvac && (
+          <span className="muted small role-swap" data-role="official">Tap to update</span>
+        )}
+      </div>
+      <div className="card" style={{ marginBottom: 16 }}>
+        {evac.amenities.map((a, ai) => (
+          <div
+            key={ai}
+            className="list-item"
+            onClick={canManageEvac ? () => cycleAmenity(ai) : undefined}
+            style={canManageEvac ? { cursor: 'pointer' } : undefined}
+          >
+            <span>{a.name}</span>
+            <span className="val" style={{ color: AMENITY_COLORS[a.status] || '' }}>
+              {a.status}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <button
+        className="btn btn-primary btn-block"
+        onClick={() => showToast?.('Directions would open here')}
       >
         Get directions
-      </Button>
-
-      <style>{`
-        .evac-topbar {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          padding: var(--space-2) 0 var(--space-4);
-        }
-        .evac-topbar h2 {
-          font-size: var(--text-lg);
-          font-weight: 600;
-          margin: 0;
-        }
-        .evac-name {
-          font-weight: 600;
-          font-size: var(--text-lg);
-        }
-        .evac-addr {
-          font-size: var(--text-sm);
-          color: var(--ink-soft);
-          margin-top: var(--space-1);
-        }
-        .cap-bar {
-          height: 9px;
-          border-radius: var(--radius-full);
-          background: var(--surface-alt);
-          overflow: hidden;
-          margin-top: var(--space-4);
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.10);
-        }
-        .cap-fill {
-          height: 100%;
-          border-radius: var(--radius-full);
-          background: var(--grad-safe);
-          transition: width var(--duration-base);
-        }
-        .cap-labels {
-          display: flex;
-          justify-content: space-between;
-          margin-top: var(--space-2);
-        }
-        .cap-label, .cap-value {
-          font-size: var(--text-sm);
-          color: var(--ink-soft);
-        }
-        .permission-note {
-          font-size: var(--text-sm);
-          color: var(--ink-soft);
-          margin: calc(-1 * var(--space-1)) 0 var(--space-4);
-        }
-        .amenity-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: var(--space-2) 0;
-          border-top: 1px solid var(--border);
-          font-size: var(--text-sm);
-        }
-        .amenity-item:first-child {
-          border-top: none;
-        }
-        .amenity-status {
-          font-weight: 600;
-          font-size: var(--text-xs);
-        }
-      `}</style>
-    </PageContainer>
+      </button>
+    </section>
   );
 }

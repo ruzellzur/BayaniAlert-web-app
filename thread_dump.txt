@@ -1,0 +1,13 @@
+THREAD_START
+======= --~G~
+    ~L~section class="screen" id="screen-thread"~G~
+      ~L~div class="topbar"~G~
+        ~L~div class="row" style="gap:12px;"~G~~L~button class="btn-ghost btn btn-sm mobile-back" onclick="go('resourceDetail')" aria-label="Go back" style="padding:8px 10px;"~G~←~L~/button~G~~L~h2 style="font-size:17px;" id="threadName"~G~Neighbor~L~/h2~G~~L~/div~G~
+      ~L~/div~G~
+      ~L~div id="threadBody" style="display:flex; flex-direction:column; gap:8px; min-height:260px; padding:4px 2px 12px;"~G~~L~/div~G~
+      ~L~div class="row" style="gap:8px; position:sticky; bottom:0; background:var(--bg); padding-top:8px;"~G~
+        ~L~input type="text" id="threadInput" placeholder="Type a message…" style="flex:1; padding:11px 14px; border-radius:12px; border:1.5px solid var(--border); background:var(--surface); color:var(--ink);" onkeydown="if(event.key==='Enter') sendThreadMsg();"~G~
+        ~L~button class="btn btn-accent" onclick="sendThreadMsg()"~G~Send~L~/button~G~
+      ~L~/div~G~
+    ~L~/section~G~
+THREAD_END len=1017

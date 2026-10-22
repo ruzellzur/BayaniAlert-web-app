@@ -1,9 +1,10 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef } from 'react';
 
 /**
  * Input Component
  *
- * A form input with label, validation, and error states.
+ * Renders the prototype's `.field > label + input` structure so the
+ * stylesheet drives every visual property.
  *
  * @param {string} label - Input label
  * @param {string} error - Error message
@@ -20,95 +21,46 @@ const Input = forwardRef(({
   disabled = false,
   type = 'text',
   className = '',
+  id,
+  name,
   ...props
 }, ref) => {
-  const [focused, setFocused] = useState(false);
-
-  const containerStyles = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-    marginBottom: '14px',
-  };
-
-  const labelStyles = {
-    fontSize: '12px',
-    fontWeight: 600,
-    color: 'var(--ink-soft)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-  };
-
-  const inputStyles = {
-    border: `1.5px solid ${error ? 'var(--danger)' : 'var(--border)'}`,
-    borderRadius: '12px',
-    padding: '11px 13px',
-    fontFamily: 'var(--font-body)',
-    fontSize: '13.5px',
-    background: 'var(--surface)',
-    color: 'var(--ink)',
-    width: '100%',
-    transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
-    outline: 'none',
-    opacity: disabled ? 0.6 : 1,
-    cursor: disabled ? 'not-allowed' : 'text',
-  };
-
-  const errorStyles = {
-    fontSize: '11px',
-    color: 'var(--danger)',
-    fontWeight: 600,
-    marginTop: '2px',
-  };
-
-  const hintStyles = {
-    fontSize: '11px',
-    color: 'var(--ink-soft)',
-    marginTop: '2px',
-  };
-
-  const handleFocus = (e) => {
-    setFocused(true);
-    e.target.style.borderColor = error ? 'var(--danger)' : 'var(--accent)';
-    e.target.style.boxShadow = error ? 'var(--focus-ring-danger)' : 'var(--focus-ring)';
-  };
-
-  const handleBlur = (e) => {
-    setFocused(false);
-    e.target.style.borderColor = error ? 'var(--danger)' : 'var(--border)';
-    e.target.style.boxShadow = 'none';
-  };
+  const inputId = id || name;
+  const describedBy = error
+    ? `${inputId || 'field'}-error`
+    : hint
+      ? `${inputId || 'field'}-hint`
+      : undefined;
 
   return (
-    <div style={containerStyles} className={className}>
+    <div className={`field ${className}`}>
       {label && (
-        <label style={labelStyles}>
+        <label htmlFor={inputId}>
           {label}
-          {required && <span style={{ color: 'var(--danger)' }}>*</span>}
+          {required && <span style={{ color: 'var(--danger)' }}> *</span>}
         </label>
       )}
       <input
         ref={ref}
+        id={inputId}
+        name={name}
         type={type}
         disabled={disabled}
         required={required}
-        style={inputStyles}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
+        className={error ? 'field-error' : undefined}
         aria-invalid={error ? 'true' : 'false'}
-        aria-describedby={error ? `${props.id || props.name}-error` : hint ? `${props.id || props.name}-hint` : undefined}
+        aria-describedby={describedBy}
         {...props}
       />
       {error && (
-        <div id={`${props.id || props.name}-error`} style={errorStyles} role="alert">
+        <span id={describedBy} className="error-text" role="alert">
           {error}
-        </div>
+        </span>
       )}
       {hint && !error && (
-        <div id={`${props.id || props.name}-hint`} style={hintStyles}>
+        <span id={describedBy} className="error-text" style={{ color: 'var(--ink-soft)' }}>
           {hint}
-        </div>
+        </span>
       )}
     </div>
   );

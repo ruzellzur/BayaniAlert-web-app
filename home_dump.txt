@@ -1,0 +1,69 @@
+HOME_START
+======= --~G~
+    ~L~section class="screen" id="screen-home"~G~
+      ~L~div class="topbar"~G~
+        ~L~div class="brand"~G~~L~span class="word"~G~Bayani~L~em~G~Alert~L~/em~G~~L~/span~G~~L~/div~G~
+        ~L~div class="topbar-right"~G~
+          ~L~span class="brgy-pill"~G~Brgy. San Isidro~L~/span~G~
+          ~L~button class="icon-btn" onclick="showToast('No new notifications')" aria-label="Notifications"~G~~L~svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"~G~~L~path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/~G~~L~path d="M13.7 21a2 2 0 0 1-3.4 0"/~G~~L~/svg~G~~L~/button~G~
+          ~L~div class="top-avatar" onclick="go('profile')"~G~~L~span class="role-swap" data-role="resident" id="topAvResident"~G~RG~L~/span~G~~L~span class="role-swap" data-role="official" id="topAvOfficial"~G~MR~L~/span~G~~L~/div~G~
+        ~L~/div~G~
+      ~L~/div~G~
+
+      ~L~div class="dash-grid"~G~
+        ~L~div class="dash-col"~G~
+          ~L~div class="alert-card" onclick="go('weatherHistory')" style="cursor:pointer;"~G~
+            ~L~div class="alert-top"~G~
+              ~L~div~G~~L~div class="small" style="color:#B9C4DA;"~G~Weather advisory~L~/div~G~~L~h3~G~Signal No. 2 — Heavy rain expected tonight~L~/h3~G~~L~/div~G~
+              ~L~span class="signal-badge"~G~SIG 2~L~/span~G~
+            ~L~/div~G~
+            ~L~div class="alert-meta"~G~
+              ~L~div~G~Rainfall~L~strong~G~42mm/hr~L~/strong~G~~L~/div~G~
+              ~L~div~G~Wind~L~strong~G~65 km/h~L~/strong~G~~L~/div~G~
+              ~L~div~G~Updated~L~strong~G~6:40 PM~L~/strong~G~~L~/div~G~
+            ~L~/div~G~
+          ~L~/div~G~
+
+          ~L~div class="quick-grid"~G~
+            ~L~div class="quick" onclick="go('checkin')"~G~~L~span class="ic"~G~~L~svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"~G~~L~path d="M20 6 9 17l-5-5"/~G~~L~/svg~G~~L~/span~G~~L~span class="role-swap" data-role="resident"~G~Check in~L~/span~G~~L~span class="role-swap" data-role="official"~G~Check-ins~L~/span~G~~L~/div~G~
+            ~L~div class="quick" onclick="go('board')"~G~~L~span class="ic"~G~~L~svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"~G~~L~path d="M20 7H4v13h16z"/~G~~L~path d="M16 3v8M8 3v8M4 11h16"/~G~~L~/svg~G~~L~/span~G~Resources~L~/div~G~
+            ~L~div class="quick" onclick="go('map')"~G~~L~span class="ic"~G~~L~svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"~G~~L~path d="M9 20 3 17V4l6 3 6-3 6 3v13l-6-3-6 3Z"/~G~~L~path d="M9 4v13M15 7v13"/~G~~L~/svg~G~~L~/span~G~Map~L~/div~G~
+            ~L~div class="quick" onclick="go('announcements')"~G~~L~span class="ic"~G~~L~svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"~G~~L~path d="M3 11v3a1 1 0 0 0 1 1h2l4 4V6L6 10H4a1 1 0 0 0-1 1Z"/~G~~L~path d="M16 8a4 4 0 0 1 0 8"/~G~~L~/svg~G~~L~/span~G~~L~span class="role-swap" data-role="resident"~G~Notices~L~/span~G~~L~span class="role-swap" data-role="official"~G~Post notice~L~/span~G~~L~/div~G~
+          ~L~/div~G~
+
+          ~L~div class="section-label"~G~~L~h3~G~Nearby on the resource board~L~/h3~G~~L~a onclick="go('board')"~G~See all~L~/a~G~~L~/div~G~
+          ~L~div class="card res-card" onclick="openResourceDetail(0)" style="cursor:pointer;"~G~
+            ~L~span class="res-ic"~G~~L~svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"~G~~L~path d="M4 4h16v4H4zM6 8v12h12V8"/~G~~L~/svg~G~~L~/span~G~
+            ~L~div class="res-body"~G~~L~div class="name"~G~Gasoline-powered generator~L~/div~G~~L~div class="owner"~G~Shared by Mang Tonio · Purok 3~L~/div~G~~L~/div~G~
+          ~L~/div~G~
+        ~L~/div~G~
+
+        ~L~div class="dash-col"~G~
+          ~L~div class="role-swap" data-role="resident"~G~
+            ~L~div class="section-label" style="margin-top:0;"~G~~L~h3~G~Barangay announcements~L~/h3~G~~L~a onclick="go('announcements')"~G~See all~L~/a~G~~L~/div~G~
+            ~L~div class="card stack" style="gap:0;" id="annPreviewResident"~G~
+              ~L~div class="ann-preview"~G~~L~span class="ann-dot" style="background:var(--danger);"~G~~L~/span~G~~L~div~G~~L~div class="t"~G~Evacuation center at San Isidro Elementary now open~L~/div~G~~L~div class="time"~G~Kagawad Reyes · 25 min ago~L~/div~G~~L~/div~G~~L~/div~G~
+              ~L~div class="ann-preview"~G~~L~span class="ann-dot" style="background:var(--accent);"~G~~L~/span~G~~L~div~G~~L~div class="t"~G~Free rubber boots at the covered court, while supplies last~L~/div~G~~L~div class="time"~G~Brgy. Captain Lira · 2 hr ago~L~/div~G~~L~/div~G~~L~/div~G~
+              ~L~div class="ann-preview"~G~~L~span class="ann-dot" style="background:var(--safe);"~G~~L~/span~G~~L~div~G~~L~div class="t"~G~Drainage clearing ends Friday — thank you, Purok 3!~L~/div~G~~L~div class="time"~G~Kagawad Reyes · Yesterday~L~/div~G~~L~/div~G~~L~/div~G~
+            ~L~/div~G~
+          ~L~/div~G~
+          ~L~div class="role-swap" data-role="official"~G~
+            ~L~div class="section-label" style="margin-top:0;"~G~~L~h3~G~Check-in overview~L~/h3~G~~L~a onclick="go('checkin')"~G~View board~L~/a~G~~L~/div~G~
+            ~L~div class="card" style="margin-bottom:16px;"~G~
+              ~L~div class="row between"~G~~L~span style="font-weight:600; font-size:13.5px;"~G~Purok 3 households~L~/span~G~~L~span class="small muted"~G~18 / 24 responded~L~/span~G~~L~/div~G~
+              ~L~div class="cap-bar" style="margin-top:10px;"~G~~L~div class="cap-fill" style="width:75%;"~G~~L~/div~G~~L~/div~G~
+              ~L~div class="row between" style="margin-top:14px;"~G~
+                ~L~span class="small" style="color:var(--danger); font-weight:600;"~G~2 households need help~L~/span~G~
+                ~L~button class="btn btn-danger btn-sm" onclick="go('checkin')"~G~Respond~L~/button~G~
+              ~L~/div~G~
+            ~L~/div~G~
+            ~L~div class="section-label" style="margin-top:0;"~G~~L~h3~G~Your announcements~L~/h3~G~~L~a onclick="go('announcements')"~G~Manage~L~/a~G~~L~/div~G~
+            ~L~div class="card stack" style="gap:0;" id="annPreviewOfficial"~G~
+              ~L~div class="ann-preview"~G~~L~span class="ann-dot" style="background:var(--danger);"~G~~L~/span~G~~L~div~G~~L~div class="t"~G~Evacuation center at San Isidro Elementary now open~L~/div~G~~L~div class="time"~G~Posted 25 min ago~L~/div~G~~L~/div~G~~L~/div~G~
+              ~L~div class="ann-preview"~G~~L~span class="ann-dot" style="background:var(--safe);"~G~~L~/span~G~~L~div~G~~L~div class="t"~G~Drainage clearing ends Friday — thank you, Purok 3!~L~/div~G~~L~div class="time"~G~Posted yesterday~L~/div~G~~L~/div~G~~L~/div~G~
+            ~L~/div~G~
+          ~L~/div~G~
+        ~L~/div~G~
+      ~L~/div~G~
+    ~L~/section~G~
+HOME_END len=6742

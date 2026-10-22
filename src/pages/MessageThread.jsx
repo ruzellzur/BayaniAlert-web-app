@@ -1,161 +1,115 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Button, Input, Card } from '../components/ui';
-import { PageContainer } from '../components/layout/PageContainer';
+
+/**
+ * Message Thread Page
+ *
+ * Markup matches the prototype's `#screen-thread`:
+ *   .topbar > .row (mobile-back + h2#threadName)
+ *   #threadBody > .bubble.me | .bubble.them
+ *   sticky composer row (input + Send)
+ *
+ * All visual rules live in src/styles/prototype.css.
+ */
+const INPUT_STYLE = {
+  flex: 1,
+  padding: '11px 14px',
+  borderRadius: 12,
+  border: '1.5px solid var(--border)',
+  background: 'var(--surface)',
+  color: 'var(--ink)',
+};
 
 export default function MessageThread() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { resources, user } = useApp();
-  const [message, setMessage] = useState('');
+  const { resources, messages, sendMessage } = useApp();
 
-  // Convert string ID from URL to number for matching
   const resourceId = parseInt(id, 10);
-  const resource = resources.find(r => r.id === resourceId);
+  const resource = resources.find((r) => r.id === resourceId);
+  const ownerName = resource ? resource.owner.split('·')[0].trim() : '';
 
-  // Mock conversation data
-  const [messages, setMessages] = useState([
-    { id: 1, from: 'owner', text: 'Hi! Yes, the generator is available. You can pick it up tomorrow morning.', time: '2:30 PM' },
-    { id: 2, from: 'user', text: 'Perfect! What time works best for you?', time: '2:32 PM' },
-    { id: 3, from: 'owner', text: 'Around 8 AM would be good. I\'m at Purok 3, near the chapel.', time: '2:35 PM' },
-  ]);
+  const [text, setText] = useState('');
+  const bodyRef = useRef(null);
+  const thread = (messages && messages[ownerName]) || [];
 
-  if (!resource) {
-    return (
-      <PageContainer>
-        <div className="thread-topbar">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/board')}
-            aria-label="Go back"
-          >
-            ←
-          </Button>
-          <h2>Messages</h2>
-        </div>
-        <Card padding="lg" style={{ textAlign: 'center', marginTop: 'var(--space-5)' }}>
-          <p className="muted">Conversation not found</p>
-        </Card>
-      </PageContainer>
-    );
-  }
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [thread.length]);
 
-  const ownerName = resource.owner.split('·')[0].trim();
-
-  const handleSend = () => {
-    if (!message.trim()) return;
-
-    const newMsg = {
-      id: messages.length + 1,
-      from: 'user',
-      text: message,
-      time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-    };
-
-    setMessages([...messages, newMsg]);
-    setMessage('');
+  const send = () => {
+    const val = text.trim();
+    if (!val || !ownerName) return;
+    sendMessage?.(ownerName, val);
+    setText('');
   };
 
   return (
-    <PageContainer>
+    <section className="screen active" id="screen-thread">
       {/* Topbar */}
-      <div className="thread-topbar">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(`/resource/${id}`)}
-          aria-label="Go back"
-        >
-          ←
-        </Button>
-        <h2>{ownerName}</h2>
+      <div className="topbar">
+        <div className="row" style={{ gap: 12 }}>
+          <button
+            className="btn-ghost btn btn-sm mobile-back"
+            onClick={() => navigate(`/resource/${id}`)}
+            aria-label="Go back"
+            style={{ padding: '8px 10px' }}
+          >
+            ←
+          </button>
+          <h2 style={{ fontSize: 17 }} id="threadName">
+            {ownerName || 'Neighbor'}
+          </h2>
+        </div>
       </div>
 
-      {/* Message Thread */}
-      <div className="thread-body">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`msg ${msg.from === 'user' ? 'msg-user' : 'msg-owner'}`}>
-            <div className="msg-bubble">{msg.text}</div>
-            <div className="msg-time">{msg.time}</div>
+      {/* Messages */}
+      <div
+        id="threadBody"
+        ref={bodyRef}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          minHeight: 260,
+          padding: '4px 2px 12px',
+          overflowY: 'auto',
+        }}
+      >
+        {thread.length === 0 ? (
+          <div className="muted small" style={{ textAlign: 'center', marginTop: 24 }}>
+            Say hello to {ownerName || 'your neighbor'} about this item.
           </div>
-        ))}
+        ) : (
+          thread.map((m, i) => (
+            <div key={i} className={'bubble ' + (m.from === 'me' ? 'me' : 'them')}>
+              {m.text}
+            </div>
+          ))
+        )}
       </div>
 
-      {/* Message Input */}
-      <div className="thread-input-row">
-        <Input
+      {/* Composer */}
+      <div
+        className="row"
+        style={{ gap: 8, position: 'sticky', bottom: 0, background: 'var(--bg)', paddingTop: 8 }}
+      >
+        <input
+          type="text"
+          id="threadInput"
           placeholder="Type a message…"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          style={INPUT_STYLE}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') send();
+          }}
         />
-        <Button variant="accent" onClick={handleSend}>Send</Button>
+        <button className="btn btn-accent" onClick={send}>
+          Send
+        </button>
       </div>
-
-      <style>{`
-        .thread-topbar {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          padding: var(--space-2) 0 var(--space-3);
-        }
-        .thread-topbar h2 {
-          font-size: var(--text-lg);
-          font-weight: 600;
-          margin: 0;
-        }
-        .thread-body {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-2);
-          min-height: 260px;
-          padding: var(--space-1) 0 var(--space-3);
-        }
-        .msg {
-          display: flex;
-          flex-direction: column;
-          max-width: 75%;
-        }
-        .msg-user {
-          align-self: flex-end;
-          align-items: flex-end;
-        }
-        .msg-owner {
-          align-self: flex-start;
-          align-items: flex-start;
-        }
-        .msg-bubble {
-          padding: var(--space-2) var(--space-3);
-          border-radius: var(--radius-lg);
-          font-size: var(--text-sm);
-          line-height: 1.45;
-        }
-        .msg-user .msg-bubble {
-          background: var(--grad-primary);
-          color: var(--on-strong);
-          border-bottom-right-radius: var(--radius-sm);
-        }
-        .msg-owner .msg-bubble {
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-bottom-left-radius: var(--radius-sm);
-        }
-        .msg-time {
-          font-size: var(--text-xs);
-          color: var(--ink-soft);
-          margin-top: var(--space-1);
-        }
-        .thread-input-row {
-          display: flex;
-          gap: var(--space-2);
-          position: sticky;
-          bottom: 0;
-          background: var(--bg);
-          padding-top: var(--space-2);
-        }
-      `}</style>
-    </PageContainer>
+    </section>
   );
 }

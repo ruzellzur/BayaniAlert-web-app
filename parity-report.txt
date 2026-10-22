@@ -1,0 +1,90 @@
+PROTOTYPE CLASS PARITY REPORT
+============================================================
+
+screen-welcome -> Welcome.jsx
+  prototype classes: 34   react classes: 38
+  MISSING: none
+  extra (4): between btn-primary btn-sm row
+
+screen-login -> Login.jsx
+  prototype classes: 17   react classes: 17
+  MISSING: none
+
+screen-register -> Register.jsx
+  prototype classes: 16   react classes: 16
+  MISSING: none
+
+screen-home -> Home.jsx
+  prototype classes: 39   react classes: 40
+  MISSING: none
+  extra (1): active
+
+screen-board -> Board.jsx
+  prototype classes: 17   react classes: 30
+  MISSING: none
+  extra (13): btn-primary card cat- compose field form-grid muted name owner res-body res-card res-ic small
+
+screen-resourceDetail -> ResourceDetail.jsx
+  prototype classes: 17   react classes: 17
+  MISSING (1): res-ic
+  extra (1): active
+
+[?] screen-thread — no React page mapped
+
+screen-listResource -> Board.jsx
+  prototype classes: 17   react classes: 30
+  MISSING: none
+  extra (13): add-resource-btn brgy-pill btn-primary card cat- muted name owner res-body res-card res-ic small topbar-right
+
+screen-myRequests -> MyRequests.jsx
+  prototype classes: 14   react classes: 20
+  MISSING: none
+  extra (6): muted small tag tag-accepted tag-declined tag-pending
+
+screen-map -> Map.jsx
+  prototype classes: 13   react classes: 19
+  MISSING: none
+  extra (6): active between btn-primary card muted small
+
+screen-evacDetail -> EvacDetail.jsx
+  prototype classes: 19   react classes: 22
+  MISSING: none
+  extra (3): active list-item val
+
+screen-checkin -> Checkin.jsx
+  prototype classes: 29   react classes: 32
+  MISSING: none
+  extra (3): dot house nm
+
+screen-weatherHistory -> WeatherHistory.jsx
+  prototype classes: 17   react classes: 18
+  MISSING: none
+  extra (1): active
+
+screen-announcements -> Announcements.jsx
+  prototype classes: 20   react classes: 25
+  MISSING: none
+  extra (5): post post-head role-swap time who
+
+screen-profile -> Profile.jsx
+  prototype classes: 16   react classes: 17
+  MISSING: none
+  extra (1): active
+
+screen-editProfile -> EditProfile.jsx
+  prototype classes: 12   react classes: 13
+  MISSING: none
+  extra (1): active
+
+screen-directory -> Directory.jsx
+  prototype classes: 15   react classes: 18
+  MISSING: none
+  extra (3): active muted small
+
+[?] screen-adminApprovals — no React page mapped
+
+[?] screen-adminPuroks — no React page mapped
+
+[?] screen-adminEvac — no React page mapped
+
+[orphan] admin — no prototype screen
