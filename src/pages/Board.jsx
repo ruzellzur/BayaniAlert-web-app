@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 export default function Board() {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ export default function Board() {
   };
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter">
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
@@ -82,20 +82,10 @@ export default function Board() {
       {/* Search */}
       <input
         type="text"
+        className="search-input"
         placeholder="Search items, e.g. generator, water…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        style={{
-          width: '100%',
-          marginBottom: 12,
-          padding: '11px 14px',
-          borderRadius: 12,
-          border: '1.5px solid var(--border)',
-          background: 'var(--surface)',
-          color: 'var(--ink)',
-          fontFamily: 'var(--font-body)',
-          fontSize: 13.5
-        }}
       />
 
       {/* Category Chips */}
@@ -112,16 +102,24 @@ export default function Board() {
       </div>
 
       {/* Resource List */}
-      <div id="resList" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div id="resList" className="res-list">
         {filteredResources.length === 0 ? (
-          <p className="small muted" style={{ textAlign: 'center', marginTop: 18 }}>No items match your search.</p>
+          <div className="empty-state">
+            <span className="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="m20 20-3.5-3.5"/>
+              </svg>
+            </span>
+            <h4>No items match</h4>
+            <p>Try a different search term, or be the first to share something with your neighbors.</p>
+          </div>
         ) : (
           filteredResources.map((res) => (
             <div
               key={res.id}
-              className="card res-card"
+              className="card card-hover res-card"
               onClick={() => navigate(`/resource/${res.id}`)}
-              style={{ cursor: 'pointer' }}
             >
               <span className={`res-ic cat-${res.cat}`}>
                 {getCategoryIcon(res.cat)}
@@ -230,170 +228,20 @@ export default function Board() {
       )}
 
       <style>{`
-        .topbar {
+        .res-list {
           display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
-        }
-        .brgy-pill {
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--ink-soft);
-          background: var(--surface);
-          border: 1px solid var(--border);
-          padding: 6px 10px;
-          border-radius: 999px;
-          white-space: nowrap;
-        }
-        .screen-head {
-          margin: 4px 0 16px;
-        }
-        .screen-head .sub {
-          color: var(--ink-soft);
-          font-size: 13.5px;
-          margin-top: 3px;
-        }
-        .res-card {
-          display: flex;
+          flex-direction: column;
           gap: 12px;
-          align-items: flex-start;
-        }
-        .res-ic {
-          width: 44px;
-          height: 44px;
-          border-radius: 13px;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--grad-cool);
-          color: #fff;
-        }
-        .res-ic svg {
-          width: 21px;
-          height: 21px;
-        }
-        .res-ic.cat-power {
-          background: var(--grad-accent);
-        }
-        .res-ic.cat-water {
-          background: linear-gradient(135deg, #6FA8D8, var(--cool) 65%, #274670);
-        }
-        .res-ic.cat-tools {
-          background: var(--grad-cool);
-        }
-        .res-ic.cat-firstaid {
-          background: var(--grad-danger);
-        }
-        .res-ic.cat-transport {
-          background: var(--grad-safe);
-        }
-        .res-body {
-          flex: 1;
-          min-width: 0;
-        }
-        .res-body .name {
-          font-weight: 600;
-          font-size: 14.5px;
-        }
-        .res-body .owner {
-          font-size: 12px;
-          color: var(--ink-soft);
-          margin-top: 2px;
-        }
-        .res-foot {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 10px;
-        }
-        .dist {
-          font-size: 11.5px;
-          color: var(--ink-soft);
-        }
-        #resList {
-          flex: 1 1 0;
-          min-height: 0;
-          overflow-y: auto;
-          padding-bottom: 4px;
         }
         .add-resource-btn {
           flex-shrink: 0;
-          margin-top: 12px;
-          padding-top: 12px;
+          margin-top: 14px;
+          padding-top: 14px;
           border-top: 1px solid var(--border);
         }
 
-        /* Modal */
-        .modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.6);
-          backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 100;
-          padding: 20px;
-          animation: fadeIn 0.2s ease;
-        }
-        .modal-content {
-          background: var(--surface);
-          border-radius: 20px;
-          width: 100%;
-          max-width: 480px;
-          max-height: 90vh;
-          overflow-y: auto;
-          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
-          animation: slideUp 0.25s ease;
-        }
-        .modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px 20px 16px;
-          border-bottom: 1px solid var(--border);
-        }
-        .modal-close {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
-          border: none;
-          background: var(--surface-alt);
-          color: var(--ink);
-          font-size: 24px;
-          line-height: 1;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .modal-close:hover {
-          background: var(--border);
-        }
-        .modal-content .form-grid {
-          padding: 20px;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
         @media (min-width: 900px) {
-          .topbar {
-            padding: 26px 0 20px;
-          }
-          .screen-enter {
-            max-width: 1180px;
-          }
-          #resList {
+          .res-list {
             display: grid !important;
             grid-template-columns: repeat(2, 1fr);
             gap: 14px;
@@ -407,6 +255,8 @@ export default function Board() {
             padding-top: 0;
           }
         }
+
+      }</style>
       `}</style>
     </div>
   );

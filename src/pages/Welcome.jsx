@@ -1,16 +1,27 @@
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 export default function Welcome() {
   const navigate = useNavigate();
   const { evacCenters } = useApp();
 
   return (
-    <div className="screen-enter welcome" style={{ padding: 0 }}>
+    <div className="screen-enter welcome">
       {/* Hero Section */}
       <div className="hero">
+        <span className="hero-orb orb-a" aria-hidden="true" />
+        <span className="hero-orb orb-b" aria-hidden="true" />
+        <span className="hero-orb orb-c" aria-hidden="true" />
+        <div className="hero-rain" aria-hidden="true">
+          {Array.from({ length: 14 }).map((_, i) => (
+            <span key={i} style={{ '--i': i }} />
+          ))}
+        </div>
+
         <div className="hero-text">
-          <span className="hero-badge">Barangay San Isidro</span>
+          <span className="hero-badge">
+            <span className="live-dot" aria-hidden="true" /> Barangay San Isidro
+          </span>
           <h1>Kapag may bagyo,<br /><i>magkasama tayo.</i></h1>
           <p>Weather alerts, shared supplies, and safety check-ins for every household in the barangay — in one place.</p>
         </div>
@@ -27,22 +38,39 @@ export default function Welcome() {
         {/* Value Props */}
         <div className="value-row">
           <div className="value">
+            <span className="value-ic ic-accent">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.7 21a2 2 0 0 1-3.4 0"/>
+              </svg>
+            </span>
             <div className="num">Live</div>
             <div className="lbl">Weather alerts</div>
           </div>
           <div className="value">
+            <span className="value-ic ic-safe">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 6 9 17l-5-5"/>
+              </svg>
+            </span>
             <div className="num">1-tap</div>
             <div className="lbl">Safety check-in</div>
           </div>
           <div className="value">
+            <span className="value-ic ic-cool">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 7H4v13h16z"/>
+                <path d="M16 3v8M8 3v8M4 11h16"/>
+              </svg>
+            </span>
             <div className="num">Shared</div>
             <div className="lbl">Supplies board</div>
           </div>
         </div>
 
         {/* CTA Buttons */}
-        <div className="welcome-cta-row" style={{ flexDirection: 'column', display: 'flex', gap: 12 }}>
-          <button className="btn btn-accent btn-block" onClick={() => navigate('/register')}>Get started</button>
+        <div className="welcome-cta-row">
+          <button className="btn btn-accent btn-block btn-lg" onClick={() => navigate('/register')}>Get started</button>
           <button className="btn btn-ghost btn-block" onClick={() => navigate('/login')}>I already have an account</button>
         </div>
 
@@ -144,38 +172,100 @@ export default function Welcome() {
       </div>
 
       <style>{`
-        .welcome {
-          padding: 0;
-        }
+        .welcome { padding: 0; }
+
         .hero {
-          padding: 54px 26px 30px;
-          background: radial-gradient(120% 90% at 15% -10%, rgba(226,154,59,0.35), transparent 60%),
-                      radial-gradient(80% 60% at 100% 100%, rgba(110,143,199,0.22), transparent 60%),
-                      var(--grad-primary);
+          padding: 54px 26px 34px;
+          background:
+            radial-gradient(120% 90% at 15% -10%, rgba(232,155,54,0.42), transparent 60%),
+            radial-gradient(80% 60% at 100% 100%, rgba(123,99,204,0.32), transparent 60%),
+            var(--grad-primary);
+          background-size: 200% 200%;
+          animation: gradientPan 16s ease infinite;
           color: #fff;
           position: relative;
           min-height: 340px;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
+          overflow: hidden;
         }
+        .hero-orb {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(30px);
+          pointer-events: none;
+        }
+        .hero-orb.orb-a {
+          width: 190px; height: 190px;
+          top: -50px; right: -40px;
+          background: radial-gradient(circle, rgba(232,155,54,0.65), transparent 70%);
+          animation: floaty 7s ease-in-out infinite;
+        }
+        .hero-orb.orb-b {
+          width: 150px; height: 150px;
+          bottom: -40px; left: -40px;
+          background: radial-gradient(circle, rgba(123,99,204,0.6), transparent 70%);
+          animation: floaty 9s ease-in-out infinite reverse;
+        }
+        .hero-orb.orb-c {
+          width: 110px; height: 110px;
+          top: 40%; left: 42%;
+          background: radial-gradient(circle, rgba(61,138,97,0.45), transparent 70%);
+          animation: floaty 11s ease-in-out infinite;
+        }
+        .hero-rain {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          overflow: hidden;
+        }
+        .hero-rain span {
+          position: absolute;
+          top: -14%;
+          width: 1.5px;
+          height: 26px;
+          border-radius: 2px;
+          background: linear-gradient(180deg, transparent, rgba(255,255,255,0.45));
+          left: calc(var(--i) * 7.4% + 2%);
+          animation: rainFall 2.4s linear infinite;
+          animation-delay: calc(var(--i) * -0.34s);
+          opacity: 0.55;
+        }
+        @keyframes rainFall {
+          0% { transform: translateY(-30px); opacity: 0; }
+          15% { opacity: 0.6; }
+          100% { transform: translateY(420px); opacity: 0; }
+        }
+
         .hero-badge {
           align-self: flex-start;
-          background: rgba(255,255,255,0.14);
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255,255,255,0.16);
           color: #fff;
           font-size: 11.5px;
           font-weight: 600;
-          padding: 6px 12px;
+          padding: 7px 14px;
           border-radius: 999px;
           margin-bottom: 20px;
+          backdrop-filter: blur(6px);
+          position: relative;
+          z-index: 1;
         }
+        .hero-badge .live-dot { background: #6FE39C; }
+        .hero-badge .live-dot::after { background: #6FE39C; }
+
         .hero svg.sky {
           position: absolute;
-          top: 20px;
+          top: 18px;
           right: 18px;
           width: 96px;
           height: 96px;
-          opacity: 0.9;
+          opacity: 0.92;
+          animation: floaty 6s ease-in-out infinite;
+          z-index: 1;
         }
         .hero h1 {
           font-size: 32px;
@@ -183,6 +273,8 @@ export default function Welcome() {
           color: #fff;
           font-weight: 600;
           max-width: 15ch;
+          position: relative;
+          z-index: 1;
         }
         .hero h1 i {
           font-style: italic;
@@ -197,120 +289,83 @@ export default function Welcome() {
           margin-top: 12px;
           max-width: 34ch;
           line-height: 1.5;
+          position: relative;
+          z-index: 1;
         }
-        .hero-text {
-          max-width: 480px;
-        }
-        .hero-art {
-          display: none;
-        }
+        .hero-text { position: relative; z-index: 1; }
+
         .welcome-body {
-          padding: 26px 24px 40px;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
+          padding: 30px 20px 60px;
         }
         .value-row {
-          display: flex;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
           gap: 12px;
-          margin: 6px 0 10px;
+          margin: 0 0 22px;
         }
         .value {
-          flex: 1;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          padding: 18px 10px 16px;
           text-align: center;
+          box-shadow: var(--card-shadow);
+          transition: transform 0.22s var(--ease), box-shadow 0.22s ease;
         }
+        .value-ic {
+          width: 42px;
+          height: 42px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 10px;
+          color: #fff;
+          transition: transform 0.24s var(--ease);
+        }
+        .value-ic svg { width: 21px; height: 21px; }
+        .value-ic.ic-accent { background: var(--grad-accent); box-shadow: 0 6px 16px -6px rgba(232,155,54,0.8); }
+        .value-ic.ic-safe { background: var(--grad-safe); box-shadow: 0 6px 16px -6px rgba(61,138,97,0.8); }
+        .value-ic.ic-cool { background: var(--grad-cool); box-shadow: 0 6px 16px -6px rgba(69,115,174,0.8); }
         .value .num {
           font-family: var(--font-display);
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 600;
-          background: linear-gradient(120deg, var(--accent-2), var(--cool));
+          background: linear-gradient(120deg, var(--accent-2), var(--accent) 75%);
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
         }
         .value .lbl {
-          font-size: 11px;
-          color: var(--ink-soft);
-          margin-top: 2px;
-        }
-        .welcome-cta-row {
-          display: flex;
-          gap: 12px;
-        }
-        .guest-info-grid {
-          display: block;
-        }
-        .dir-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 13px 0;
-          border-top: 1px solid var(--border);
-        }
-        .dir-item:first-child {
-          border-top: none;
-          padding-top: 0;
-        }
-        .dir-item .avatar {
-          width: 40px;
-          height: 40px;
-          border-radius: 11px;
-          background: var(--grad-cool);
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 13.5px;
-          flex-shrink: 0;
-        }
-        .dir-item .info {
-          flex: 1;
-          min-width: 0;
-        }
-        .dir-item .info .nm {
-          font-weight: 600;
-          font-size: 13.5px;
-        }
-        .dir-item .info .role {
           font-size: 11.5px;
           color: var(--ink-soft);
-          margin-top: 1px;
+          font-weight: 600;
+          margin-top: 3px;
+          line-height: 1.3;
         }
-        .dir-call {
-          width: 36px;
-          height: 36px;
-          border-radius: 11px;
-          border: 1px solid var(--border);
-          background: var(--surface);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          color: var(--safe);
-          flex-shrink: 0;
-        }
-        .dir-call svg {
-          width: 16px;
-          height: 16px;
+        @media (hover: hover) {
+          .value:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px -14px rgba(21,35,61,0.32);
+          }
+          .value:hover .value-ic { transform: scale(1.12) rotate(-6deg); }
         }
 
+        .welcome-cta-row {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          max-width: 420px;
+          margin: 0 auto 6px;
+        }
+
+        .guest-info { margin: 26px auto 0; max-width: 640px; }
+        .guest-info-grid { display: block; }
+
         @media (min-width: 560px) {
-          .welcome-body {
-            max-width: 720px;
-            margin: 0 auto;
-          }
-          .value-row {
-            max-width: 640px;
-            margin: 0 0 6px;
-          }
-          .welcome-cta-row {
-            max-width: 420px;
-          }
-          .guest-info {
-            max-width: 640px;
-          }
+          .welcome-body { padding: 36px 24px 70px; }
+          .value-row { max-width: 640px; margin: 0 auto 22px; }
+          .guest-info { max-width: 640px; margin: 26px auto 0; }
         }
 
         @media (min-width: 900px) {
@@ -323,17 +378,9 @@ export default function Welcome() {
             justify-content: space-between;
             gap: 40px;
           }
-          .hero-badge {
-            margin-bottom: 22px;
-          }
-          .hero h1 {
-            font-size: 46px;
-            max-width: 14ch;
-          }
-          .hero p {
-            font-size: 16px;
-            max-width: 38ch;
-          }
+          .hero-badge { margin-bottom: 22px; }
+          .hero h1 { font-size: 46px; max-width: 14ch; }
+          .hero p { font-size: 16px; max-width: 38ch; }
           .hero svg.sky {
             position: static;
             width: 120px;
@@ -344,22 +391,20 @@ export default function Welcome() {
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            position: relative;
+            z-index: 1;
           }
           .welcome-body {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 40px 60px 70px;
+            padding: 44px 60px 80px;
           }
-          .value-row {
-            max-width: 640px;
-            margin: 0 0 6px;
-          }
-          .welcome-cta-row {
-            max-width: 420px;
-          }
-          .guest-info {
-            max-width: 960px;
-          }
+          .value-row { max-width: 760px; margin: 0 auto 26px; gap: 18px; }
+          .value { padding: 22px 14px 20px; }
+          .value-ic { width: 48px; height: 48px; }
+          .value .num { font-size: 21px; }
+          .welcome-cta-row { max-width: 420px; }
+          .guest-info { max-width: 960px; margin: 34px auto 0; }
           .guest-info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;

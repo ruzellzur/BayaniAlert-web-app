@@ -1,10 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 export default function ResourceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { resources, user } = useApp();
+  const { resources } = useApp();
 
   // Convert string ID from URL to number for matching
   const resourceId = parseInt(id, 10);
@@ -12,15 +12,25 @@ export default function ResourceDetail() {
 
   if (!resource) {
     return (
-      <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+      <div className="screen-enter">
         <div className="topbar">
           <div className="row" style={{ gap: 12 }}>
             <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/board')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
             <h2 style={{ fontSize: 17 }}>Item details</h2>
           </div>
         </div>
-        <div className="card" style={{ marginTop: 20, textAlign: 'center' }}>
-          <p className="muted">Resource not found</p>
+        <div className="card" style={{ marginTop: 20 }}>
+          <div className="empty-state">
+            <span className="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="m20 20-3.5-3.5"/>
+              </svg>
+            </span>
+            <h4>Resource not found</h4>
+            <p>This item may have been removed or already borrowed. Browse the board to find something else.</p>
+            <button className="btn btn-accent btn-sm" style={{ marginTop: 6 }} onClick={() => navigate('/board')}>Back to board</button>
+          </div>
         </div>
       </div>
     );
@@ -47,9 +57,11 @@ export default function ResourceDetail() {
 
   const ownerName = resource.owner.split('·')[0].trim();
   const ownerInitials = ownerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  // Stable pseudo-count derived from the owner name (no impure calls during render)
+  const itemsShared = (ownerName.length * 7) % 19 + 1;
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter">
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
@@ -64,8 +76,14 @@ export default function ResourceDetail() {
           {getCategoryIcon(resource.cat)}
         </span>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 17 }}>{resource.name}</div>
-          <div className="muted small" style={{ marginTop: 3 }}>{resource.dist} away</div>
+          <div className="detail-name">{resource.name}</div>
+          <div className="detail-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {resource.dist} away
+          </div>
         </div>
       </div>
 
@@ -79,84 +97,79 @@ export default function ResourceDetail() {
       <div className="section-label" style={{ marginTop: 0 }}>
         <h3>Shared by</h3>
       </div>
-      <div className="card owner-card" style={{ marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center' }}>
-        <span className="avatar" style={{
-          width: 40,
-          height: 40,
-          borderRadius: 12,
-          background: 'var(--grad-cool)',
-          color: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: 'var(--font-display)',
-          fontWeight: 600,
-          fontSize: 14,
-          flexShrink: 0
-        }}>
-          {ownerInitials}
-        </span>
+      <div className="card owner-card">
+        <span className="avatar">{ownerInitials}</span>
         <div>
           <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{ownerName}</div>
-          <div className="muted small">Member since 2022 · {Math.floor(Math.random() * 20) + 1} items shared</div>
+          <div className="muted small">Member since 2022 · {itemsShared} items shared</div>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <button className="btn btn-primary btn-block" onClick={handleRequest}>Request this item</button>
-      <button className="btn btn-ghost btn-block" style={{ marginTop: 10 }} onClick={handleMessage}>Message owner</button>
+      <div className="detail-actions">
+        <button className="btn btn-primary btn-block btn-lg" onClick={handleRequest}>Request this item</button>
+        <button className="btn btn-ghost btn-block" onClick={handleMessage}>Message owner</button>
+      </div>
 
       <style>{`
-        .topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
-        }
         .detail-hero {
           display: flex;
+          flex-direction: column;
           align-items: center;
+          text-align: center;
           gap: 14px;
-          padding: 14px 2px;
-          margin-bottom: 6px;
+          padding: 22px 0 24px;
         }
-        .res-ic {
-          width: 48px;
-          height: 48px;
+        .detail-hero .res-ic {
+          width: 76px;
+          height: 76px;
+          border-radius: 24px;
+          font-size: 30px;
+          animation: floaty 5s ease-in-out infinite;
+        }
+        .detail-hero .res-ic svg { width: 34px; height: 34px; }
+        .detail-name {
+          font-family: var(--font-display);
+          font-size: 24px;
+          font-weight: 600;
+          line-height: 1.2;
+        }
+        .detail-meta {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: var(--ink-soft);
+          background: var(--surface);
+          border: 1px solid var(--border);
+          padding: 6px 14px;
+          border-radius: 999px;
+          box-shadow: var(--card-shadow);
+        }
+        .owner-card {
+          display: flex;
+          gap: 13px;
+          align-items: center;
+          margin-bottom: 18px;
+        }
+        .owner-card .avatar {
+          width: 46px;
+          height: 46px;
           border-radius: 14px;
-          flex-shrink: 0;
+          background: var(--grad-cool);
+          color: #fff;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--grad-cool);
-          color: #fff;
-        }
-        .res-ic svg {
-          width: 23px;
-          height: 23px;
-        }
-        .res-ic.cat-power { background: var(--grad-accent); }
-        .res-ic.cat-water { background: linear-gradient(135deg, #5FA8D3, #4A90B8); }
-        .res-ic.cat-tools { background: linear-gradient(135deg, #7B8794, #5C6370); }
-        .res-ic.cat-firstaid { background: linear-gradient(135deg, #E57373, #C1443C); }
-        .res-ic.cat-transport { background: linear-gradient(135deg, #81C784, #5FA864); }
-        .section-label {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin: 22px 0 10px;
-        }
-        .section-label h3 {
-          font-size: 15px;
+          font-family: var(--font-display);
           font-weight: 600;
+          font-size: 15px;
+          flex-shrink: 0;
+          box-shadow: 0 6px 16px -6px rgba(69,115,174,0.8);
         }
+        .detail-actions { display: flex; flex-direction: column; gap: 10px; }
 
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
-        }
       `}</style>
     </div>
   );

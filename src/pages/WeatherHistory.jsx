@@ -19,7 +19,7 @@ export default function WeatherHistory() {
   ];
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter">
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
@@ -32,22 +32,16 @@ export default function WeatherHistory() {
       <div className="section-label" style={{ marginTop: 0 }}>
         <h3>Next 6 hours</h3>
       </div>
-      <div className="forecast-strip" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: 6,
-        marginBottom: 18
-      }}>
+      <div className="forecast-strip">
         {forecast.map((f, i) => (
-          <div key={i} className="fcell" style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 12,
-            padding: '10px 4px',
-            textAlign: 'center'
-          }}>
-            <div className="t small muted" style={{ marginBottom: 4 }}>{f.time}</div>
-            <div className="v" style={{ fontWeight: 600, fontSize: 15 }}>{f.temp}</div>
+          <div key={i} className="fcell">
+            <div className="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 3s6 7 6 11a6 6 0 1 1-12 0c0-4 6-11 6-11Z"/>
+              </svg>
+            </div>
+            <div className="t">{f.time}</div>
+            <div className="v">{f.temp}</div>
           </div>
         ))}
       </div>
@@ -56,31 +50,12 @@ export default function WeatherHistory() {
       <div className="section-label" style={{ marginTop: 0 }}>
         <h3>Advisory history</h3>
       </div>
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      <div className="card" style={{ padding: '4px 16px' }}>
         {history.map((item, i) => (
-          <div key={i} className="hist-item" style={{
-            display: 'flex',
-            gap: 12,
-            padding: '12px 0',
-            borderTop: i > 0 ? '1px solid var(--border)' : 'none'
-          }}>
-            <span className="hist-dot" style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 11,
-              fontWeight: 700,
-              flexShrink: 0,
-              background: item.active ? 'var(--accent)' : 'var(--surface-alt)',
-              color: item.active ? 'var(--accent-ink)' : 'var(--ink-soft)'
-            }}>
-              {item.badge}
-            </span>
+          <div key={i} className={`hist-item ${item.active ? 'is-active' : ''}`}>
+            <span className="hist-badge">{item.badge}</span>
             <div>
-              <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{item.label}</div>
+              <div className="hist-label">{item.label}</div>
               <div className="muted small" style={{ marginTop: 2 }}>{item.time}</div>
             </div>
           </div>
@@ -88,19 +63,55 @@ export default function WeatherHistory() {
       </div>
 
       <style>{`
-        .topbar {
+        .forecast-strip {
+          margin-bottom: 20px;
+        }
+        .fcell .ic {
+          width: 30px;
+          height: 30px;
+          margin: 0 auto 4px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          justify-content: center;
+          background: var(--accent-soft);
+          color: var(--accent);
         }
+        .fcell .ic svg { width: 17px; height: 17px; }
+        .hist-item {
+          display: flex;
+          gap: 13px;
+          align-items: center;
+          padding: 13px 0;
+          border-top: 1px solid var(--border);
+        }
+        .hist-item:first-child { border-top: none; padding-top: 0; }
+        .hist-badge {
+          width: 40px;
+          height: 40px;
+          border-radius: 13px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11.5px;
+          font-weight: 700;
+          flex-shrink: 0;
+          background: var(--surface-alt);
+          color: var(--ink-soft);
+          transition: transform 0.24s var(--ease);
+        }
+        .hist-item.is-active .hist-badge {
+          background: var(--grad-accent);
+          color: var(--accent-ink);
+          box-shadow: var(--glow-accent);
+        }
+        .hist-item.is-active .hist-badge::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+        }
+        .hist-label { font-weight: 600; font-size: 13.5px; }
 
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
-        }
       `}</style>
     </div>
   );

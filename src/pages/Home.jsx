@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import Brand from '../components/Brand';
 
 export default function Home() {
@@ -7,20 +7,21 @@ export default function Home() {
   const { user, resources, announcements, evacCenters, households } = useApp();
 
   const isOfficial = user?.role === 'official';
-  const isAdmin = user?.role === 'admin';
 
   // Filter announcements for display
-  const allAnnouncements = [...announcements, ...[
-    { who: 'Kagawad Reyes', time: '25 min ago', text: 'Evacuation center at San Isidro Elementary is now open. Bring your family ID and essentials.', color: 'danger' },
-    { who: 'Brgy. Captain Lira', time: '2 hr ago', text: 'Free rubber boots and candles available at the covered court while supplies last.', color: 'accent' },
-    { who: 'Kagawad Reyes', time: 'Yesterday', text: 'Please clear drainage canals near your homes before Friday. Bagyo is expected to strengthen over the weekend.', color: 'safe' },
-  ]].slice(0, 3);
+  const allAnnouncements = announcements.slice(0, 3);
 
   // Household stats for officials
   const safeCount = households.filter(h => h.status === 'safe').length;
   const helpCount = households.filter(h => h.status === 'help').length;
   const noResponseCount = households.filter(h => h.status === 'none').length;
   const respondedCount = safeCount + helpCount;
+
+  // Time-of-day greeting
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const fullName = user?.officialName || user?.name || '';
+  const firstName = fullName.split(' ').filter(Boolean).slice(-1)[0] || 'neighbor';
 
   const getCategoryIcon = (cat) => {
     const icons = {
@@ -34,7 +35,7 @@ export default function Home() {
   };
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter">
       {/* Topbar */}
       <div className="topbar">
         <Brand />
@@ -50,6 +51,14 @@ export default function Home() {
             <span>{user?.initials || 'RG'}</span>
           </div>
         </div>
+      </div>
+
+      {/* Greeting */}
+      <div className="home-greeting">
+        <h1>{greeting}, {firstName}</h1>
+        <p className="muted">
+          <span className="live-dot" aria-hidden="true" /> Live updates for Barangay San Isidro
+        </p>
       </div>
 
       <div className="dash-grid">
@@ -109,12 +118,40 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Barangay pulse */}
+          <div className="section-label">
+            <h3>Barangay pulse</h3>
+            <a onClick={() => navigate('/checkin')}>Details</a>
+          </div>
+          <div className="stat-grid">
+            <div className="stat-card sc-safe">
+              <div className="n">{safeCount}</div>
+              <div className="l">Checked in safe</div>
+            </div>
+            <div className="stat-card sc-danger">
+              <div className="n">{helpCount}</div>
+              <div className="l">Need assistance</div>
+            </div>
+            <div className="stat-card sc-muted">
+              <div className="n">{noResponseCount}</div>
+              <div className="l">No response</div>
+            </div>
+            <div className="stat-card sc-accent">
+              <div className="n">{resources.length}</div>
+              <div className="l">Items shared</div>
+            </div>
+            <div className="stat-card sc-cool">
+              <div className="n">{evacCenters.length}</div>
+              <div className="l">Evac centers</div>
+            </div>
+          </div>
+
           {/* Nearby Resources */}
           <div className="section-label">
             <h3>Nearby on the resource board</h3>
             <a onClick={() => navigate('/board')}>See all</a>
           </div>
-          <div className="card res-card" onClick={() => navigate('/board')} style={{ cursor: 'pointer' }}>
+          <div className="card card-hover res-card" onClick={() => navigate('/board')}>
             <span className="res-ic cat-power">
               {getCategoryIcon('power')}
             </span>
@@ -188,219 +225,104 @@ export default function Home() {
       </div>
 
       <style>{`
-        .topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
-          background: var(--bg);
-          position: sticky;
-          top: 0;
-          z-index: 5;
-        }
-        .brand {
-          display: flex;
-          align-items: baseline;
-          gap: 6px;
-        }
-        .brand .word {
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 19px;
-        }
-        .brand .word em {
-          font-style: italic;
-          color: var(--accent);
-        }
-        .brgy-pill {
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--ink-soft);
-          background: var(--surface);
-          border: 1px solid var(--border);
-          padding: 6px 10px;
-          border-radius: 999px;
-          white-space: nowrap;
-        }
-        .topbar-right {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .icon-btn {
-          width: 36px;
-          height: 36px;
-          border-radius: 11px;
-          border: 1px solid var(--border);
-          background: var(--surface);
-          display: none;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          color: var(--ink-soft);
-        }
-        .icon-btn svg {
-          width: 17px;
-          height: 17px;
-        }
-        .top-avatar {
-          width: 36px;
-          height: 36px;
-          border-radius: 11px;
-          background: var(--grad-cool);
-          color: #fff;
-          display: none;
-          align-items: center;
-          justify-content: center;
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 13px;
-          cursor: pointer;
-        }
-        .dash-grid {
-          display: block;
-        }
-        .dash-col {
-          min-width: 0;
-        }
-        .quick-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 10px;
-          margin: 18px 0 6px;
-        }
-        .quick {
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 16px;
-          padding: 12px 4px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 7px;
-          font-size: 11px;
-          font-weight: 600;
-          color: var(--ink);
-          cursor: pointer;
+        .home-greeting {
+          margin: 4px 0 18px;
           text-align: center;
-          transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
         }
-        .quick .ic {
-          width: 38px;
-          height: 38px;
-          border-radius: 11px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--grad-accent);
-          color: #fff;
-          box-shadow: 0 4px 10px rgba(226,154,59,0.28);
-        }
-        .quick svg {
-          width: 19px;
-          height: 19px;
-        }
-        .section-label {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin: 22px 0 10px;
-        }
-        .section-label h3 {
-          font-size: 15px;
+        .home-greeting h1 {
+          font-size: 25px;
           font-weight: 600;
+          line-height: 1.2;
+          background: linear-gradient(115deg, var(--ink) 25%, var(--cool) 70%, var(--cool-2));
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
         }
-        .section-label a {
+        .home-greeting p {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
           font-size: 12.5px;
           font-weight: 600;
-          color: var(--ink-soft);
-          cursor: pointer;
+          margin-top: 7px;
         }
-        .ann-preview {
-          display: flex;
-          gap: 11px;
-          padding: 12px 0;
-          border-top: 1px solid var(--border);
+
+        .stat-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+          margin-bottom: 6px;
         }
-        .ann-preview:first-child {
-          border-top: none;
-          padding-top: 0;
+        .stat-card {
+          position: relative;
+          overflow: hidden;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          padding: 16px 14px;
+          text-align: center;
+          box-shadow: var(--card-shadow);
+          transition: transform 0.22s var(--ease), box-shadow 0.22s ease;
         }
-        .ann-dot {
-          width: 8px;
-          height: 8px;
+        .stat-card::after {
+          content: "";
+          position: absolute;
+          top: -26px;
+          right: -26px;
+          width: 78px;
+          height: 78px;
           border-radius: 50%;
-          margin-top: 6px;
-          flex-shrink: 0;
+          opacity: 0.16;
         }
-        .ann-preview .t {
-          font-size: 13.5px;
+        .stat-card.sc-safe::after { background: var(--safe); }
+        .stat-card.sc-danger::after { background: var(--danger); }
+        .stat-card.sc-muted::after { background: var(--ink-soft); }
+        .stat-card.sc-accent::after { background: var(--accent); }
+        .stat-card.sc-cool::after { background: var(--cool); }
+        .stat-card .n {
+          position: relative;
+          font-family: var(--font-display);
+          font-size: 27px;
           font-weight: 600;
-          line-height: 1.35;
+          line-height: 1.1;
         }
-        .ann-preview .time {
+        .stat-card.sc-safe .n { color: var(--safe); }
+        .stat-card.sc-danger .n { color: var(--danger); }
+        .stat-card.sc-muted .n { color: var(--ink-soft); }
+        .stat-card.sc-accent .n { color: var(--accent); }
+        .stat-card.sc-cool .n { color: var(--cool); }
+        .stat-card .l {
+          position: relative;
           font-size: 11px;
           color: var(--ink-soft);
-          margin-top: 3px;
-        }
-        .res-card {
-          display: flex;
-          gap: 12px;
-          align-items: flex-start;
-        }
-        .res-ic {
-          width: 44px;
-          height: 44px;
-          border-radius: 13px;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--grad-cool);
-          color: #fff;
-        }
-        .res-ic svg {
-          width: 21px;
-          height: 21px;
-        }
-        .res-ic.cat-power {
-          background: var(--grad-accent);
-        }
-        .res-body {
-          flex: 1;
-          min-width: 0;
-        }
-        .res-body .name {
           font-weight: 600;
-          font-size: 14.5px;
+          margin-top: 5px;
         }
-        .res-body .owner {
-          font-size: 12px;
-          color: var(--ink-soft);
-          margin-top: 2px;
+        @media (hover: hover) {
+          .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px -12px rgba(21,35,61,0.3);
+          }
+        }
+
+        .dash-grid { display: block; }
+        .dash-col { min-width: 0; }
+
+        @media (min-width: 760px) {
+          .stat-grid { grid-template-columns: repeat(4, 1fr); }
         }
 
         @media (min-width: 900px) {
-          .topbar {
-            padding: 26px 44px 20px;
+          .home-greeting {
+            text-align: left;
+            margin: 6px 0 24px;
           }
-          .topbar .brand {
-            display: none;
-          }
-          .icon-btn,
-          .top-avatar {
-            display: flex;
-          }
+          .home-greeting h1 { font-size: 34px; }
           .dash-grid {
             display: grid;
-            grid-template-columns: 1.65fr 1fr;
-            gap: 26px;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 28px;
             align-items: start;
-          }
-          .quick-grid {
-            grid-template-columns: repeat(4, 1fr);
-            max-width: 520px;
           }
         }
       `}</style>

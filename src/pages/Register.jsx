@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import Brand from '../components/Brand';
 
 export default function Register() {
@@ -65,9 +65,16 @@ export default function Register() {
   return (
     <section className="screen active" id="screen-register">
       <div className="auth-visual">
-        <span className="hero-badge">Barangay San Isidro</span>
+        <span className="hero-badge">
+          <span className="live-dot" aria-hidden="true" /> Barangay San Isidro
+        </span>
         <h2>Kapag may bagyo,<br /><i>magkasama tayo.</i></h2>
         <p>One account gets your household weather alerts, the resource board, and a way to check in safe during a storm.</p>
+        <div className="auth-stats">
+          <div><strong>Live</strong><span>Weather alerts</span></div>
+          <div><strong>1-tap</strong><span>Safety check-in</span></div>
+          <div><strong>Shared</strong><span>Supplies board</span></div>
+        </div>
       </div>
       <div className="auth-wrap">
         <Brand />

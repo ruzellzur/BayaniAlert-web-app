@@ -26,7 +26,7 @@ export default function Directory() {
   );
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter">
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
@@ -38,142 +38,110 @@ export default function Directory() {
       {/* Search */}
       <input
         type="text"
+        className="search-input"
         placeholder="Search contacts…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        style={{
-          width: '100%',
-          marginBottom: 14,
-          padding: '11px 14px',
-          borderRadius: 12,
-          border: '1.5px solid var(--border)',
-          background: 'var(--surface)',
-          color: 'var(--ink)',
-          fontFamily: 'var(--font-body)',
-          fontSize: '13.5px'
-        }}
       />
 
       {/* Barangay Officials */}
       <div className="section-label" style={{ marginTop: 0 }}>
         <h3>Barangay officials</h3>
       </div>
-      <div className="card" style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 0 }}>
-        {filteredOfficials.map((official, i) => (
-          <div key={i} className="dir-item" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            padding: '12px 0',
-            borderTop: i > 0 ? '1px solid var(--border)' : 'none'
-          }}>
-            <span className="avatar" style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              background: 'var(--grad-cool)',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: 'var(--font-display)',
-              fontWeight: 600,
-              fontSize: 14,
-              flexShrink: 0
-            }}>
-              {official.initials}
-            </span>
-            <div className="info" style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{official.name}</div>
-              <div className="small muted">{official.role}</div>
-            </div>
-            <button className="dir-call" onClick={() => alert(`Would dial ${official.phone}`)} aria-label={`Call ${official.phone}`} style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: 'var(--ink-soft)'
-            }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18 }}>
-                <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z"/>
+      <div className="card dir-list" style={{ marginBottom: 18 }}>
+        {filteredOfficials.length === 0 ? (
+          <div className="empty-state">
+            <span className="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="m20 20-3.5-3.5"/>
               </svg>
-            </button>
+            </span>
+            <h4>No matches</h4>
+            <p>No barangay official matches "{search}".</p>
           </div>
-        ))}
+        ) : (
+          filteredOfficials.map((official, i) => (
+            <div key={i} className="dir-item">
+              <span className="avatar">{official.initials}</span>
+              <div className="info">
+                <div className="nm">{official.name}</div>
+                <div className="small muted">{official.role}</div>
+              </div>
+              <button className="dir-call" onClick={() => alert(`Would dial ${official.phone}`)} aria-label={`Call ${official.phone}`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z"/>
+                </svg>
+              </button>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Emergency Services */}
       <div className="section-label" style={{ marginTop: 0 }}>
         <h3>Emergency services</h3>
       </div>
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-        {filteredEmergency.map((service, i) => (
-          <div key={i} className="dir-item" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            padding: '12px 0',
-            borderTop: i > 0 ? '1px solid var(--border)' : 'none'
-          }}>
-            <span className="avatar" style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              background: service.isEmergency ? 'var(--danger-bg)' : 'var(--grad-cool)',
-              color: service.isEmergency ? 'var(--danger)' : '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: 'var(--font-display)',
-              fontWeight: 600,
-              fontSize: 14,
-              flexShrink: 0
-            }}>
-              {service.initials}
-            </span>
-            <div className="info" style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{service.name}</div>
-              <div className="small muted">{service.role}</div>
-            </div>
-            <button className="dir-call" onClick={() => alert(`Would dial ${service.phone}`)} aria-label={`Call ${service.phone}`} style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: 'var(--ink-soft)'
-            }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18 }}>
-                <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z"/>
+      <div className="card dir-list dir-emergency">
+        {filteredEmergency.length === 0 ? (
+          <div className="empty-state">
+            <span className="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="m20 20-3.5-3.5"/>
               </svg>
-            </button>
+            </span>
+            <h4>No matches</h4>
+            <p>No emergency service matches "{search}".</p>
           </div>
-        ))}
+        ) : (
+          filteredEmergency.map((service, i) => (
+            <div key={i} className="dir-item">
+              <span className="avatar" style={service.isEmergency ? undefined : { background: 'var(--grad-cool)' }}>
+                {service.initials}
+              </span>
+              <div className="info">
+                <div className="nm">{service.name}</div>
+                <div className="small muted">{service.role}</div>
+              </div>
+              <button className="dir-call" onClick={() => alert(`Would dial ${service.phone}`)} aria-label={`Call ${service.phone}`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z"/>
+                </svg>
+              </button>
+            </div>
+          ))
+        )}
       </div>
 
       <style>{`
-        .topbar {
+        .dir-group {
+          margin-bottom: 18px;
+        }
+        .dir-list { padding: 4px 16px; }
+        .dir-emergency .dir-item .avatar {
+          background: var(--grad-danger);
+          box-shadow: 0 5px 14px -6px rgba(201,74,61,0.85);
+        }
+        .dir-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .dir-card {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          gap: 13px;
+        }
+        .dir-card .info { flex: 1; min-width: 0; }
+
+        @media (min-width: 760px) {
+          .dir-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 900px) {
+          .dir-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
         }
 
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
-        }
       `}</style>
     </div>
   );

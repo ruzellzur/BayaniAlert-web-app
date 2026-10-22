@@ -1,91 +1,43 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { AppContext, permsFor } from './app-context';
+import {
+  INITIAL_RESOURCES,
+  INITIAL_EVACUATION_CENTERS,
+  INITIAL_ANNOUNCEMENTS,
+  INITIAL_HOUSEHOLDS,
+  INITIAL_PUROKS,
+  INITIAL_PENDING_OFFICIALS,
+} from '../data/seed';
 
-const AppContext = createContext(null);
 
-// Position permissions from prototype
-const POSITION_PERMS = {
-  'Barangay Captain': { announce: true, evac: true, rescue: false },
-  'Kagawad': { announce: true, evac: true, rescue: false },
-  'SK Chairperson': { announce: true, evac: false, rescue: false },
-  'Barangay Tanod': { announce: false, evac: false, rescue: true },
-  'BDRRM Officer': { announce: true, evac: true, rescue: true },
-  'Rescue/Response Team': { announce: false, evac: false, rescue: true },
-};
-
-function permsFor(position) {
-  return POSITION_PERMS[position] || { announce: true, evac: true, rescue: false };
+// Read persisted state once, at module scope, so the first render already has
+// the restored values (no setState-in-effect flash).
+function readPersistedState() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const saved = window.localStorage.getItem('bayanialert_state');
+    return saved ? JSON.parse(saved) : null;
+  } catch (e) {
+    console.error('Failed to load state:', e);
+    return null;
+  }
 }
 
-// Initial data from prototype
-const INITIAL_RESOURCES = [
-  { id: 0, name: 'Gasoline-powered generator', owner: 'Mang Tonio · Purok 3', cat: 'power', dist: '120m', desc: '2000W gasoline generator, good for a few lights, a fan, and charging phones during an outage. Bring your own extension cord if you need more reach.' },
-  { id: 1, name: '5-gallon drinking water', owner: 'Aling Nena · Purok 1', cat: 'water', dist: '240m', desc: 'Sealed 5-gallon container, refilled weekly. Can lend the container or just fill yours — just return it clean.' },
-  { id: 2, name: 'Extension cord & power strip', owner: 'Kuya Jomar · Purok 3', cat: 'power', dist: '300m', desc: '10-meter heavy-duty extension cord with a 4-outlet power strip. Good for sharing one generator across two households.' },
-  { id: 3, name: 'First aid kit (family size)', owner: 'Nurse Bel · Purok 2', cat: 'firstaid', dist: '410m', desc: 'Stocked kit with bandages, antiseptic, paracetamol, and a thermometer. Please let Nurse Bel know what you use so she can restock.' },
-  { id: 4, name: 'Steel bolo & rope', owner: 'Mang Tonio · Purok 3', cat: 'tools', dist: '120m', desc: 'Useful for clearing fallen branches or securing loose roofing before a storm. Handle with care and return promptly.' },
-  { id: 5, name: 'Multicab for evacuation trips', owner: 'Kap. Lira · Purok 1', cat: 'transport', dist: '500m', desc: 'Can help ferry elderly or families with small children to the evacuation center. Best to request a few hours before the storm peaks.' },
-  { id: 6, name: 'Rechargeable flashlights (x3)', owner: 'Aling Nena · Purok 1', cat: 'power', dist: '240m', desc: 'Three USB-rechargeable flashlights, fully charged. Good for a family during a brownout.' },
-  { id: 7, name: 'Water container drums', owner: 'Mang Ador · Purok 4', cat: 'water', dist: '650m', desc: 'Two empty 20-liter drums for stocking up on water before the storm arrives.' },
-];
-
-const INITIAL_EVACUATION_CENTERS = [
-  { name: 'San Isidro Elementary School', addr: '0.6 km away · Purok 2', distLabel: '0.6 km', cap: 210, max: 400, amenities: [{ name: 'Drinking water station', status: 'Available' }, { name: 'First aid / medical', status: 'Available' }, { name: 'Generator power', status: 'Available' }] },
-  { name: 'Purok 4 Covered Court', addr: '1.2 km away · Purok 4', distLabel: '1.2 km', cap: 90, max: 150, amenities: [{ name: 'Drinking water station', status: 'Available' }, { name: 'First aid / medical', status: 'Limited' }, { name: 'Generator power', status: 'Unavailable' }] },
-];
-
-const INITIAL_ANNOUNCEMENTS = [
-  { who: 'Kagawad Reyes', time: '25 min ago', text: 'Evacuation center at San Isidro Elementary is now open. Bring your family ID and essentials.', color: 'danger' },
-  { who: 'Brgy. Captain Lira', time: '2 hr ago', text: 'Free rubber boots and candles available at the covered court while supplies last.', color: 'accent' },
-  { who: 'Kagawad Reyes', time: 'Yesterday', text: 'Please clear drainage canals near your homes before Friday. Bagyo is expected to strengthen over the weekend.', color: 'safe' },
-];
-
-const INITIAL_HOUSEHOLDS = [
-  'MD', 'TN', 'JR', 'AB', 'CP', 'LM', 'FS', 'GV', 'KP', 'RD', 'VN', 'ES', 'WQ', 'HY', 'ZL', 'OC'
-].map((h, i) => ({ initials: h, id: 140 + i, status: (i === 3 || i === 9) ? 'help' : 'safe' }));
-
-const INITIAL_PUROKS = ['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4'];
-
-const INITIAL_PENDING_OFFICIALS = [
-  { id: 'p1', name: 'Ador Santos', position: 'Barangay Tanod', purok: 'Purok 4', status: 'pending' },
-  { id: 'p2', name: 'Liza Cruz', position: 'SK Chairperson', purok: 'Purok 2', status: 'pending' },
-];
+const persisted = readPersistedState();
 
 export function AppProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [myStatus, setMyStatus] = useState(null);
-  const [resources, setResources] = useState(INITIAL_RESOURCES);
-  const [requests, setRequests] = useState([]);
-  const [messages, setMessages] = useState({});
-  const [evacCenters, setEvacCenters] = useState(INITIAL_EVACUATION_CENTERS);
-  const [announcements, setAnnouncements] = useState([]);
-  const [puroks, setPuroks] = useState(INITIAL_PUROKS);
-  const [pendingOfficials, setPendingOfficials] = useState(INITIAL_PENDING_OFFICIALS);
-  const [households, setHouseholds] = useState(INITIAL_HOUSEHOLDS);
-  const [theme, setTheme] = useState('system');
+  const [user, setUser] = useState(() => persisted?.user ?? null);
+  const [myStatus, setMyStatus] = useState(() => persisted?.myStatus ?? null);
+  const [resources, setResources] = useState(() => persisted?.resources ?? INITIAL_RESOURCES);
+  const [requests, setRequests] = useState(() => persisted?.requests ?? []);
+  const [messages, setMessages] = useState(() => persisted?.messages ?? {});
+  const [evacCenters, setEvacCenters] = useState(() => persisted?.evacCenters ?? INITIAL_EVACUATION_CENTERS);
+  const [announcements, setAnnouncements] = useState(() => persisted?.announcements ?? INITIAL_ANNOUNCEMENTS);
+  const [puroks, setPuroks] = useState(() => persisted?.puroks ?? INITIAL_PUROKS);
+  const [pendingOfficials, setPendingOfficials] = useState(() => persisted?.pendingOfficials ?? INITIAL_PENDING_OFFICIALS);
+  const [households, setHouseholds] = useState(() => persisted?.households ?? INITIAL_HOUSEHOLDS);
+  const [theme, setTheme] = useState(() => persisted?.theme ?? 'system');
   const [toast, setToast] = useState(null);
-
-  // Load state from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('bayanialert_state');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.user) setUser(parsed.user);
-        if (parsed.myStatus) setMyStatus(parsed.myStatus);
-        if (parsed.resources) setResources(parsed.resources);
-        if (parsed.requests) setRequests(parsed.requests);
-        if (parsed.messages) setMessages(parsed.messages);
-        if (parsed.evacCenters) setEvacCenters(parsed.evacCenters);
-        if (parsed.announcements) setAnnouncements(parsed.announcements);
-        if (parsed.puroks) setPuroks(parsed.puroks);
-        if (parsed.pendingOfficials) setPendingOfficials(parsed.pendingOfficials);
-        if (parsed.households) setHouseholds(parsed.households);
-        if (parsed.theme) setTheme(parsed.theme);
-      }
-    } catch (e) {
-      console.error('Failed to load state:', e);
-    }
-  }, []);
 
   // Save state to localStorage
   useEffect(() => {
@@ -294,13 +246,3 @@ export function AppProvider({ children }) {
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
-
-export function useApp() {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within AppProvider');
-  }
-  return context;
-}
-
-export { POSITION_PERMS };

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 export default function Checkin() {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ export default function Checkin() {
   };
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter">
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
@@ -57,11 +57,12 @@ export default function Checkin() {
             {user?.name || 'Ruzel G.'} — Household #{user?.household || '142'}
           </div>
           <div className="me-status">
+            <span className={`live-dot ${myStatus === 'none' ? 'is-idle' : ''}`} aria-hidden="true" />
             {myStatus === 'safe' ? 'Marked safe' : myStatus === 'help' ? 'Help requested' : "Not checked in for tonight's advisory"}
           </div>
           <div className="status-btns">
-            <button className="btn btn-safe" style={{ flex: 1 }} onClick={() => setStatus('safe')}>I'm safe</button>
-            <button className="btn btn-danger" style={{ flex: 1 }} onClick={() => setStatus('help')}>Need help</button>
+            <button className="btn btn-safe" onClick={() => setStatus('safe')}>I'm safe</button>
+            <button className="btn btn-danger" onClick={() => setStatus('help')}>Need help</button>
           </div>
         </div>
       )}
@@ -99,7 +100,7 @@ export default function Checkin() {
         <span className="muted small">{respondedCount} of {households.length} checked in</span>
       </div>
 
-      <div className="chip-row" style={{ marginBottom: 10 }}>
+      <div className="chip-row filter-chips" style={{ marginBottom: 10 }}>
         {['all', 'safe', 'help', 'none'].map((f) => (
           <span
             key={f}
@@ -114,14 +115,22 @@ export default function Checkin() {
       <div className="card">
         <div className="house-grid">
           {filteredHouseholds.length === 0 ? (
-            <p className="small muted" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '10px 0' }}>No households match this filter.</p>
+            <div className="empty-state" style={{ gridColumn: '1/-1' }}>
+              <span className="ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 21V9l9-6 9 6v12"/>
+                  <path d="M9 21v-6h6v6"/>
+                </svg>
+              </span>
+              <h4>No households here</h4>
+              <p>No households in Purok 3 match this filter right now.</p>
+            </div>
           ) : (
-            filteredHouseholds.map((h, i) => (
+            filteredHouseholds.map((h) => (
               <div
                 key={h.id}
-                className="house"
+                className={`house ${h.status === 'none' ? 'is-none' : ''}`}
                 onClick={() => handleHouseholdClick(households.indexOf(h))}
-                style={{ cursor: 'pointer' }}
               >
                 <div className="dot" style={{ background: statColors[h.status] || statColors.safe }}>
                   {h.initials}
@@ -143,22 +152,18 @@ export default function Checkin() {
       </p>
 
       <style>{`
-        .topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
-        }
         .me-card {
           text-align: center;
-          padding: 22px 16px;
+          padding: 26px 18px;
+          background:
+            radial-gradient(120% 90% at 50% -20%, var(--accent-soft), transparent 60%),
+            var(--surface);
         }
         .me-card .avatar {
-          width: 58px;
-          height: 58px;
+          width: 66px;
+          height: 66px;
           border-radius: 50%;
-          margin: 0 auto 12px;
+          margin: 0 auto 14px;
           background: var(--grad-primary);
           color: #fff;
           display: flex;
@@ -166,81 +171,58 @@ export default function Checkin() {
           justify-content: center;
           font-family: var(--font-display);
           font-weight: 600;
-          font-size: 20px;
-          box-shadow: 0 6px 16px rgba(27,42,74,0.25);
+          font-size: 23px;
+          box-shadow: 0 10px 24px -8px rgba(21,35,61,0.6);
+          animation: floaty 5s ease-in-out infinite;
         }
         .me-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
           font-size: 13px;
+          font-weight: 600;
           color: var(--ink-soft);
-          margin-top: 4px;
+          margin-top: 6px;
+          background: var(--surface-alt);
+          padding: 7px 14px;
+          border-radius: 999px;
         }
         .status-btns {
           display: flex;
           gap: 10px;
-          margin-top: 18px;
+          margin-top: 20px;
         }
+        .status-btns .btn { flex: 1; }
+
         .house-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 12px;
           margin-top: 4px;
         }
-        .house {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 6px;
-        }
         .house .dot {
-          width: 46px;
-          height: 46px;
+          position: relative;
+          transition: transform 0.2s var(--ease);
+        }
+        .house .dot::after {
+          content: "";
+          position: absolute;
+          inset: 0;
           border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 14px;
-          color: #fff;
+          border: 2px solid currentColor;
+          opacity: 0;
+          animation: pulseRing 2.6s ease-out infinite;
         }
-        .house .nm {
-          font-size: 10.5px;
-          text-align: center;
-          color: var(--ink-soft);
-          font-weight: 600;
-          line-height: 1.2;
+        .house.is-none .dot::after { opacity: 0.5; }
+
+        .filter-chips { justify-content: center; }
+        @media (min-width: 560px) {
+          .house-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
         }
-        .stat-trio {
-          display: flex;
-          gap: 22px;
-          margin-top: 14px;
-        }
-        .stat-trio .n {
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 18px;
-        }
-        .stat-trio .l {
-          font-size: 11px;
-          color: var(--ink-soft);
-          margin-top: 2px;
-        }
-        .demo-note {
-          font-size: 11px;
-          color: var(--ink-soft);
-          text-align: center;
-          margin-top: 16px;
-          line-height: 1.5;
+        @media (min-width: 900px) {
+          .house-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 16px; }
         }
 
-        @media (min-width: 900px) {
-          .topbar {
-            padding: 26px 0 20px;
-          }
-          .house-grid {
-            grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-          }
-        }
       `}</style>
     </div>
   );

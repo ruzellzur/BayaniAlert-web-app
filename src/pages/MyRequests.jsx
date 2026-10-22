@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 export default function MyRequests() {
   const navigate = useNavigate();
-  const { requests, resources } = useApp();
+  const { requests } = useApp();
   const [tab, setTab] = useState('sent');
   const [search, setSearch] = useState('');
 
@@ -19,7 +19,7 @@ export default function MyRequests() {
   );
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter">
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
@@ -40,24 +40,14 @@ export default function MyRequests() {
         placeholder="Search your requests…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        style={{
-          width: '100%',
-          marginBottom: 12,
-          padding: '11px 14px',
-          borderRadius: 12,
-          border: '1.5px solid var(--border)',
-          background: 'var(--surface)',
-          color: 'var(--ink)',
-          fontFamily: 'var(--font-body)',
-          fontSize: '13.5px'
-        }}
-      />
+              className="search-input"
+            />
 
       {/* Sent Tab */}
       {tab === 'sent' && (
         <div className="card">
           {filteredSentRequests.length === 0 ? (
-            <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>
+            <p className="small muted center-text" style={{ padding: '20px 0' }}>
               No requests sent yet
             </p>
           ) : (
@@ -80,7 +70,7 @@ export default function MyRequests() {
       {tab === 'received' && (
         <div className="card">
           {receivedRequests.length === 0 ? (
-            <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>
+            <p className="small muted center-text" style={{ padding: '20px 0' }}>
               No requests received
             </p>
           ) : (
@@ -101,70 +91,19 @@ export default function MyRequests() {
       )}
 
       <style>{`
-        .topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
-        }
-
         .req-card {
-          display: flex;
-          justify-content: space-between;
           align-items: center;
-          gap: 10px;
-          padding: 14px 0;
-          border-top: 1px solid var(--border);
         }
-
-        .req-card:first-child {
-          border-top: none;
-          padding-top: 0;
-        }
-
-        .req-card .name {
-          font-weight: 600;
-          font-size: 13.5px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .req-card .meta {
-          font-size: 11.5px;
-          color: var(--ink-soft);
-          margin-top: 2px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .status-badge {
-          padding: 4px 10px;
-          border-radius: 8px;
-          font-size: 11px;
-          font-weight: 600;
-          white-space: nowrap;
+        .req-card .req-actions {
+          display: flex;
+          gap: 6px;
           flex-shrink: 0;
         }
-
-        .status-badge.pending {
-          background: var(--surface-alt);
-          color: var(--ink-soft);
+        .search-input {
+          margin-bottom: 14px;
         }
+        .empty-state { padding: 30px 16px; }
 
-        .status-badge.accepted,
-        .status-badge.approved {
-          background: var(--safe);
-          color: #fff;
-        }
-
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
-        }
       `}</style>
     </div>
   );

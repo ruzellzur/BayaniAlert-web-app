@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 export default function MessageThread() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { resources, user } = useApp();
+  const { resources } = useApp();
   const [message, setMessage] = useState('');
 
   // Convert string ID from URL to number for matching
@@ -21,15 +21,24 @@ export default function MessageThread() {
 
   if (!resource) {
     return (
-      <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+      <div className="screen-enter">
         <div className="topbar">
           <div className="row" style={{ gap: 12 }}>
             <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/board')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
             <h2 style={{ fontSize: 17 }}>Messages</h2>
           </div>
         </div>
-        <div className="card" style={{ marginTop: 20, textAlign: 'center' }}>
-          <p className="muted">Conversation not found</p>
+        <div className="card" style={{ marginTop: 20 }}>
+          <div className="empty-state">
+            <span className="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>
+              </svg>
+            </span>
+            <h4>Conversation not found</h4>
+            <p>This message thread is no longer available. Head back to the board to start a new one.</p>
+            <button className="btn btn-accent btn-sm" style={{ marginTop: 6 }} onClick={() => navigate('/board')}>Back to board</button>
+          </div>
         </div>
       </div>
     );
@@ -52,7 +61,7 @@ export default function MessageThread() {
   };
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter">
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
@@ -84,53 +93,43 @@ export default function MessageThread() {
       </div>
 
       <style>{`
-        .topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
-        }
         .thread-body {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
           min-height: 260px;
-          padding: 4px 2px 12px;
+          padding: 4px 2px 14px;
         }
         .msg {
           display: flex;
           flex-direction: column;
-          max-width: 75%;
+          max-width: 76%;
+          animation: popIn 0.28s var(--ease) both;
         }
-        .msg-user {
-          align-self: flex-end;
-          align-items: flex-end;
-        }
-        .msg-owner {
-          align-self: flex-start;
-          align-items: flex-start;
-        }
+        .msg-user { align-self: flex-end; align-items: flex-end; }
+        .msg-owner { align-self: flex-start; align-items: flex-start; }
         .msg-bubble {
-          padding: 10px 14px;
-          border-radius: 14px;
+          padding: 11px 15px;
+          border-radius: 16px;
           font-size: 13.5px;
           line-height: 1.45;
+          box-shadow: var(--card-shadow);
         }
         .msg-user .msg-bubble {
           background: var(--grad-primary);
           color: var(--on-strong);
-          border-bottom-right-radius: 4px;
+          border-bottom-right-radius: 5px;
         }
         .msg-owner .msg-bubble {
           background: var(--surface);
           border: 1px solid var(--border);
-          border-bottom-left-radius: 4px;
+          border-bottom-left-radius: 5px;
         }
         .msg-time {
           font-size: 10px;
           color: var(--ink-soft);
-          margin-top: 3px;
+          margin-top: 4px;
+          font-weight: 600;
         }
         .thread-input-row {
           display: flex;
@@ -138,24 +137,25 @@ export default function MessageThread() {
           position: sticky;
           bottom: 0;
           background: var(--bg);
-          padding-top: 8px;
+          padding-top: 10px;
         }
         .thread-input-row input {
           flex: 1;
-          padding: 11px 14px;
-          border-radius: 12px;
+          padding: 12px 14px;
+          border-radius: 14px;
           border: 1.5px solid var(--border);
           background: var(--surface);
           color: var(--ink);
           font-family: var(--font-body);
           font-size: 13.5px;
+          transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .thread-input-row input:focus {
+          outline: none;
+          border-color: var(--accent);
+          box-shadow: 0 0 0 4px var(--accent-soft);
         }
 
-        @media (min-width: 900px) {
-          .mobile-back {
-            display: none;
-          }
-        }
       `}</style>
     </div>
   );

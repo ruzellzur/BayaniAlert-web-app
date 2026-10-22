@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 export default function Map() {
   const navigate = useNavigate();
   const { evacCenters } = useApp();
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter">
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
@@ -47,14 +47,23 @@ export default function Map() {
               <rect x="150" y="115" width="22" height="18" rx="2" fill="#C7D2CB"/>
               <rect x="200" y="85" width="30" height="22" rx="2" fill="#C7D2CB"/>
               <rect x="40" y="60" width="24" height="18" rx="2" fill="#C7D2CB"/>
-              <circle cx="95" cy="107" r="9" fill="url(#mapDanger)"/>
-              <text x="95" y="111" fontSize="10" fill="#fff" textAnchor="middle" fontFamily="Work Sans, sans-serif" fontWeight="700">E</text>
-              <circle cx="215" cy="94" r="9" fill="url(#mapDanger)"/>
-              <text x="215" y="98" fontSize="10" fill="#fff" textAnchor="middle" fontFamily="Work Sans, sans-serif" fontWeight="700">E</text>
+              <g className="map-pulse">
+                <circle cx="95" cy="107" r="16" fill="url(#mapDanger)" opacity="0.28"/>
+                <circle cx="95" cy="107" r="9" fill="url(#mapDanger)"/>
+                <text x="95" y="111" fontSize="10" fill="#fff" textAnchor="middle" fontFamily="Work Sans, sans-serif" fontWeight="700">E</text>
+              </g>
+              <g className="map-pulse mp-2">
+                <circle cx="215" cy="94" r="16" fill="url(#mapDanger)" opacity="0.28"/>
+                <circle cx="215" cy="94" r="9" fill="url(#mapDanger)"/>
+                <text x="215" y="98" fontSize="10" fill="#fff" textAnchor="middle" fontFamily="Work Sans, sans-serif" fontWeight="700">E</text>
+              </g>
               <circle cx="150" cy="180" r="7" fill="url(#mapAccent)"/>
               <circle cx="60" cy="150" r="7" fill="url(#mapAccent)"/>
               <circle cx="230" cy="170" r="7" fill="url(#mapAccent)"/>
-              <circle cx="130" cy="60" r="6" fill="url(#mapInk)" stroke="#fff" strokeWidth="2"/>
+              <g className="map-pulse mp-3">
+                <circle cx="130" cy="60" r="14" fill="url(#mapInk)" opacity="0.26"/>
+                <circle cx="130" cy="60" r="6" fill="url(#mapInk)" stroke="#fff" strokeWidth="2"/>
+              </g>
             </svg>
           </div>
 
@@ -87,14 +96,22 @@ export default function Map() {
           {evacCenters.map((center, i) => (
             <div
               key={i}
-              className="card row between"
+              className="card card-hover evac-row"
               onClick={() => navigate(`/evac/${i}`)}
-              style={{ cursor: 'pointer', marginBottom: i < evacCenters.length - 1 ? '10px' : 0 }}
             >
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>{center.name}</div>
+                <div className="evac-name">{center.name}</div>
                 <div className="muted small" style={{ marginTop: 3 }}>
                   {center.distLabel} · {center.cap} / {center.max} capacity
+                </div>
+                <div className="cap-bar" style={{ marginTop: 10 }}>
+                  <div
+                    className="cap-fill"
+                    style={{
+                      width: `${(center.cap / center.max) * 100}%`,
+                      background: center.cap / center.max > 0.9 ? 'var(--grad-danger)' : 'var(--grad-safe)'
+                    }}
+                  ></div>
                 </div>
               </div>
               <button
@@ -112,34 +129,42 @@ export default function Map() {
       </div>
 
       <style>{`
-        .topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
-        }
         .map-grid {
           display: block;
         }
         .map-wrap {
           position: relative;
-          border-radius: 20px;
+          border-radius: 22px;
           overflow: hidden;
           border: 1px solid var(--border);
           background: #DCE9E0;
           aspect-ratio: 1/1.05;
+          box-shadow: var(--shadow);
         }
         .map-wrap svg {
           width: 100%;
           height: 100%;
           display: block;
         }
+        .map-pulse {
+          transform-origin: center;
+          transform-box: fill-box;
+          animation: mapPing 2.6s ease-out infinite;
+        }
+        .map-pulse.mp-2 { animation-delay: 0.9s; }
+        .map-pulse.mp-3 { animation-delay: 1.7s; }
+        @keyframes mapPing {
+          0%   { transform: scale(0.72); opacity: 0.9; }
+          70%  { transform: scale(1.35); opacity: 0; }
+          100% { transform: scale(1.35); opacity: 0; }
+        }
+
         .legend {
           display: flex;
           flex-wrap: wrap;
-          gap: 14px;
-          margin-top: 14px;
+          justify-content: center;
+          gap: 10px;
+          margin-top: 16px;
         }
         .legend .item {
           display: flex;
@@ -148,24 +173,39 @@ export default function Map() {
           font-size: 12px;
           color: var(--ink-soft);
           font-weight: 600;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          padding: 6px 12px;
         }
         .legend .sw {
           width: 11px;
           height: 11px;
           border-radius: 4px;
+          flex-shrink: 0;
         }
 
+        .evac-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          margin-bottom: 12px;
+        }
+        .evac-row:last-child { margin-bottom: 0; }
+        .evac-row > div:first-child { flex: 1; min-width: 0; }
+        .evac-name { font-weight: 600; font-size: 14px; }
+
         @media (min-width: 900px) {
-          .topbar {
-            padding: 26px 0 20px;
-          }
           .map-grid {
             display: grid;
             grid-template-columns: 1.4fr 1fr;
-            gap: 26px;
+            gap: 30px;
             align-items: start;
           }
+          .legend { justify-content: flex-start; }
         }
+
       `}</style>
     </div>
   );

@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import { HomeIcon, BoardIcon, MapIcon, CheckinIcon, AnnounceIcon, ProfileIcon, LogoutIcon } from './icons';
 import Brand from './Brand';
 
@@ -41,14 +41,17 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="side-foot">
-        <div className="side-house" onClick={handleLogout} style={{ cursor: 'pointer' }}>
+        <div className="side-house">
           <span className="av">{user.initials}</span>
-          <div>
+          <div className="side-house-info">
             <div className="nm">{user.name}</div>
             <div className="hh">
               {user.role === 'resident' ? `Household ${user.household}` : user.position}
             </div>
           </div>
+          <button className="side-logout" onClick={handleLogout} aria-label="Log out">
+            <LogoutIcon />
+          </button>
         </div>
       </div>
 
@@ -103,22 +106,41 @@ export function Sidebar() {
           text-align: left;
           width: 100%;
           text-decoration: none;
+          position: relative;
+          transition: all 0.2s var(--ease);
         }
         .side-link svg {
           width: 19px;
           height: 19px;
           flex-shrink: 0;
+          transition: transform 0.24s var(--ease);
         }
         .side-link:hover {
           background: var(--surface-alt);
+          color: var(--ink);
+          transform: translateX(3px);
+        }
+        .side-link:hover svg {
+          transform: scale(1.14);
         }
         .side-link.active {
           background: var(--grad-primary);
           color: var(--on-strong);
-          box-shadow: 0 4px 14px rgba(27,42,74,0.25);
+          box-shadow: 0 8px 20px -8px rgba(21,35,61,0.75);
+        }
+        .side-link.active::before {
+          content: "";
+          position: absolute;
+          left: -16px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 4px;
+          height: 22px;
+          border-radius: 0 999px 999px 0;
+          background: var(--grad-accent);
         }
         .side-link.active svg {
-          stroke: var(--accent);
+          stroke: var(--accent-2);
         }
         .side-foot {
           margin-top: auto;
@@ -129,16 +151,40 @@ export function Sidebar() {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 8px 10px;
-          border-radius: 12px;
+          padding: 9px 10px;
+          border-radius: 14px;
+          cursor: pointer;
+          transition: all 0.2s var(--ease);
         }
         .side-house:hover {
           background: var(--surface-alt);
+          transform: translateY(-2px);
+        }
+        .side-house-info { flex: 1; min-width: 0; }
+        .side-logout {
+          width: 32px;
+          height: 32px;
+          border-radius: 10px;
+          border: none;
+          background: transparent;
+          color: var(--ink-soft);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: all 0.2s var(--ease);
+        }
+        .side-logout svg { width: 17px; height: 17px; }
+        .side-logout:hover {
+          background: var(--danger-soft);
+          color: var(--danger);
+          transform: translateX(2px);
         }
         .side-house .av {
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
+          width: 36px;
+          height: 36px;
+          border-radius: 12px;
           background: var(--grad-cool);
           color: #fff;
           display: flex;
@@ -147,6 +193,8 @@ export function Sidebar() {
           font-family: var(--font-display);
           font-weight: 600;
           font-size: 13px;
+          box-shadow: var(--glow-cool);
+          flex-shrink: 0;
         }
         .side-house .nm {
           font-size: 12.5px;
@@ -155,6 +203,27 @@ export function Sidebar() {
         .side-house .hh {
           font-size: 11px;
           color: var(--ink-soft);
+        }
+        .side-house-info { flex: 1; min-width: 0; }
+        .side-logout {
+          width: 32px;
+          height: 32px;
+          border-radius: 10px;
+          border: none;
+          background: transparent;
+          color: var(--ink-soft);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: all 0.2s var(--ease);
+        }
+        .side-logout svg { width: 17px; height: 17px; }
+        .side-logout:hover {
+          background: var(--danger-soft);
+          color: var(--danger);
+          transform: translateX(2px);
         }
 
         @media (min-width: 900px) {
@@ -202,12 +271,15 @@ export function AdminSidebar() {
         ))}
       </nav>
       <div className="side-foot">
-        <div className="side-house" onClick={handleLogout} style={{ cursor: 'pointer' }}>
+        <div className="side-house">
           <span className="av">SA</span>
-          <div>
+          <div className="side-house-info">
             <div className="nm">System admin</div>
-            <div className="hh">Log out</div>
+            <div className="hh">Barangay San Isidro</div>
           </div>
+          <button className="side-logout" onClick={handleLogout} aria-label="Log out">
+            <LogoutIcon />
+          </button>
         </div>
       </div>
 
@@ -312,6 +384,27 @@ export function AdminSidebar() {
           font-size: 11px;
           color: var(--ink-soft);
         }
+        .side-house-info { flex: 1; min-width: 0; }
+        .side-logout {
+          width: 32px;
+          height: 32px;
+          border-radius: 10px;
+          border: none;
+          background: transparent;
+          color: var(--ink-soft);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: all 0.2s var(--ease);
+        }
+        .side-logout svg { width: 17px; height: 17px; }
+        .side-logout:hover {
+          background: var(--danger-soft);
+          color: var(--danger);
+          transform: translateX(2px);
+        }
       `}</style>
     </aside>
   );
@@ -342,55 +435,6 @@ export function BottomNav() {
           {item.label}
         </NavLink>
       ))}
-
-      <style>{`
-        .tabbar {
-          position: fixed;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          display: flex;
-          justify-content: space-around;
-          align-items: stretch;
-          background: var(--surface);
-          border-top: 1px solid var(--border);
-          padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
-          z-index: 50;
-        }
-        .tab {
-          background: none;
-          border: none;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          color: var(--ink-soft);
-          font-size: 10.5px;
-          font-weight: 600;
-          padding: 6px 4px;
-          border-radius: 10px;
-          cursor: pointer;
-          flex: 1;
-          text-decoration: none;
-        }
-        .tab svg {
-          width: 21px;
-          height: 21px;
-        }
-        .tab.active {
-          background: linear-gradient(180deg, rgba(226,154,59,0.14), transparent);
-          color: var(--accent);
-        }
-        .tab.active svg {
-          stroke: var(--accent);
-        }
-
-        @media (min-width: 900px) {
-          .tabbar {
-            display: none !important;
-          }
-        }
-      `}</style>
     </nav>
   );
 }
@@ -418,55 +462,6 @@ export function AdminBottomNav() {
           {item.label}
         </NavLink>
       ))}
-
-      <style>{`
-        .tabbar {
-          position: fixed;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          display: flex;
-          justify-content: space-around;
-          align-items: stretch;
-          background: var(--surface);
-          border-top: 1px solid var(--border);
-          padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
-          z-index: 50;
-        }
-        .tab {
-          background: none;
-          border: none;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          color: var(--ink-soft);
-          font-size: 10.5px;
-          font-weight: 600;
-          padding: 6px 4px;
-          border-radius: 10px;
-          cursor: pointer;
-          flex: 1;
-          text-decoration: none;
-        }
-        .tab svg {
-          width: 21px;
-          height: 21px;
-        }
-        .tab.active {
-          background: linear-gradient(180deg, rgba(226,154,59,0.14), transparent);
-          color: var(--accent);
-        }
-        .tab.active svg {
-          stroke: var(--accent);
-        }
-
-        @media (min-width: 900px) {
-          .tabbar {
-            display: none !important;
-          }
-        }
-      `}</style>
     </nav>
   );
 }
