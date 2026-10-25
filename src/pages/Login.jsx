@@ -15,16 +15,16 @@ export default function Login() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // const [position, setPosition] = useState('Kagawad');
+  const [position, setPosition] = useState('Kagawad');
 
-  // const positions = [
-  //   'Barangay Captain',
-  //   'Kagawad',
-  //   'SK Chairperson',
-  //   'Barangay Tanod',
-  //   'BDRRM Officer',
-  //   'Rescue/Response Team',
-  // ];
+  const positions = [
+    'Barangay Captain',
+    'Kagawad',
+    'SK Chairperson',
+    'Barangay Tanod',
+    'BDRRM Officer',
+    'Rescue/Response Team',
+  ];
 
   const getIdLabel = () => (role === 'admin' ? 'Admin username' : 'Mobile number');
   const getIdPlaceholder = () => (role === 'admin' ? 'e.g. adminjuan' : 'e.g. 0917 123 4567');

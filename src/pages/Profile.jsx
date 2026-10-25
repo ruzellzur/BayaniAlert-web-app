@@ -132,7 +132,7 @@ export default function Profile() {
           <span className="val">›</span>
         </div>
         {isResident && (
-          <div className="list-item" onClick={() => navigate('/edit-profile')} style={{ cursor: 'pointer' }}>
+          <div className="list-item" onClick={() => navigate('/household-setup')} style={{ cursor: 'pointer' }}>
             <span>Edit household info</span>
             <span className="val">›</span>
           </div>

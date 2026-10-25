@@ -23,13 +23,16 @@ import EvacDetail from './pages/EvacDetail';
 import MyRequests from './pages/MyRequests';
 import EditProfile from './pages/EditProfile';
 import Directory from './pages/Directory';
+import HouseholdSetup from './pages/HouseholdSetup';
 import './index.css';
 
-function ProtectedRoute({ children, adminOnly = false }) {
+function ProtectedRoute({ children, adminOnly = false, allowNoHousehold = false }) {
   const { user, loading } = useAuth();
-  if (loading) return null;            // wait for the saved session check
+  if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/home" replace />;
+  if (user.role === 'resident' && !user.household && !allowNoHousehold)
+    return <Navigate to="/household-setup" replace />;
   return children;
 }
 
@@ -83,6 +86,7 @@ function AppRoutes() {
         <Route path="/requests" element={<ProtectedRoute><MyRequests /></ProtectedRoute>} />
         <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
         <Route path="/directory" element={<ProtectedRoute><Directory /></ProtectedRoute>} />
+        <Route path="/household-setup" element={<ProtectedRoute allowNoHousehold><HouseholdSetup /></ProtectedRoute>} />
 
         {/* Admin routes */}
         <Route path="/admin/approvals" element={<ProtectedRoute adminOnly><AdminApprovals /></ProtectedRoute>} />

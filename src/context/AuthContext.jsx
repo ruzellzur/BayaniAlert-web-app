@@ -40,23 +40,23 @@ function toEmail(identifier) {
 const initialsOf = (name) =>
   (name || '').trim().split(/\s+/).filter(Boolean)
     .map((w) => w[0]).join('').toUpperCase().slice(0, 2);
-    
+
 // DB row -> the shape the prototype's pages already expect from `user`.
 const shapeUser = (p) => ({
   id: p.id,
   role: p.role, // 'resident' | 'official' | 'admin'
   name: p.full_name,
-  officialName: p.full_name,
   phone: p.phone,
   username: p.username,
   barangayId: p.barangay_id,
   purokId: p.purok_id,
   position: p.official_position ?? null,
   officialName: p.role === 'official' && p.official_position ? `${p.official_position} ${p.full_name}` : p.full_name,
-  permissions: p.role === 'official' ? permsFor(p.position) : null,
-  initials: initialsOf(p.full_name),
+  permissions: p.role === 'official' ? permsFor(p.official_position) : null,  initials: initialsOf(p.full_name),
   barangayName: p.barangay?.name ?? null,
   purokName: p.purok?.name ?? null,
+  household: Array.isArray(p.household) ? p.household[0] ?? null : p.household ?? null,
+  householdNo: (Array.isArray(p.household) ? p.household[0] : p.household)?.household_no ?? null,
 });
 
 // ------------------------------------------------------------------------
@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
   const hydrate = useCallback(async (authUser) => {
     const { data: p, error } = await supabase
       .from('profiles')
-      .select('*, barangay:barangays(name), purok:puroks(name)')      
+      .select('*, barangay:barangays(name), purok:puroks(name), household:households(*, emergency_contacts(*))')      
       .eq('id', authUser.id)
       .single();
 
@@ -96,6 +96,11 @@ export function AuthProvider({ children }) {
     setUser(u);
     return { user: u };
   }, []);
+
+    const refreshUser = async () => {
+    const { data } = await supabase.auth.getUser();
+    if (data?.user) await hydrate(data.user);
+  };
 
   // Restore a saved session on page load.
   useEffect(() => {
@@ -185,7 +190,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const value = { user, loading, signIn, signUp, signOut };
+  const value = { user, loading, signIn, signUp, signOut, refreshUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
