@@ -59,8 +59,6 @@ export default function ResourceDetail() {
   const ownerInitials = ownerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   const pinned = hasPin(resource);
 
-  const hasPin = typeof resource.lat === 'number' && typeof resource.lng === 'number';
-
   return (
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
       {/* Topbar */}
