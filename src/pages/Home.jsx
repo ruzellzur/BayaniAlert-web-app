@@ -1,13 +1,23 @@
-import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext'; // data still mocked for now
 import Brand from '../components/Brand';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, resources, announcements, evacCenters, households } = useApp();
+  const { user } = useAuth();
+  const { announcements, households } = useApp();
+
+  // Admins have no household or resident dashboard; send them to their own area.
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin/approvals" replace />;
+  }
 
   const isOfficial = user?.role === 'official';
-  const isAdmin = user?.role === 'admin';
+  // Position-based permissions (see POSITION_PERMS in AuthContext / can_do() in SQL)
+  const canAnnounce = !!user?.permissions?.announce;
+  const canRescue = !!user?.permissions?.rescue;
+  const showManage = isOfficial && canAnnounce;
 
   // Filter announcements for display
   const allAnnouncements = [...announcements, ...[
@@ -19,7 +29,6 @@ export default function Home() {
   // Household stats for officials
   const safeCount = households.filter(h => h.status === 'safe').length;
   const helpCount = households.filter(h => h.status === 'help').length;
-  const noResponseCount = households.filter(h => h.status === 'none').length;
   const respondedCount = safeCount + helpCount;
 
   const getCategoryIcon = (cat) => {
@@ -39,7 +48,7 @@ export default function Home() {
       <div className="topbar">
         <Brand />
         <div className="topbar-right">
-          <span className="brgy-pill">Brgy. San Isidro</span>
+          {user?.barangayName && <span className="brgy-pill">{user.barangayName}</span>}
           <button className="icon-btn" onClick={() => alert('No new notifications')} aria-label="Notifications">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -47,7 +56,7 @@ export default function Home() {
             </svg>
           </button>
           <div className="top-avatar" onClick={() => navigate('/profile')}>
-            <span>{user?.initials || 'RG'}</span>
+            <span>{user?.initials}</span>
           </div>
         </div>
       </div>
@@ -105,7 +114,7 @@ export default function Home() {
                   <path d="M16 8a4 4 0 0 1 0 8"/>
                 </svg>
               </span>
-              <span>{isOfficial ? 'Post notice' : 'Notices'}</span>
+              <span>{showManage ? 'Post notice' : 'Notices'}</span>
             </div>
           </div>
 
@@ -126,16 +135,16 @@ export default function Home() {
         </div>
 
         <div className="dash-col">
-          {isOfficial ? (
+          {/* Check-in overview: all approved officials can view it */}
+          {isOfficial && (
             <>
-              {/* Check-in Overview for Officials */}
               <div className="section-label" style={{ marginTop: 0 }}>
                 <h3>Check-in overview</h3>
                 <a onClick={() => navigate('/checkin')}>View board</a>
               </div>
               <div className="card" style={{ marginBottom: 16 }}>
                 <div className="row between">
-                  <span style={{ fontWeight: 600, fontSize: '13.5px' }}>Purok 3 households</span>
+                  <span style={{ fontWeight: 600, fontSize: '13.5px' }}>{user?.purokName || 'All puroks'} households</span>
                   <span className="small muted">{respondedCount} / {households.length} responded</span>
                 </div>
                 <div className="cap-bar" style={{ marginTop: 10 }}>
@@ -143,11 +152,18 @@ export default function Home() {
                 </div>
                 <div className="row between" style={{ marginTop: 14 }}>
                   <span className="small" style={{ color: 'var(--danger)', fontWeight: 600 }}>{helpCount} households need help</span>
-                  <button className="btn btn-danger btn-sm" onClick={() => navigate('/checkin')}>Respond</button>
+                  {/* Only rescue-capable positions can act on help requests */}
+                  {canRescue && (
+                    <button className="btn btn-danger btn-sm" onClick={() => navigate('/checkin')}>Respond</button>
+                  )}
                 </div>
               </div>
+            </>
+          )}
 
-              {/* Your Announcements */}
+          {showManage ? (
+            <>
+              {/* Officials who can announce: manage view */}
               <div className="section-label" style={{ marginTop: 0 }}>
                 <h3>Your announcements</h3>
                 <a onClick={() => navigate('/announcements')}>Manage</a>
@@ -166,7 +182,7 @@ export default function Home() {
             </>
           ) : (
             <>
-              {/* Announcements for Residents */}
+              {/* Residents, and officials without announce permission: read-only view */}
               <div className="section-label" style={{ marginTop: 0 }}>
                 <h3>Barangay announcements</h3>
                 <a onClick={() => navigate('/announcements')}>See all</a>

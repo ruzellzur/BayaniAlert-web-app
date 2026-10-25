@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Welcome from './pages/Welcome';
 import Login from './pages/Login';
@@ -25,22 +26,17 @@ import Directory from './pages/Directory';
 import './index.css';
 
 function ProtectedRoute({ children, adminOnly = false }) {
-  const { user } = useApp();
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (adminOnly && user.role !== 'admin') {
-    return <Navigate to="/home" replace />;
-  }
-
+  const { user, loading } = useAuth();
+  if (loading) return null;            // wait for the saved session check
+  if (!user) return <Navigate to="/login" replace />;
+  if (adminOnly && user.role !== 'admin') return <Navigate to="/home" replace />;
   return children;
 }
 
 function PublicRoute({ children }) {
-  const { user } = useApp();
+  const { user, loading } = useAuth();
 
+  if (loading) return null;            // wait for the saved session check
   if (user) {
     return <Navigate to="/home" replace />;
   }
@@ -49,7 +45,9 @@ function PublicRoute({ children }) {
 }
 
 function AppRoutes() {
-  const { user } = useApp();
+  const { user, loading } = useAuth();
+
+  if (loading) return null;            // wait for the saved session check
 
   // Add authenticated class to body
   if (user) {
@@ -100,10 +98,12 @@ function AppRoutes() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AppProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AppProvider>
+    </AuthProvider>
   </StrictMode>
 );
