@@ -2,6 +2,17 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { HomeIcon, BoardIcon, MapIcon, CheckinIcon, AnnounceIcon, ProfileIcon, LogoutIcon } from './icons';
 import Brand from './Brand';
+import { useMessages } from '../context/MessagesContext';
+
+// Same stroke style as the other nav icons. Swap for one in ./icons if you add it there.
+const InboxIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" />
+  </svg>
+);
+
+const NavBadge = ({ count }) =>
+  count > 0 ? <span className="nav-badge">{count > 99 ? '99+' : count}</span> : null;
 
 // Shared by Sidebar and AdminSidebar (the admin copy used to be missing the
 // display:none, so it showed on phones too).
@@ -61,6 +72,20 @@ const SIDEBAR_CSS = `
     width: 19px;
     height: 19px;
     flex-shrink: 0;
+  }
+  .side-link .nav-badge {
+    margin-left: auto;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .side-link:hover {
     background: var(--surface-alt);
@@ -149,6 +174,23 @@ const TABBAR_CSS = `
     cursor: pointer;
     flex: 1;
     text-decoration: none;
+    position: relative;
+  }
+  .tab .nav-badge {
+    position: absolute;
+    top: 0;
+    left: calc(50% + 4px);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .tab svg {
     width: 21px;
@@ -182,6 +224,7 @@ function useLogout() {
 
 export function Sidebar() {
   const { user } = useAuth();
+  const { unreadCount } = useMessages();
   const navigate = useNavigate();
   const handleLogout = useLogout();
 
@@ -190,6 +233,7 @@ export function Sidebar() {
   const navItems = [
     { to: '/home', icon: <HomeIcon />, label: 'Home' },
     { to: '/board', icon: <BoardIcon />, label: 'Resource board' },
+    { to: '/messages', icon: <InboxIcon />, label: 'Messages', badge: unreadCount },
     { to: '/map', icon: <MapIcon />, label: 'Map' },
     { to: '/checkin', icon: <CheckinIcon />, label: 'Safety check-in' },
     { to: '/announcements', icon: <AnnounceIcon />, label: 'Announcements' },
@@ -215,6 +259,7 @@ export function Sidebar() {
           >
             {item.icon}
             {item.label}
+            <NavBadge count={item.badge} />
           </NavLink>
         ))}
       </nav>
@@ -288,12 +333,14 @@ export function AdminSidebar() {
 
 export function BottomNav() {
   const { user } = useAuth();
+  const { unreadCount } = useMessages();
 
   if (!user || user.role === 'admin') return null;
 
   const navItems = [
     { to: '/home', icon: <HomeIcon />, label: 'Home' },
     { to: '/board', icon: <BoardIcon />, label: 'Board' },
+    { to: '/messages', icon: <InboxIcon />, label: 'Inbox', badge: unreadCount },
     { to: '/map', icon: <MapIcon />, label: 'Map' },
     { to: '/checkin', icon: <CheckinIcon />, label: 'Check-in' },
     { to: '/announcements', icon: <AnnounceIcon />, label: 'Alerts' },
@@ -311,6 +358,7 @@ export function BottomNav() {
         >
           {item.icon}
           {item.label}
+          <NavBadge count={item.badge} />
         </NavLink>
       ))}
 

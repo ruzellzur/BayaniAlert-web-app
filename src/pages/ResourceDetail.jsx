@@ -52,7 +52,8 @@ export default function ResourceDetail() {
   };
 
   const handleMessage = () => {
-    navigate(`/thread/${id}`);
+    // Thread page works out the owner from the listing id.
+    navigate(`/thread/${resource.id}`);
   };
 
   const ownerName = resource.ownerName;
@@ -153,7 +154,14 @@ export default function ResourceDetail() {
       >
         {resource.isMine ? 'This is your listing' : 'Request this item'}
       </button>
-      <button className="btn btn-ghost btn-block" style={{ marginTop: 10 }} onClick={handleMessage}>Message owner</button>
+      <button
+        className="btn btn-ghost btn-block"
+        style={{ marginTop: 10 }}
+        onClick={handleMessage}
+        disabled={resource.isMine}
+      >
+        Message owner
+      </button>
 
       <style>{`
         .topbar {

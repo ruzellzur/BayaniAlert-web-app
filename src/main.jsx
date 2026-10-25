@@ -20,6 +20,7 @@ import AdminPuroks from './pages/admin/AdminPuroks';
 import AdminEvac from './pages/admin/AdminEvac';
 import ResourceDetail from './pages/ResourceDetail';
 import MessageThread from './pages/MessageThread';
+import Inbox from './pages/Inbox';
 import WeatherHistory from './pages/WeatherHistory';
 import EvacDetail from './pages/EvacDetail';
 import MyRequests from './pages/MyRequests';
@@ -28,6 +29,7 @@ import Directory from './pages/Directory';
 import HouseholdSetup from './pages/EditHousehold';
 import './index.css';
 import { EvacProvider } from './context/EvacContext';
+import { MessagesProvider } from './context/MessagesContext';
 
 function ProtectedRoute({ children, adminOnly = false, allowNoHousehold = false }) {
   const { user, loading } = useAuth();
@@ -83,6 +85,7 @@ function AppRoutes() {
         <Route path="/announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/resource/:id" element={<ProtectedRoute><ResourceDetail /></ProtectedRoute>} />
+        <Route path="/messages" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
         <Route path="/thread/:id" element={<ProtectedRoute><MessageThread /></ProtectedRoute>} />
         <Route path="/weather-history" element={<ProtectedRoute><WeatherHistory /></ProtectedRoute>} />
         <Route path="/evac/:id" element={<ProtectedRoute><EvacDetail /></ProtectedRoute>} />
@@ -106,17 +109,19 @@ function AppRoutes() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <PurokProvider>
-        <EvacProvider>
-          <ResourceProvider> 
-            <AppProvider>
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
-            </AppProvider>
-          </ResourceProvider> 
-        </EvacProvider>
-      </PurokProvider>
+      <MessagesProvider>
+        <PurokProvider>
+          <EvacProvider>
+            <ResourceProvider>
+              <AppProvider>
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              </AppProvider>
+            </ResourceProvider>
+          </EvacProvider>
+        </PurokProvider>
+      </MessagesProvider>
     </AuthProvider>
   </StrictMode> 
 );
