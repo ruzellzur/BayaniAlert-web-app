@@ -1,8 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useResources } from '../context/ResourceContext';
+import LocationPicker from '../components/LocationPicker';
+import { approxCoord, describeDistance } from '../utils/geo';
 
 const CATEGORIES = ['power', 'water', 'tools', 'medicine', 'transport'];
+const FALLBACK_CENTER = [14.6507, 120.9726]; // only if the barangay has no center
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function Board() {
@@ -10,6 +14,7 @@ export default function Board() {
   const {
     resources, myRequests, incomingRequests, loading, error,
     addResource, requestItem, respondToRequest,
+    originSource, locate, locating, locateError,
   } = useResources();
 
   const [filter, setFilter] = useState('all');
@@ -58,25 +63,60 @@ export default function Board() {
     return matchesFilter && matchesSearch;
   });
 
+  const distOf = (r) => r.distance ?? Number.MAX_SAFE_INTEGER;
+  const visibleResources = [...filteredResources].sort((a, b) => distOf(a) - distOf(b));
+
   // ---- list a resource ---------------------------------------------------
+  const openListModal = () => {
+    // Start near the user's home so listing from home is quick. It's rounded (~110 m)
+    // because every neighbor will see this pin; they can drag it to the exact spot.
+    setLocation(
+      household ? { lat: approxCoord(household.lat), lng: approxCoord(household.lng) } : null
+    );
+    setGeoMsg('');
+    setShowModal(true);
+  };
+
   const closeListModal = () => {
     setShowModal(false);
     setFormData({ name: '', category: 'power', desc: '', location: '' });
+    setLocation(null);
+    setGeoMsg('');
     setErrors({});
+  };
+
+  const locateMe = () => {
+    setGeoMsg('');
+    if (!navigator.geolocation) {
+      setGeoMsg('Location is not available on this device. Tap the map instead.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setGeoMsg('Could not get your location. Tap the map to drop a pin instead.'),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name.trim()) {
-      setErrors({ name: 'Give your item a name first' });
+
+    const errs = {};
+    if (!formData.name.trim()) errs.name = 'Give your item a name first';
+    if (!location) errs.location = 'Pin the pickup spot on the map';
+    if (Object.keys(errs).length) {
+      setErrors(errs);
       return;
     }
+
     setSubmitting(true);
     const { error: err } = await addResource({
       name: formData.name,
       category: formData.category,
       desc: formData.desc,
       pickupNote: formData.location,
+      lat: location.lat,
+      lng: location.lng,
     });
     setSubmitting(false);
 
@@ -160,6 +200,13 @@ export default function Board() {
     };
     return icons[cat] || icons.tools;
   };
+
+  const { user } = useAuth();
+  const household = user?.household ?? null;
+  const mapCenter = user?.barangayCenter ?? FALLBACK_CENTER;
+
+  const [location, setLocation] = useState(null);
+  const [geoMsg, setGeoMsg] = useState('');
 
   return (
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
@@ -252,12 +299,25 @@ export default function Board() {
       {/* Resource List */}
       <div id="resList" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {loading && resources.length === 0 ? (
-          <p className="small muted" style={{ textAlign: 'center', marginTop: 18 }}>Loading items…</p>
+          <p className="small muted" style={{ marginTop: 6 }}>
+            {originSource === 'gps'
+              ? 'Distances from your current location'
+              : originSource === 'home'
+                ? 'Distances from your home'
+                : 'Set up your household or use your location to see distances'}
+            {' · '}
+            <a style={{ cursor: 'pointer', fontWeight: 600 }} onClick={locate}>
+              {locating ? 'Locating…' : originSource === 'gps' ? 'Update' : 'Use my location'}
+            </a>
+          </p>
+        ) : locateError ? (
+          <p className="error-text" style={{ marginTop: 4 }}>{locateError}</p>
         ) : filteredResources.length === 0 ? (
           <p className="small muted" style={{ textAlign: 'center', marginTop: 18 }}>No items match your search.</p>
         ) : (
-          filteredResources.map((res) => {
+          visibleResources.map((res) => {
             const action = getAction(res);
+            const label = describeDistance(res);
             return (
               <div
                 key={res.id}
@@ -277,7 +337,7 @@ export default function Board() {
                     {res.type === 'request' ? 'Needed by' : 'Shared by'} {res.owner}
                   </div>
                   <div className="res-foot">
-                    <span className="dist">{res.dist} away</span>
+                    <span className="dist">{label}</span>
                     {res.type === 'request' && !res.isMine ? (
                       <span className="tag-needs">Needs help</span>
                     ) : (
@@ -305,7 +365,7 @@ export default function Board() {
       {/* Add Resource Button */}
       <button
         className="btn btn-accent btn-block add-resource-btn"
-        onClick={() => setShowModal(true)}
+        onClick={openListModal}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ width: 18, height: 18 }}>
           <path d="M12 5v14M5 12h14"/>
@@ -422,13 +482,36 @@ export default function Board() {
               </div>
 
               <div className="field full">
-                <label>Pickup location</label>
+                <label>Pickup details (optional)</label>
                 <input
                   type="text"
-                  placeholder="Purok 3, near the chapel"
+                  placeholder="e.g. near the chapel, blue gate"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 />
+              </div>
+
+              <div className="field full">
+                <label>Pickup spot</label>
+                <LocationPicker
+                  value={location}
+                  onChange={(p) => {
+                    setLocation(p);
+                    setErrors((prev) => ({ ...prev, location: undefined }));
+                  }}
+                  center={mapCenter}
+                  height={220}
+                />
+                <div className="row between" style={{ marginTop: 8 }}>
+                  <p className="small muted">
+                    {location ? 'Drag the pin or tap the map to adjust.' : 'Tap the map to drop a pin.'}
+                  </p>
+                  <a className="small" style={{ cursor: 'pointer', fontWeight: 600 }} onClick={locateMe}>
+                    Use my location
+                  </a>
+                </div>
+                {geoMsg && <span className="error-text">{geoMsg}</span>}
+                {errors.location && <span className="error-text">{errors.location}</span>}
               </div>
 
               {errors.form && <span className="error-text" style={{ gridColumn: '1 / -1' }}>{errors.form}</span>}

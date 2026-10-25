@@ -53,6 +53,10 @@ const shapeUser = (p) => ({
   username: p.username,
   barangayId: p.barangay_id,
   barangayName: p.barangay?.name ?? null,   
+  barangayCenter:
+  p.barangay?.center_lat != null && p.barangay?.center_lng != null
+    ? [p.barangay.center_lat, p.barangay.center_lng]
+    : null,
   purokId: p.purok_id,
   position: p.official_position ?? null,
   officialName: p.role === 'official' && p.official_position ? `${p.official_position} ${p.full_name}` : p.full_name,
@@ -77,8 +81,7 @@ export function AuthProvider({ children }) {
   const hydrate = useCallback(async (authUser) => {
     const { data: p, error } = await supabase
       .from('profiles')
-      .select('*, barangay:barangays(name), purok:puroks(name), household:households(*, emergency_contacts(*))')      
-      .eq('id', authUser.id)
+      .select('*, barangay:barangays(name, center_lat, center_lng), purok:puroks(name), household:households(*, emergency_contacts(*))')      .eq('id', authUser.id)
       .single();
 
     if (error || !p) {

@@ -3,6 +3,7 @@ import {
 } from 'react';
 import { supabase } from '../config/apiConfig';
 import { useAuth } from './AuthContext';
+import { approxCoord, distanceMeters } from '../utils/geo';
 
 // Must match the CHECK constraints in the DB.
 export const RESOURCE_CATEGORIES = [
@@ -16,31 +17,13 @@ const ResourceContext = createContext(null);
 
 // ---- helpers -----------------------------------------------------------
 
-function distanceMeters(a, b) {
-  if (!a || !b || a.lat == null || a.lng == null || b.lat == null || b.lng == null) return null;
-  const R = 6371000;
-  const rad = (d) => (d * Math.PI) / 180;
-  const dLat = rad(b.lat - a.lat);
-  const dLng = rad(b.lng - a.lng);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
-
-function formatDistance(m) {
-  if (m == null) return 'Nearby';
-  if (m < 1000) return `${Math.max(10, Math.round(m / 10) * 10)} m`;
-  return `${(m / 1000).toFixed(1)} km`;
-}
-
 // listing row -> the shape Board / ResourceDetail already use.
-function toUi(row, owners, origin, me) {
+// Distance is NOT computed here; see `resourcesWithDistance` in the provider.
+function toUi(row, owners, me) {
   const isMine = row.owner_id === me?.id;
   const o = owners[row.owner_id];
   const ownerName = isMine ? 'You' : o?.name || 'A neighbor';
   const ownerPurok = isMine ? null : o?.purok ?? null;
-  const m = distanceMeters(origin, { lat: row.lat, lng: row.lng });
   return {
     id: row.id, // uuid string
     name: row.title,
@@ -51,7 +34,6 @@ function toUi(row, owners, origin, me) {
     ownerPurok,
     ownerId: row.owner_id,
     isMine,
-    dist: isMine ? 'You' : formatDistance(m),
     quantity: row.quantity,
     isLendable: row.is_lendable,
     type: row.listing_type,
@@ -118,9 +100,51 @@ export function ResourceProvider({ children }) {
   const [error, setError] = useState(null);
 
   const barangayId = user?.barangayId ?? null;
-  const origin = user?.household
-    ? { lat: user.household.lat, lng: user.household.lng }
-    : null;
+
+  // ---- where "near" is measured from ---------------------------------------
+  // 1) live GPS, only after the user taps "Use my location"
+  // 2) the household pin (no permission needed)
+  // 3) nothing: cards then show no distance instead of a made-up one
+  const hLat = user?.household?.lat;
+  const hLng = user?.household?.lng;
+  const home = useMemo(
+    () => (typeof hLat === 'number' && typeof hLng === 'number' ? { lat: hLat, lng: hLng } : null),
+    [hLat, hLng]
+  );
+
+  const [gps, setGps] = useState(null);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState('');
+
+  // Don't carry one person's GPS fix over to the next login
+  useEffect(() => {
+    setGps(null);
+    setLocateError('');
+  }, [user?.id]);
+
+  const origin = gps ?? home;
+  const originSource = gps ? 'gps' : home ? 'home' : null;
+
+  // Only ever call this from a button tap, so the permission prompt has context.
+  const locate = useCallback(() => {
+    setLocateError('');
+    if (!navigator.geolocation) {
+      setLocateError('Location is not available on this device.');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGps({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocating(false);
+      },
+      () => {
+        setLocateError('Could not get your location, so distances stay based on your home.');
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, []);
 
   // Names + purok come from public_profiles (RLS on profiles hides other
   // residents; the view exposes them for your own barangay). Returns
@@ -154,7 +178,7 @@ export function ResourceProvider({ children }) {
       return;
     }
     const names = await loadNames(rows.map((r) => r.owner_id));
-    setResources(rows.map((r) => toUi(r, names, origin, user)));
+    setResources(rows.map((r) => toUi(r, names, user)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, barangayId, loadNames]);
 
@@ -192,6 +216,17 @@ export function ResourceProvider({ children }) {
     refresh();
   }, [refresh]);
 
+  // Listings plus a numeric `distance` (meters, or null). Derived, so it updates
+  // the moment the household loads or GPS is turned on. No refetch needed.
+  const resourcesWithDistance = useMemo(
+    () =>
+      resources.map((r) => ({
+        ...r,
+        distance: r.isMine ? null : distanceMeters(origin, r),
+      })),
+    [resources, origin]
+  );
+
   // ---- listings: create ---------------------------------------------------
   // input: { name, category, desc, quantity?, isLendable?, type?, pickupNote?, lat?, lng? }
   // Returns { resource } or { error }.
@@ -210,6 +245,27 @@ export function ResourceProvider({ children }) {
 
     const type = LISTING_TYPES.includes(input.type) ? input.type : 'offer';
 
+    // Coordinates: use the pin if one was sent. Otherwise fall back to the owner's
+    // home, rounded (~110 m) because listings are visible to the whole barangay.
+    let lat;
+    let lng;
+    const sentLat = input.lat != null;
+    const sentLng = input.lng != null;
+    if (sentLat || sentLng) {
+      if (!sentLat || !sentLng) return { error: 'The pickup spot is incomplete. Please pin it again.' };
+      lat = Number(input.lat);
+      lng = Number(input.lng);
+      if (
+        !Number.isFinite(lat) || !Number.isFinite(lng) ||
+        Math.abs(lat) > 90 || Math.abs(lng) > 180
+      ) {
+        return { error: 'The pickup spot is not valid. Please pin it again.' };
+      }
+    } else {
+      lat = home ? approxCoord(home.lat) : null;
+      lng = home ? approxCoord(home.lng) : null;
+    }
+
     // resource_listings has no pickup-location column, so fold it into the description.
     const description = [input.desc?.trim(), input.pickupNote?.trim() && `Pickup: ${input.pickupNote.trim()}`]
       .filter(Boolean)
@@ -224,8 +280,8 @@ export function ResourceProvider({ children }) {
       description,
       quantity,
       is_lendable: input.isLendable ?? true,
-      lat: input.lat ?? origin?.lat ?? null,
-      lng: input.lng ?? origin?.lng ?? null,
+      lat,
+      lng,
     };
 
     const { data, error: err } = await supabase
@@ -236,10 +292,10 @@ export function ResourceProvider({ children }) {
 
     if (err) return { error: friendlyError(err) };
 
-    const ui = toUi(data, {}, origin, user);
+    const ui = toUi(data, {}, user);
     setResources((prev) => [ui, ...prev]);
     return { resource: ui };
-  }, [user, barangayId, origin]);
+  }, [user, barangayId, home]);
 
   // ---- listings: update / moderate -----------------------------------------
   // Owners can edit their own rows; officials of the barangay can edit any (RLS).
@@ -277,17 +333,17 @@ export function ResourceProvider({ children }) {
       return prev.map((r) =>
         r.id === id
           ? {
-              ...toUi(data, {}, origin, user),
+              ...toUi(data, {}, user),
+              // toUi gets no owner lookup here, so keep the names we already resolved
               owner: r.owner,
               ownerName: r.ownerName,
               ownerPurok: r.ownerPurok,
-              dist: r.dist,
             }
           : r
       );
     });
     return { ok: true };
-  }, [origin, user]);
+  }, [user]);
 
   const setStatus = useCallback((id, status) => updateResource(id, { status }), [updateResource]);
 
@@ -299,7 +355,10 @@ export function ResourceProvider({ children }) {
     return { ok: true };
   }, []);
 
-  const getResource = useCallback((id) => resources.find((r) => r.id === id) || null, [resources]);
+  const getResource = useCallback(
+    (id) => resourcesWithDistance.find((r) => r.id === id) || null,
+    [resourcesWithDistance]
+  );
 
   // ---- requests --------------------------------------------------------------
 
@@ -363,13 +422,17 @@ export function ResourceProvider({ children }) {
   );
 
   const value = useMemo(() => ({
-    resources,
+    resources: resourcesWithDistance,
     requests,
     myRequests,
     incomingRequests,
     loading,
     error,
     canList: Boolean(user?.id && barangayId),
+    originSource,   // 'gps' | 'home' | null
+    locate,
+    locating,
+    locateError,
     refresh,
     addResource,
     updateResource,
@@ -380,7 +443,8 @@ export function ResourceProvider({ children }) {
     respondToRequest,
     cancelRequest,
   }), [
-    resources, requests, myRequests, incomingRequests, loading, error, user?.id, barangayId,
+    resourcesWithDistance, requests, myRequests, incomingRequests, loading, error, user?.id, barangayId,
+    originSource, locate, locating, locateError,
     refresh, addResource, updateResource, setStatus, removeResource, getResource,
     requestItem, respondToRequest, cancelRequest,
   ]);

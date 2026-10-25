@@ -23,3 +23,13 @@ export const approxCoord = (v) => Math.round(v * 1000) / 1000;
 
 export const directionsUrl = (lat, lng) =>
   `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+export const hasPin = (o) => typeof o?.lat === 'number' && typeof o?.lng === 'number';
+
+// What a card should say. Returns null when there's nothing honest to say.
+export function describeDistance(res) {
+  if (res.isMine) return 'Posted by you';
+  if (typeof res.distance === 'number') return `${formatDistance(res.distance)} away`;
+  if (!hasPin(res)) return 'No pickup pin';
+  return null; // pinned, but we don't know where the user is
+}

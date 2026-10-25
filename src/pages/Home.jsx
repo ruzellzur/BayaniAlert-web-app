@@ -1,43 +1,99 @@
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useApp } from '../context/AppContext'; // data still mocked for now
+import { useAnnouncements } from '../hooks/useAnnouncements';
+import { useCheckinBoard, timeAgo } from '../hooks/useCheckins';
+import { useWeatherAlerts, SEVERITY_LABEL } from '../hooks/useWeatherAlerts';
+import { useNearbyResources } from '../hooks/useNearbyResources';
+import { formatDistance } from '../utils/geo';
 import Brand from '../components/Brand';
+
+// "6:40 PM" if it's today, otherwise "Oct 24, 6:40 PM"
+function formatWhen(iso) {
+  const d = new Date(iso);
+  const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (d.toDateString() === new Date().toDateString()) return time;
+  return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${time}`;
+}
+
+const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
+function AnnPreview({ a }) {
+  return (
+    <div className="ann-preview">
+      <span
+        className="ann-dot"
+        style={{ background: a.pinned ? 'var(--danger)' : 'var(--accent)' }}
+      ></span>
+      <div style={{ minWidth: 0 }}>
+        <div className="t">{a.title}</div>
+        <div className="b">{a.body}</div>
+        <div className="time">
+          {a.pinned ? '📌 ' : ''}{a.who} · {timeAgo(a.created_at)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const Empty = ({ children, danger }) => (
+  <p
+    className={`small ${danger ? '' : 'muted'}`}
+    style={{ textAlign: 'center', padding: '10px 0', color: danger ? 'var(--danger)' : undefined }}
+  >
+    {children}
+  </p>
+);
 
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { announcements, households } = useApp();
+
+  const isOfficial = user?.role === 'official';
+  const barangayId = user?.barangayId ?? null;
+
+  // Hooks must run before the admin early return below.
+  const board = useCheckinBoard(user, isOfficial); // only fetches for officials
+  const ann = useAnnouncements(barangayId);
+  const weather = useWeatherAlerts(barangayId);
+  const resources = useNearbyResources(user, 3);
 
   // Admins have no household or resident dashboard; send them to their own area.
   if (user?.role === 'admin') {
     return <Navigate to="/admin/approvals" replace />;
   }
 
-  const isOfficial = user?.role === 'official';
   // Position-based permissions (see POSITION_PERMS in AuthContext / can_do() in SQL)
   const canAnnounce = !!user?.permissions?.announce;
   const canRescue = !!user?.permissions?.rescue;
   const showManage = isOfficial && canAnnounce;
 
-  // Filter announcements for display
-  const allAnnouncements = [...announcements, ...[
-    { who: 'Kagawad Reyes', time: '25 min ago', text: 'Evacuation center at San Isidro Elementary is now open. Bring your family ID and essentials.', color: 'danger' },
-    { who: 'Brgy. Captain Lira', time: '2 hr ago', text: 'Free rubber boots and candles available at the covered court while supplies last.', color: 'accent' },
-    { who: 'Kagawad Reyes', time: 'Yesterday', text: 'Please clear drainage canals near your homes before Friday. Bagyo is expected to strengthen over the weekend.', color: 'safe' },
-  ]].slice(0, 3);
+  // Check-in stats for officials
+  const { counts } = board;
+  const helpCount = counts.help;
+  const respondedCount = counts.responded;
+  const pct = counts.total ? (counts.responded / counts.total) * 100 : 0;
 
-  // Household stats for officials
-  const safeCount = households.filter(h => h.status === 'safe').length;
-  const helpCount = households.filter(h => h.status === 'help').length;
-  const respondedCount = safeCount + helpCount;
+  // Announcements: the hook already sorts pinned first, then newest
+  const previews = ann.announcements.slice(0, showManage ? 2 : 3);
+
+  const top = weather.top;
+  const weatherTitle = weather.loading
+    ? 'Checking for alerts…'
+    : weather.error
+      ? 'Could not load weather alerts'
+      : top
+        ? top.title
+        : 'No active weather alerts';
 
   const getCategoryIcon = (cat) => {
     const icons = {
       power: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2 3 14h7l-1 8 11-14h-8z"/></svg>,
       water: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3s6 7 6 11a6 6 0 1 1-12 0c0-4 6-11 6-11Z"/></svg>,
       tools: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 7l3 3-8 8-3.5.5.5-3.5 8-8Z"/><path d="M17 4l3 3"/></svg>,
-      firstaid: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M12 10v6M9 13h6"/></svg>,
+      medicine: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M12 10v6M9 13h6"/></svg>,
       transport: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="10" width="18" height="7" rx="2"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="16.5" cy="18.5" r="1.5"/></svg>,
+      food: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 3v7a2 2 0 0 0 2 2v9"/><path d="M10 3v7"/><path d="M16 3c-2 1-3 3.5-3 6s1 3 3 3v9"/></svg>,
+      shelter: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>,
     };
     return icons[cat] || icons.tools;
   };
@@ -63,20 +119,25 @@ export default function Home() {
 
       <div className="dash-grid">
         <div className="dash-col">
-          {/* Weather Alert */}
+          {/* Weather advisory (read-only; TODO: let officials post alerts) */}
           <div className="alert-card" onClick={() => navigate('/weather-history')} style={{ cursor: 'pointer' }}>
             <div className="alert-top">
-              <div>
-                <div className="small" style={{ color: '#B9C4DA' }}>Weather advisory</div>
-                <h3>Signal No. 2 — Heavy rain expected tonight</h3>
+              <div style={{ minWidth: 0 }}>
+                <div className="small" style={{ color: '#B9C4DA' }}>
+                  Weather advisory{weather.alerts.length > 1 ? ` · ${weather.alerts.length} active` : ''}
+                </div>
+                <h3>{weatherTitle}</h3>
+                {top?.body && <p className="alert-body">{top.body}</p>}
               </div>
-              <span className="signal-badge">SIG 2</span>
+              <span className="signal-badge">{top ? SEVERITY_LABEL[top.severity] : 'CLEAR'}</span>
             </div>
-            <div className="alert-meta">
-              <div>Rainfall<strong>42mm/hr</strong></div>
-              <div>Wind<strong>65 km/h</strong></div>
-              <div>Updated<strong>6:40 PM</strong></div>
-            </div>
+            {top && (
+              <div className="alert-meta">
+                <div>Issued<strong>{formatWhen(top.issued_at)}</strong></div>
+                <div>Source<strong>{capitalize(top.source)}</strong></div>
+                <div>Expires<strong>{top.expires_at ? formatWhen(top.expires_at) : 'Until lifted'}</strong></div>
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -118,19 +179,37 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Nearby Resources */}
+          {/* Resource board */}
           <div className="section-label">
-            <h3>Nearby on the resource board</h3>
+            <h3>{resources.hasOrigin ? 'Nearby on the resource board' : 'Latest on the resource board'}</h3>
             <a onClick={() => navigate('/board')}>See all</a>
           </div>
-          <div className="card res-card" onClick={() => navigate('/board')} style={{ cursor: 'pointer' }}>
-            <span className="res-ic cat-power">
-              {getCategoryIcon('power')}
-            </span>
-            <div className="res-body">
-              <div className="name">Gasoline-powered generator</div>
-              <div className="owner">Shared by Mang Tonio · Purok 3</div>
-            </div>
+          <div className="card">
+            {!barangayId ? (
+              <Empty>Your account isn't linked to a barangay.</Empty>
+            ) : resources.loading ? (
+              <Empty>Loading…</Empty>
+            ) : resources.error ? (
+              <Empty danger>{resources.error}</Empty>
+            ) : resources.items.length === 0 ? (
+              <Empty>Nothing is listed on the board right now.</Empty>
+            ) : (
+              resources.items.map((r) => (
+                <div key={r.id} className="res-row" onClick={() => navigate('/board')}>
+                  <span className={`res-ic cat-${r.category}`}>{getCategoryIcon(r.category)}</span>
+                  <div className="res-body">
+                    <div className="name">{r.title}</div>
+                    <div className="owner">
+                      {[
+                        `Shared by ${r.ownerName}`,
+                        r.purokName,
+                        r.distance != null ? formatDistance(r.distance) : null,
+                      ].filter(Boolean).join(' · ')}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -143,63 +222,60 @@ export default function Home() {
                 <a onClick={() => navigate('/checkin')}>View board</a>
               </div>
               <div className="card" style={{ marginBottom: 16 }}>
-                <div className="row between">
-                  <span style={{ fontWeight: 600, fontSize: '13.5px' }}>{user?.purokName || 'All puroks'} households</span>
-                  <span className="small muted">{respondedCount} / {households.length} responded</span>
-                </div>
-                <div className="cap-bar" style={{ marginTop: 10 }}>
-                  <div className="cap-fill" style={{ width: `${(respondedCount / households.length) * 100}%` }}></div>
-                </div>
-                <div className="row between" style={{ marginTop: 14 }}>
-                  <span className="small" style={{ color: 'var(--danger)', fontWeight: 600 }}>{helpCount} households need help</span>
-                  {/* Only rescue-capable positions can act on help requests */}
-                  {canRescue && (
-                    <button className="btn btn-danger btn-sm" onClick={() => navigate('/checkin')}>Respond</button>
-                  )}
-                </div>
+                {board.error ? (
+                  <p className="small" style={{ color: 'var(--danger)' }}>{board.error}</p>
+                ) : (
+                  <>
+                    <div className="row between">
+                      <span style={{ fontWeight: 600, fontSize: '13.5px' }}>{user?.purokName || 'All puroks'} households</span>
+                      <span className="small muted">
+                        {board.loading ? '…' : `${respondedCount} / ${counts.total} responded`}
+                      </span>
+                    </div>
+                    <div className="cap-bar" style={{ marginTop: 10 }}>
+                      <div className="cap-fill" style={{ width: `${pct}%` }}></div>
+                    </div>
+                    <div className="row between" style={{ marginTop: 14 }}>
+                      <span
+                        className="small"
+                        style={{ color: helpCount ? 'var(--danger)' : 'var(--ink-soft)', fontWeight: 600 }}
+                      >
+                        {helpCount === 1 ? '1 household needs help' : `${helpCount} households need help`}
+                      </span>
+                      {/* Only rescue-capable positions can act on help requests */}
+                      {canRescue && helpCount > 0 && (
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => navigate('/checkin', { state: { filter: 'help' } })}
+                        >
+                          Respond
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </>
           )}
 
-          {showManage ? (
-            <>
-              {/* Officials who can announce: manage view */}
-              <div className="section-label" style={{ marginTop: 0 }}>
-                <h3>Your announcements</h3>
-                <a onClick={() => navigate('/announcements')}>Manage</a>
-              </div>
-              <div className="card stack" style={{ gap: 0 }}>
-                {allAnnouncements.slice(0, 2).map((ann, i) => (
-                  <div key={i} className="ann-preview">
-                    <span className="ann-dot" style={{ background: `var(--${ann.color})` }}></span>
-                    <div>
-                      <div className="t">{ann.text}</div>
-                      <div className="time">Posted {ann.time}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Residents, and officials without announce permission: read-only view */}
-              <div className="section-label" style={{ marginTop: 0 }}>
-                <h3>Barangay announcements</h3>
-                <a onClick={() => navigate('/announcements')}>See all</a>
-              </div>
-              <div className="card stack" style={{ gap: 0 }}>
-                {allAnnouncements.map((ann, i) => (
-                  <div key={i} className="ann-preview">
-                    <span className="ann-dot" style={{ background: `var(--${ann.color})` }}></span>
-                    <div>
-                      <div className="t">{ann.text}</div>
-                      <div className="time">{ann.who} · {ann.time}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          {/* Announcements */}
+          <div className="section-label" style={{ marginTop: 0 }}>
+            <h3>{showManage ? 'Latest announcements' : 'Barangay announcements'}</h3>
+            <a onClick={() => navigate('/announcements')}>{showManage ? 'Manage' : 'See all'}</a>
+          </div>
+          <div className="card stack" style={{ gap: 0 }}>
+            {!barangayId ? (
+              <Empty>Your account isn't linked to a barangay.</Empty>
+            ) : ann.loading ? (
+              <Empty>Loading…</Empty>
+            ) : ann.error ? (
+              <Empty danger>{ann.error}</Empty>
+            ) : previews.length === 0 ? (
+              <Empty>No announcements yet.</Empty>
+            ) : (
+              previews.map((a) => <AnnPreview key={a.id} a={a} />)
+            )}
+          </div>
         </div>
       </div>
 
@@ -280,6 +356,16 @@ export default function Home() {
         .dash-col {
           min-width: 0;
         }
+        .alert-body {
+          font-size: 12.5px;
+          line-height: 1.4;
+          color: #B9C4DA;
+          margin-top: 6px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
         .quick-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -355,15 +441,35 @@ export default function Home() {
           font-weight: 600;
           line-height: 1.35;
         }
+        .ann-preview .b {
+          font-size: 12.5px;
+          color: var(--ink);
+          line-height: 1.4;
+          margin-top: 2px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
         .ann-preview .time {
           font-size: 11px;
           color: var(--ink-soft);
           margin-top: 3px;
         }
-        .res-card {
+        .res-row {
           display: flex;
           gap: 12px;
           align-items: flex-start;
+          padding: 12px 0;
+          border-top: 1px solid var(--border);
+          cursor: pointer;
+        }
+        .res-row:first-child {
+          border-top: none;
+          padding-top: 0;
+        }
+        .res-row:last-child {
+          padding-bottom: 0;
         }
         .res-ic {
           width: 44px;

@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useResources } from '../context/ResourceContext';
+import LocationPicker from '../components/LocationPicker';
+import { describeDistance, directionsUrl, hasPin } from '../utils/geo';
 import { useAuth } from '../context/AuthContext'; // only if you still need `user`
 
 export default function ResourceDetail() {
@@ -38,7 +40,7 @@ export default function ResourceDetail() {
       power: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2 3 14h7l-1 8 11-14h-8z"/></svg>,
       water: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3s6 7 6 11a6 6 0 1 1-12 0c0-4 6-11 6-11Z"/></svg>,
       tools: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 7l3 3-8 8-3.5.5.5-3.5 8-8Z"/><path d="M17 4l3 3"/></svg>,
-      firstaid: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M12 10v6M9 13h6"/></svg>,
+      medicine: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M12 10v6M9 13h6"/></svg>,
       transport: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="10" width="18" height="7" rx="2"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="16.5" cy="18.5" r="1.5"/></svg>,
     };
     return icons[cat] || icons.tools;
@@ -55,6 +57,9 @@ export default function ResourceDetail() {
 
   const ownerName = resource.ownerName;
   const ownerInitials = ownerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const pinned = hasPin(resource);
+
+  const hasPin = typeof resource.lat === 'number' && typeof resource.lng === 'number';
 
   return (
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
@@ -73,8 +78,10 @@ export default function ResourceDetail() {
         </span>
         <div>
           <div style={{ fontWeight: 600, fontSize: 17 }}>{resource.name}</div>
-          <div className="muted small" style={{ marginTop: 3 }}>{resource.dist} away</div>
-        </div>
+            <div className="muted small" style={{ marginTop: 3 }}>
+              {describeDistance(resource) ?? 'Pickup pin set'}
+            </div>        
+          </div>
       </div>
 
       {/* About Card */}
@@ -82,6 +89,36 @@ export default function ResourceDetail() {
         <p className="small" style={{ marginBottom: 10, fontWeight: 600, color: 'var(--ink)' }}>About this item</p>
         <p className="small muted" style={{ lineHeight: 1.6 }}>{resource.desc || 'No additional description provided.'}</p>
       </div>
+
+      
+    <div className="section-label" style={{ marginTop: 0 }}>
+      <h3>{resource.type === 'request' ? 'Location' : 'Pickup location'}</h3>
+      {pinned && (
+        <a
+          href={directionsUrl(resource.lat, resource.lng)}
+          target="_blank"
+          rel="noreferrer"
+          style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ink-soft)' }}
+        >
+          Get directions
+        </a>
+      )}
+    </div>
+    {pinned ? (
+      <div style={{ marginBottom: 16 }}>
+        <LocationPicker
+          key={resource.id}
+          readOnly
+          value={{ lat: resource.lat, lng: resource.lng }}
+          center={[resource.lat, resource.lng]}
+          height={220}
+        />
+      </div>
+    ) : (
+      <div className="card" style={{ marginBottom: 16 }}>
+        <p className="small muted">The owner hasn't pinned a spot for this item.</p>
+      </div>
+    )}
 
       {/* Owner Section */}
       <div className="section-label" style={{ marginTop: 0 }}>
@@ -153,7 +190,7 @@ export default function ResourceDetail() {
         .res-ic.cat-power { background: var(--grad-accent); }
         .res-ic.cat-water { background: linear-gradient(135deg, #5FA8D3, #4A90B8); }
         .res-ic.cat-tools { background: linear-gradient(135deg, #7B8794, #5C6370); }
-        .res-ic.cat-firstaid { background: linear-gradient(135deg, #E57373, #C1443C); }
+        .res-ic.cat-medicine { background: linear-gradient(135deg, #E57373, #C1443C); }
         .res-ic.cat-transport { background: linear-gradient(135deg, #81C784, #5FA864); }
         .section-label {
           display: flex;

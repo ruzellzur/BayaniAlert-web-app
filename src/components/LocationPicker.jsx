@@ -18,10 +18,11 @@ const pinIcon = L.icon({
 /**
  * Click the map (or drag the pin) to choose a spot.
  *   value:    { lat, lng } | null
- *   onChange: ({ lat, lng }) => void
+ *   onChange: ({ lat, lng }) => void   (not needed when readOnly)
  *   center:   [lat, lng] used while nothing is pinned yet
+ *   readOnly: show the pin only: no clicking, no dragging, no scroll-wheel zoom
  */
-export default function LocationPicker({ value, onChange, center, height = 280 }) {
+export default function LocationPicker({ value, onChange, center, height = 280, readOnly = false }) {
   const elRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
@@ -32,11 +33,13 @@ export default function LocationPicker({ value, onChange, center, height = 280 }
     const map = mapRef.current;
     if (!map) return;
     if (!markerRef.current) {
-      const m = L.marker(latlng, { draggable: true, icon: pinIcon }).addTo(map);
-      m.on('dragend', () => {
-        const p = m.getLatLng();
-        onChangeRef.current({ lat: p.lat, lng: p.lng });
-      });
+      const m = L.marker(latlng, { draggable: !readOnly, icon: pinIcon }).addTo(map);
+      if (!readOnly) {
+        m.on('dragend', () => {
+          const p = m.getLatLng();
+          onChangeRef.current?.({ lat: p.lat, lng: p.lng });
+        });
+      }
       markerRef.current = m;
     } else {
       markerRef.current.setLatLng(latlng);
@@ -46,16 +49,18 @@ export default function LocationPicker({ value, onChange, center, height = 280 }
   // Create the map once
   useEffect(() => {
     const start = value ? [value.lat, value.lng] : center;
-    const map = L.map(elRef.current).setView(start, value ? 18 : 16);
+    const map = L.map(elRef.current, { scrollWheelZoom: !readOnly }).setView(start, value ? 18 : 16);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
 
-    map.on('click', (e) => {
-      ensureMarker(e.latlng);
-      onChangeRef.current({ lat: e.latlng.lat, lng: e.latlng.lng });
-    });
+    if (!readOnly) {
+      map.on('click', (e) => {
+        ensureMarker(e.latlng);
+        onChangeRef.current?.({ lat: e.latlng.lat, lng: e.latlng.lng });
+      });
+    }
 
     mapRef.current = map;
     if (value) ensureMarker(L.latLng(value.lat, value.lng));
@@ -69,7 +74,6 @@ export default function LocationPicker({ value, onChange, center, height = 280 }
   }, []);
 
   // Keep the pin in sync when the value changes from outside
-  // (e.g. "Use my location", or editing an existing household).
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !value) return;
