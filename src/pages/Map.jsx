@@ -1,9 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useState } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { supabase } from '../supabase';
+
+const PH_BOUNDS = [[4.5, 116.0], [21.5, 127.0]];
+
+function ClickToLookup({ onResult }) {
+  useMapEvents({
+    async click(e) {
+      const { lat, lng } = e.latlng;
+      const { data, error } = await supabase.rpc('get_barangay', { lat, lng });
+      onResult(error ? null : data?.[0] ?? null, { lat, lng });
+    },
+  });
+  return null;
+}
 
 export default function Map() {
   const navigate = useNavigate();
   const { evacCenters } = useApp();
+  const [picked, setPicked] = useState(null);
 
   return (
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
@@ -19,44 +37,39 @@ export default function Map() {
         <div>
           {/* SVG Map */}
           <div className="map-wrap">
-            <svg viewBox="0 0 300 320">
-              <defs>
-                <linearGradient id="mapDanger" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#DB6A55"/>
-                  <stop offset="100%" stopColor="#C1443C"/>
-                </linearGradient>
-                <linearGradient id="mapAccent" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#F0B84A"/>
-                  <stop offset="100%" stopColor="#E29A3B"/>
-                </linearGradient>
-                <linearGradient id="mapInk" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#2C4470"/>
-                  <stop offset="100%" stopColor="#1B2A4A"/>
-                </linearGradient>
-              </defs>
-              <rect width="300" height="320" fill="#DCE9E0"/>
-              <path d="M0 210 L60 200 L120 225 L180 205 L240 230 L300 215 L300 320 L0 320 Z" fill="#BFD9E6" opacity="0.85"/>
-              <path d="M0 235 L70 222 L140 244 L210 226 L300 240 L300 320 L0 320 Z" fill="#A9CBDC"/>
-              <g stroke="#C9D6C9" strokeWidth="3">
-                <line x1="0" y1="90" x2="300" y2="70"/>
-                <line x1="20" y1="0" x2="60" y2="320"/>
-                <line x1="180" y1="0" x2="150" y2="320"/>
-                <line x1="0" y1="150" x2="300" y2="160"/>
-              </g>
-              <rect x="80" y="98" width="26" height="20" rx="2" fill="#C7D2CB"/>
-              <rect x="150" y="115" width="22" height="18" rx="2" fill="#C7D2CB"/>
-              <rect x="200" y="85" width="30" height="22" rx="2" fill="#C7D2CB"/>
-              <rect x="40" y="60" width="24" height="18" rx="2" fill="#C7D2CB"/>
-              <circle cx="95" cy="107" r="9" fill="url(#mapDanger)"/>
-              <text x="95" y="111" fontSize="10" fill="#fff" textAnchor="middle" fontFamily="Work Sans, sans-serif" fontWeight="700">E</text>
-              <circle cx="215" cy="94" r="9" fill="url(#mapDanger)"/>
-              <text x="215" y="98" fontSize="10" fill="#fff" textAnchor="middle" fontFamily="Work Sans, sans-serif" fontWeight="700">E</text>
-              <circle cx="150" cy="180" r="7" fill="url(#mapAccent)"/>
-              <circle cx="60" cy="150" r="7" fill="url(#mapAccent)"/>
-              <circle cx="230" cy="170" r="7" fill="url(#mapAccent)"/>
-              <circle cx="130" cy="60" r="6" fill="url(#mapInk)" stroke="#fff" strokeWidth="2"/>
-            </svg>
-          </div>
+			  <MapContainer
+				center={[14.65, 121.05]}
+				zoom={14}
+				minZoom={5}
+				maxBounds={PH_BOUNDS}
+				maxBoundsViscosity={1}
+				style={{ height: '100%', width: '100%' }}
+			  >
+				<TileLayer
+				  url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+				  attribution="© OpenStreetMap contributors"
+				/>
+				<ClickToLookup onResult={(b, pt) => setPicked({ b, pt })} />
+				{evacCenters.filter(c => c.lat).map((c, i) => (
+				  <CircleMarker
+					key={i}
+					center={[c.lat, c.lng]}
+					radius={10}
+					pathOptions={{ color: '#fff', weight: 2, fillColor: '#C1443C', fillOpacity: 1 }}
+				  >
+					<Popup>{c.name}</Popup>
+				  </CircleMarker>
+				))}
+			  </MapContainer>
+			</div>
+
+			{picked && (
+			  <div className="card" style={{ marginTop: 14 }}>
+				{picked.b
+				  ? <>📍 <b>{picked.b.name}</b>, {picked.b.municipality}, {picked.b.province}</>
+				  : <>No barangay found at this spot</>}
+			  </div>
+			)}
 
           {/* Legend */}
           <div className="legend">

@@ -29,8 +29,8 @@ const INITIAL_RESOURCES = [
 ];
 
 const INITIAL_EVACUATION_CENTERS = [
-  { name: 'San Isidro Elementary School', addr: '0.6 km away · Purok 2', distLabel: '0.6 km', cap: 210, max: 400, amenities: [{ name: 'Drinking water station', status: 'Available' }, { name: 'First aid / medical', status: 'Available' }, { name: 'Generator power', status: 'Available' }] },
-  { name: 'Purok 4 Covered Court', addr: '1.2 km away · Purok 4', distLabel: '1.2 km', cap: 90, max: 150, amenities: [{ name: 'Drinking water station', status: 'Available' }, { name: 'First aid / medical', status: 'Limited' }, { name: 'Generator power', status: 'Unavailable' }] },
+  { name: 'San Isidro Elementary School', lat: 14.652, lng: 121.048, addr: '0.6 km away · Purok 2', distLabel: '0.6 km', cap: 210, max: 400, amenities: [{ name: 'Drinking water station', status: 'Available' }, { name: 'First aid / medical', status: 'Available' }, { name: 'Generator power', status: 'Available' }] },
+  { name: 'Purok 4 Covered Court', lat: 14.641, lng: 121.058, addr: '1.2 km away · Purok 4', distLabel: '1.2 km', cap: 90, max: 150, amenities: [{ name: 'Drinking water station', status: 'Available' }, { name: 'First aid / medical', status: 'Limited' }, { name: 'Generator power', status: 'Unavailable' }] },
 ];
 
 const INITIAL_ANNOUNCEMENTS = [
