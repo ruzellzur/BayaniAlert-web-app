@@ -40,7 +40,7 @@ export default function Map() {
 			  <MapContainer
 				center={[14.65, 121.05]}
 				zoom={14}
-				minZoom={5}
+				minZoom={6}
 				maxBounds={PH_BOUNDS}
 				maxBoundsViscosity={1}
 				style={{ height: '100%', width: '100%' }}
@@ -143,7 +143,7 @@ export default function Map() {
           background: #DCE9E0;
           aspect-ratio: 1/1.05;
         }
-        .map-wrap svg {
+        .map-wrap > svg {
           width: 100%;
           height: 100%;
           display: block;
