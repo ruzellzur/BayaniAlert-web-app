@@ -1,22 +1,71 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useResources } from '../context/ResourceContext';
+
+const STATUS_LABEL = {
+  pending: 'Pending',
+  accepted: 'Accepted',
+  declined: 'Declined',
+  cancelled: 'Cancelled',
+  completed: 'Completed',
+};
 
 export default function MyRequests() {
   const navigate = useNavigate();
-  const { requests, resources } = useApp();
+  const {
+    myRequests, incomingRequests, loading, error,
+    respondToRequest, cancelRequest,
+  } = useResources();
+
   const [tab, setTab] = useState('sent');
   const [search, setSearch] = useState('');
+  const [busyId, setBusyId] = useState(null);
+  const [toast, setToast] = useState(null);
 
-  // Mock received requests (in a real app, these would come from context)
-  const receivedRequests = [
-    { id: 'r1', item: 'Steel bolo & rope', requester: 'Aling Nena · Purok 1', status: 'pending' },
-  ];
+  const notify = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2400);
+  };
 
-  const filteredSentRequests = requests.filter(r =>
-    r.item.toLowerCase().includes(search.toLowerCase()) ||
-    r.owner.toLowerCase().includes(search.toLowerCase())
+  const q = search.toLowerCase();
+  const matches = (r, who) =>
+    r.item.toLowerCase().includes(q) || who.toLowerCase().includes(q);
+
+  const sent = useMemo(
+    () => myRequests.filter((r) => matches(r, r.owner)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [myRequests, q]
   );
+  const received = useMemo(
+    () => incomingRequests.filter((r) => matches(r, r.requester)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [incomingRequests, q]
+  );
+
+  const pendingReceived = incomingRequests.filter((r) => r.status === 'pending').length;
+
+  const run = async (id, fn, successMsg) => {
+    setBusyId(id);
+    const { error: err } = await fn();
+    setBusyId(null);
+    notify(err ?? successMsg);
+  };
+
+  const handleCancel = (req) =>
+    run(req.id, () => cancelRequest(req.id), 'Request cancelled');
+
+  const handleRespond = (req, decision) =>
+    run(
+      req.id,
+      () => respondToRequest(req.id, decision),
+      {
+        accept: `Accepted — arrange pickup with ${req.requester}`,
+        decline: 'Request declined',
+        complete: 'Marked as completed',
+      }[decision]
+    );
+
+  const isInitialLoad = loading && myRequests.length === 0 && incomingRequests.length === 0;
 
   return (
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
@@ -30,8 +79,12 @@ export default function MyRequests() {
 
       {/* Tab Switcher */}
       <div className="role-switch">
-        <button className={tab === 'sent' ? 'active' : ''} onClick={() => setTab('sent')}>Sent</button>
-        <button className={tab === 'received' ? 'active' : ''} onClick={() => setTab('received')}>Received</button>
+        <button className={tab === 'sent' ? 'active' : ''} onClick={() => setTab('sent')}>
+          Sent{myRequests.length > 0 ? ` (${myRequests.length})` : ''}
+        </button>
+        <button className={tab === 'received' ? 'active' : ''} onClick={() => setTab('received')}>
+          Received{pendingReceived > 0 ? ` (${pendingReceived} new)` : ''}
+        </button>
       </div>
 
       {/* Search */}
@@ -53,25 +106,47 @@ export default function MyRequests() {
         }}
       />
 
+      {error && <div className="req-error">{error}</div>}
+
       {/* Sent Tab */}
       {tab === 'sent' && (
         <div className="card">
-          {filteredSentRequests.length === 0 ? (
+          {isInitialLoad ? (
+            <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>Loading requests…</p>
+          ) : sent.length === 0 ? (
             <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>
-              No requests sent yet
+              {myRequests.length === 0 ? 'No requests sent yet' : 'No requests match your search'}
             </p>
           ) : (
-            filteredSentRequests.map((req, i) => (
-              <div key={i} className="req-card">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="name">{req.item}</div>
-                  <div className="meta">Requested from {req.owner}</div>
+            sent.map((req) => {
+              const canCancel = ['pending', 'accepted'].includes(req.status);
+              return (
+                <div key={req.id} className="req-card">
+                  <div
+                    style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
+                    onClick={() => navigate(`/resource/${req.listingId}`)}
+                  >
+                    <div className="name">
+                      {req.item}{req.quantity > 1 ? ` ×${req.quantity}` : ''}
+                    </div>
+                    <div className="meta">Requested from {req.owner}</div>
+                    {req.note && <div className="meta">“{req.note}”</div>}
+                  </div>
+                  <div className="req-side">
+                    <span className={`status-badge ${req.status}`}>{STATUS_LABEL[req.status]}</span>
+                    {canCancel && (
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        disabled={busyId === req.id}
+                        onClick={() => handleCancel(req)}
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <span className={`status-badge ${req.status}`}>
-                  {req.status === 'pending' ? 'Pending' : 'Accepted'}
-                </span>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}
@@ -79,26 +154,50 @@ export default function MyRequests() {
       {/* Received Tab */}
       {tab === 'received' && (
         <div className="card">
-          {receivedRequests.length === 0 ? (
+          {isInitialLoad ? (
+            <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>Loading requests…</p>
+          ) : received.length === 0 ? (
             <p className="small muted" style={{ textAlign: 'center', padding: '20px 0' }}>
-              No requests received
+              {incomingRequests.length === 0 ? 'No requests received' : 'No requests match your search'}
             </p>
           ) : (
-            receivedRequests.map((req) => (
+            received.map((req) => (
               <div key={req.id} className="req-card">
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="name">{req.item}</div>
+                  <div className="name">
+                    {req.item}{req.quantity > 1 ? ` ×${req.quantity}` : ''}
+                  </div>
                   <div className="meta">Requested by {req.requester}</div>
+                  {req.note && <div className="meta">“{req.note}”</div>}
                 </div>
-                <div className="row" style={{ gap: 6, flexShrink: 0 }}>
-                  <button className="btn btn-safe btn-sm">Accept</button>
-                  <button className="btn btn-ghost btn-sm">Decline</button>
+                <div className="req-side">
+                  {req.status === 'pending' ? (
+                    <div className="row" style={{ gap: 6 }}>
+                      <button className="btn btn-safe btn-sm" disabled={busyId === req.id} onClick={() => handleRespond(req, 'accept')}>
+                        Accept
+                      </button>
+                      <button className="btn btn-ghost btn-sm" disabled={busyId === req.id} onClick={() => handleRespond(req, 'decline')}>
+                        Decline
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className={`status-badge ${req.status}`}>{STATUS_LABEL[req.status]}</span>
+                      {req.status === 'accepted' && (
+                        <button className="btn btn-primary btn-sm" disabled={busyId === req.id} onClick={() => handleRespond(req, 'complete')}>
+                          Mark completed
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             ))
           )}
         </div>
       )}
+
+      {toast && <div className="req-toast" role="status">{toast}</div>}
 
       <style>{`
         .topbar {
@@ -107,6 +206,16 @@ export default function MyRequests() {
           justify-content: space-between;
           gap: 10px;
           padding: 18px 20px 14px;
+        }
+
+        .req-error {
+          margin-bottom: 12px;
+          padding: 10px 14px;
+          border-radius: 12px;
+          font-size: 13px;
+          color: #C1443C;
+          background: rgba(193, 68, 60, 0.1);
+          border: 1px solid rgba(193, 68, 60, 0.3);
         }
 
         .req-card {
@@ -140,6 +249,19 @@ export default function MyRequests() {
           white-space: nowrap;
         }
 
+        .req-side {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 6px;
+          flex-shrink: 0;
+        }
+
+        .req-card .btn:disabled {
+          opacity: 0.55;
+          cursor: not-allowed;
+        }
+
         .status-badge {
           padding: 4px 10px;
           border-radius: 8px;
@@ -155,9 +277,36 @@ export default function MyRequests() {
         }
 
         .status-badge.accepted,
-        .status-badge.approved {
+        .status-badge.completed {
           background: var(--safe);
           color: #fff;
+        }
+
+        .status-badge.declined {
+          background: rgba(193, 68, 60, 0.12);
+          color: #C1443C;
+        }
+
+        .status-badge.cancelled {
+          background: var(--surface-alt);
+          color: var(--ink-soft);
+          text-decoration: line-through;
+        }
+
+        .req-toast {
+          position: fixed;
+          left: 50%;
+          bottom: 96px;
+          transform: translateX(-50%);
+          z-index: 120;
+          max-width: calc(100vw - 40px);
+          padding: 10px 16px;
+          border-radius: 999px;
+          font-size: 13px;
+          font-weight: 500;
+          color: #fff;
+          background: rgba(20, 24, 33, 0.92);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
         }
 
         @media (min-width: 900px) {

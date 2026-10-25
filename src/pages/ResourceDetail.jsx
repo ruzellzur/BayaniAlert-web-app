@@ -1,29 +1,36 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useResources } from '../context/ResourceContext';
+import { useAuth } from '../context/AuthContext'; // only if you still need `user`
 
 export default function ResourceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { resources, user } = useApp();
+  const { getResource, loading, requestItem } = useResources();
 
-  // Convert string ID from URL to number for matching
-  const resourceId = parseInt(id, 10);
-  const resource = resources.find(r => r.id === resourceId);
+  const resource = getResource(id); // id is a UUID string, no parseInt
+
+  if (!resource && loading) {
+    return (
+      <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+        <p className="muted small" style={{ textAlign: 'center', marginTop: 40 }}>Loading…</p>
+      </div>
+    );
+  }
 
   if (!resource) {
     return (
-      <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
-        <div className="topbar">
-          <div className="row" style={{ gap: 12 }}>
-            <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/board')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-            <h2 style={{ fontSize: 17 }}>Item details</h2>
+        <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+          <div className="topbar">
+            <div className="row" style={{ gap: 12 }}>
+              <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/board')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
+              <h2 style={{ fontSize: 17 }}>Item details</h2>
+            </div>
+          </div>
+          <div className="card" style={{ marginTop: 20, textAlign: 'center' }}>
+            <p className="muted">Resource not found</p>
           </div>
         </div>
-        <div className="card" style={{ marginTop: 20, textAlign: 'center' }}>
-          <p className="muted">Resource not found</p>
-        </div>
-      </div>
-    );
+      );
   }
 
   const getCategoryIcon = (cat) => {
@@ -37,15 +44,16 @@ export default function ResourceDetail() {
     return icons[cat] || icons.tools;
   };
 
-  const handleRequest = () => {
-    alert('Request sent! The owner will be notified.');
+  const handleRequest = async () => {
+    const { error } = await requestItem(resource.id);
+    alert(error ?? 'Request sent! The owner will be notified.');
   };
 
   const handleMessage = () => {
     navigate(`/thread/${id}`);
   };
 
-  const ownerName = resource.owner.split('·')[0].trim();
+  const ownerName = resource.ownerName;
   const ownerInitials = ownerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
@@ -103,7 +111,13 @@ export default function ResourceDetail() {
       </div>
 
       {/* Action Buttons */}
-      <button className="btn btn-primary btn-block" onClick={handleRequest}>Request this item</button>
+      <button
+        className="btn btn-primary btn-block"
+        onClick={handleRequest}
+        disabled={resource.isMine || resource.status !== 'available' || resource.type === 'request'}
+      >
+        {resource.isMine ? 'This is your listing' : 'Request this item'}
+      </button>
       <button className="btn btn-ghost btn-block" style={{ marginTop: 10 }} onClick={handleMessage}>Message owner</button>
 
       <style>{`

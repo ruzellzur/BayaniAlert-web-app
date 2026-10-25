@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
+import { ResourceProvider } from './context/ResourceContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Welcome from './pages/Welcome';
@@ -103,11 +104,13 @@ function AppRoutes() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <AppProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </AppProvider>
+      <ResourceProvider> 
+        <AppProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AppProvider>
+      </ResourceProvider> 
     </AuthProvider>
   </StrictMode>
 );
