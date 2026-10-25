@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext'; // theme still lives in the mock
@@ -11,9 +12,10 @@ export default function Profile() {
   const isAdmin = user?.role === 'admin';
   const isResident = !isOfficial && !isAdmin;
 
-  const canAnnounce = user?.permissions?.announce;
-  const canEvac = user?.permissions?.evac;
-  const canRescue = user?.permissions?.rescue;
+  const perms = isOfficial ? user?.permissions : null;
+  const canAnnounce = !!perms?.announce;
+  const canEvac = !!perms?.evac;
+  const canRescue = !!perms?.rescue;
 
   const themeLabels = { system: 'System', light: 'Light', dark: 'Dark' };
 
@@ -28,6 +30,14 @@ export default function Profile() {
     : isOfficial
       ? `${user?.position || 'Official'} · ${user?.purokName || 'All puroks'}`
       : [user?.purokName, user?.barangayName].filter(Boolean).join(' · ');
+  
+  
+  const household = user?.household ?? null;
+  const primaryContact = household?.emergency_contacts?.[0] ?? null;    
+
+  useEffect(() => {
+    if (user && user.role !== 'resident') navigate('/profile', { replace: true });
+  }, [user, navigate]);
 
   return (
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
@@ -35,7 +45,7 @@ export default function Profile() {
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
           <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate(isAdmin ? '/admin/approvals' : '/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>{isResident ? 'Household' : 'My profile'}</h2>
+          <h2 style={{ fontSize: 17 }}>My profile</h2>
         </div>
       </div>
 
@@ -108,18 +118,19 @@ export default function Profile() {
               <span>Purok</span>
               <span className="val">{user?.purokName || '—'}</span>
             </div>
-            {/* TODO(household setup step): load from households / emergency_contacts */}
             <div className="list-item">
               <span>Family members</span>
-              <span className="val">—</span>
+              <span className="val">{household?.members_count ?? '—'}</span>
             </div>
             <div className="list-item">
               <span>Emergency contact</span>
-              <span className="val">—</span>
+              <span className="val">
+                {primaryContact ? `${primaryContact.name} · ${primaryContact.phone}` : '—'}
+              </span>
             </div>
             <div className="list-item">
               <span>Address</span>
-              <span className="val">—</span>
+              <span className="val">{household?.address || '—'}</span>
             </div>
           </>
         )}
@@ -131,9 +142,13 @@ export default function Profile() {
           <span>Barangay hotlines</span>
           <span className="val">›</span>
         </div>
+        <div className="list-item" onClick={() => navigate('/edit-profile')} style={{ cursor: 'pointer' }}>
+          <span>Edit profile</span>
+          <span className="val">›</span>
+        </div>
         {isResident && (
           <div className="list-item" onClick={() => navigate('/household-setup')} style={{ cursor: 'pointer' }}>
-            <span>Edit household info</span>
+            <span>{user?.household ? 'Edit household' : 'Set up household'}</span>
             <span className="val">›</span>
           </div>
         )}

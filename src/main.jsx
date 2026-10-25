@@ -25,7 +25,7 @@ import EvacDetail from './pages/EvacDetail';
 import MyRequests from './pages/MyRequests';
 import EditProfile from './pages/EditProfile';
 import Directory from './pages/Directory';
-import HouseholdSetup from './pages/HouseholdSetup';
+import HouseholdSetup from './pages/EditHousehold';
 import './index.css';
 import { EvacProvider } from './context/EvacContext';
 

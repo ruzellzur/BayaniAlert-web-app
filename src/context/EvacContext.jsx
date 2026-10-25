@@ -58,10 +58,10 @@ function validateCenter(input) {
   const lat = Number(input.lat);
   const lng = Number(input.lng);
   if (input.lat === '' || input.lng === '' || !Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return { error: 'Pick the location on the map.' };
+    return { error: 'Enter valid coordinates.' };
   }
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    return { error: 'Pick the location on the map.' };
+    return { error: 'Coordinates are out of range.' };
   }
 
   const amenities = (input.amenities || [])
@@ -93,7 +93,10 @@ export function EvacProvider({ children }) {
   const canManage = Boolean(isAdmin || (user?.role === 'official' && user?.permissions?.evac));
 
   const [centers, setCenters] = useState([]);
-  const [barangays, setBarangays] = useState([]); // admins only (to pick where to add a center)
+  // Admins get every barangay (to pick where to add a center); everyone else gets
+  // just their own, which gives the location picker a sensible map center.
+  const [barangays, setBarangays] = useState([]);
+  const [floodZones, setFloodZones] = useState([]); // read-only for now (shown on the map)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -101,6 +104,7 @@ export function EvacProvider({ children }) {
     if (!user?.id || (!isAdmin && !barangayId)) {
       setCenters([]);
       setBarangays([]);
+      setFloodZones([]);
       return;
     }
     setLoading(true);
@@ -109,20 +113,35 @@ export function EvacProvider({ children }) {
     let query = supabase.from('evacuation_centers').select('*');
     if (!isAdmin) query = query.eq('barangay_id', barangayId);
 
-    const [c, b] = await Promise.all([
-      query,
-      isAdmin
-        ? supabase.from('barangays').select('id, name, city, center_lat, center_lng').order('name')
-        : Promise.resolve({ data: [] }),
-    ]);
+    let barangayQuery = supabase
+      .from('barangays')
+      .select('id, name, city, center_lat, center_lng')
+      .order('name');
+    if (!isAdmin) barangayQuery = barangayQuery.eq('id', barangayId);
 
-    if (c.error || b.error) {
-      setError(friendlyError(c.error || b.error));
+    let floodQuery = supabase
+      .from('flood_zones')
+      .select('id, barangay_id, name, risk_level, geojson');
+    if (!isAdmin) floodQuery = floodQuery.eq('barangay_id', barangayId);
+
+    const [c, b, f] = await Promise.all([query, barangayQuery, floodQuery]);
+
+    if (c.error || b.error || f.error) {
+      setError(friendlyError(c.error || b.error || f.error));
       setLoading(false);
       return;
     }
     setCenters(c.data.map(toUi).sort(byName));
     setBarangays(b.data || []);
+    setFloodZones(
+      (f.data || []).map((z) => ({
+        id: z.id,
+        barangayId: z.barangay_id,
+        name: z.name,
+        risk: z.risk_level, // 'low' | 'medium' | 'high'
+        geojson: z.geojson,
+      }))
+    );
     setLoading(false);
   }, [user?.id, isAdmin, barangayId]);
 
@@ -209,11 +228,11 @@ export function EvacProvider({ children }) {
   }, []);
 
   const value = useMemo(() => ({
-    centers, barangays, loading, error, canManage, isAdmin,
+    centers, barangays, floodZones, loading, error, canManage, isAdmin,
     refresh, addCenter, updateCenter, setOccupancy,
     openCenter, closeCenter, setAmenityStatus, deleteCenter,
   }), [
-    centers, barangays, loading, error, canManage, isAdmin,
+    centers, barangays, floodZones, loading, error, canManage, isAdmin,
     refresh, addCenter, updateCenter, setOccupancy,
     openCenter, closeCenter, setAmenityStatus, deleteCenter,
   ]);

@@ -86,8 +86,10 @@ export default function AdminEvac() {
     if (isAdmin && !barangayId && barangays.length > 0) setBarangayId(barangays[0].id);
   }, [isAdmin, barangays, barangayId]);
 
-  const selectedBarangay = barangays.find((b) => b.id === barangayId) || null;
-
+const selectedBarangay = isAdmin
+  ? barangays.find((b) => b.id === barangayId) || null
+  : barangays[0] || null; // non-admins only receive their own barangay
+  
   const latNum = parseFloat(form.lat);
   const lngNum = parseFloat(form.lng);
   const pinned = Number.isFinite(latNum) && Number.isFinite(lngNum) ? { lat: latNum, lng: lngNum } : null;

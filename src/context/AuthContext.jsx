@@ -5,8 +5,9 @@ const AuthContext = createContext(null);
 
 const EMAIL_DOMAIN = 'bayanialert.local';
 
-// Same permission table as the prototype. Once the profiles.position column
-// exists (migration 03), officials get permissions from their real position.
+// position column in db is profiles.official_position
+// this perm table mirrors position_can() and should be kept in sync
+// Unknown or missing positions get no permissions, same as the database.
 const POSITION_PERMS = {
   'Barangay Captain': { announce: true, evac: true, rescue: false },
   'Kagawad': { announce: true, evac: true, rescue: false },
@@ -15,8 +16,10 @@ const POSITION_PERMS = {
   'BDRRM Officer': { announce: true, evac: true, rescue: true },
   'Rescue/Response Team': { announce: false, evac: false, rescue: true },
 };
-const permsFor = (position) =>
-  POSITION_PERMS[position] || { announce: true, evac: true, rescue: false };
+const NO_PERMS = { announce: false, evac: false, rescue: false };
+const ALL_PERMS = { announce: true, evac: true, rescue: true };
+
+const permsFor = (position) => POSITION_PERMS[position] || NO_PERMS;
 
 // ---- identifier helpers ------------------------------------------------
 
@@ -49,11 +52,15 @@ const shapeUser = (p) => ({
   phone: p.phone,
   username: p.username,
   barangayId: p.barangay_id,
+  barangayName: p.barangay?.name ?? null,   
   purokId: p.purok_id,
   position: p.official_position ?? null,
   officialName: p.role === 'official' && p.official_position ? `${p.official_position} ${p.full_name}` : p.full_name,
-  permissions: p.role === 'official' ? permsFor(p.official_position) : null,  initials: initialsOf(p.full_name),
-  barangayName: p.barangay?.name ?? null,
+  permissions:
+    p.role === 'admin' ? ALL_PERMS
+    : p.role === 'official' ? permsFor(p.official_position)
+    : NO_PERMS,
+  initials: initialsOf(p.full_name),
   purokName: p.purok?.name ?? null,
   household: Array.isArray(p.household) ? p.household[0] ?? null : p.household ?? null,
   householdNo: (Array.isArray(p.household) ? p.household[0] : p.household)?.household_no ?? null,
@@ -140,6 +147,13 @@ export function AuthProvider({ children }) {
     if (!barangayId) return { error: 'Please select your barangay.' };
     if (role === 'official' && !idNumber?.trim()) {
       return { error: 'Your barangay ID number is required.' };
+    }
+    if (role === 'official' && !POSITION_PERMS[position]) {
+      return { error: 'Select your official position.' };
+    }
+
+    if (role === 'official' && !POSITION_PERMS[position]) {
+      return { error: 'Select your official position.' };
     }
 
     const { data, error } = await supabase.auth.signUp({
