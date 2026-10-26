@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { ArrowLeftIcon } from '../components/icons';
 
 /**
  * Announcements Page
@@ -13,18 +14,6 @@ import { useApp } from '../context/AppContext';
  *
  * All visual rules live in src/styles/prototype.css.
  */
-const SEARCH_STYLE = {
-  width: '100%',
-  marginBottom: 12,
-  padding: '11px 14px',
-  borderRadius: 12,
-  border: '1.5px solid var(--border)',
-  background: 'var(--surface)',
-  color: 'var(--ink)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13.5,
-};
-
 const BASE_ANNOUNCEMENTS = [
   {
     who: 'Kagawad Reyes',
@@ -94,7 +83,7 @@ export default function Announcements() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }}>Announcements</h2>
         </div>
@@ -153,13 +142,14 @@ export default function Announcements() {
 
         <div>
           <input
-            type="text"
-            id="ann"
-            placeholder=" announcements…"
-            style={SEARCH_STYLE}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+        type="text"
+        id="ann"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="search-input"
+        placeholder=" announcements…"
+        aria-label=" announcements"
+      />
 
           <div className="card" id="annFeed">
             {items.length ? (

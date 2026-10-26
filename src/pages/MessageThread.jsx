@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { ArrowLeftIcon } from '../components/icons';
 
 /**
  * Message Thread Page
@@ -56,7 +57,7 @@ export default function MessageThread() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }} id="threadName">
             {ownerName || 'Neighbor'}

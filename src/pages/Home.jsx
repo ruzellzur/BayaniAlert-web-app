@@ -15,8 +15,6 @@ export default function Home() {
   const navigate = useNavigate();
   const { user, households } = useApp();
 
-  const isOfficial = user?.role === 'official';
-
   const residentInitials = (user?.name || 'Ruzel G.')
     .split(' ')
     .map((n) => n[0])

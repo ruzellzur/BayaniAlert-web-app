@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { ArrowLeftIcon } from '../components/icons';
 
 /**
  * Evacuation Center Detail Page
@@ -42,7 +43,7 @@ export default function EvacDetail() {
               aria-label="Go back"
               style={{ padding: '8px 10px' }}
             >
-              ←
+              <ArrowLeftIcon />
             </button>
             <h2 style={{ fontSize: 17 }}>Evacuation center</h2>
           </div>
@@ -87,7 +88,7 @@ export default function EvacDetail() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }}>Evacuation center</h2>
         </div>
@@ -108,7 +109,7 @@ export default function EvacDetail() {
 
       {/* Update capacity — officials with evac permission */}
       {isOfficial && canManageEvac && (
-        <div className="role-swap" data-role="official">
+        <div>
           <div className="section-label" style={{ marginTop: 0 }}>
             <h3>Update capacity</h3>
           </div>
@@ -133,7 +134,7 @@ export default function EvacDetail() {
 
       {/* Officials without evac permission */}
       {isOfficial && !canManageEvac && (
-        <div className="role-swap" data-role="official">
+        <div>
           <p className="small muted" style={{ margin: '-4px 0 16px' }}>
             Your position doesn't include evacuation-center management. A Barangay
             Captain, Kagawad, or BDRRM Officer can update capacity here.
@@ -145,7 +146,7 @@ export default function EvacDetail() {
       <div className="section-label" style={{ marginTop: 0 }}>
         <h3>On-site</h3>
         {isOfficial && canManageEvac && (
-          <span className="muted small role-swap" data-role="official">Tap to update</span>
+          <span className="muted small">Tap to update</span>
         )}
       </div>
       <div className="card" style={{ marginBottom: 16 }}>

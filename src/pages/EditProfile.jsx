@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { ArrowLeftIcon } from '../components/icons';
 
 /**
  * Edit Household Info Page
@@ -48,7 +49,7 @@ export default function EditProfile() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }}>Edit household info</h2>
         </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { ArrowLeftIcon } from '../components/icons';
 
 /**
  * Safety Check-in Page
@@ -21,15 +22,18 @@ import { useApp } from '../context/AppContext';
  * - Official: stats, response progress bar, household grid
  * - Status filter chips (All / Safe / Needs help / No response)
  * - Permission gate: only positions with `permissions.rescue` may update another
- *   household's status (prompt); everyone else gets a read-only alert.
+ *   household's status (via the in-page status sheet); everyone else gets a
+ *   read-only toast.
  * - Role-aware explainer note
  * - Back button to /home
  */
 export default function Checkin() {
   const navigate = useNavigate();
-  const { user, myStatus, setStatus, households, updateHouseholdStatus } = useApp();
+  const { user, myStatus, setStatus, households, updateHouseholdStatus, showToast } = useApp();
 
   const [filter, setFilter] = useState('all');
+  // Which household is being re-statused by a rescue-capable official.
+  const [statusSheet, setStatusSheet] = useState(null);
 
   const isOfficial = user?.role === 'official';
   const canRescue = user?.permissions?.rescue;
@@ -61,13 +65,7 @@ export default function Checkin() {
 
   const handleHouseholdClick = (index) => {
     if (canRescue) {
-      const newStatus = prompt(
-        'Set status for Hh. ' + households[index].id + ' — type "safe", "help", or "none"',
-        households[index].status
-      );
-      if (newStatus && ['safe', 'help', 'none'].includes(newStatus.trim().toLowerCase())) {
-        updateHouseholdStatus(index, newStatus.trim().toLowerCase());
-      }
+      setStatusSheet(index);
     } else {
       const h = households[index];
       const label =
@@ -76,8 +74,19 @@ export default function Checkin() {
           : h.status === 'safe'
           ? 'checked in safe'
           : 'has not responded';
-      alert('Hh. ' + h.id + ' — ' + label);
+      showToast?.('Hh. ' + h.id + ' — ' + label);
     }
+  };
+
+  // Applies the status chosen in the sheet, then closes it.
+  const applyStatus = (status) => {
+    if (statusSheet === null) return;
+    const h = households[statusSheet];
+    updateHouseholdStatus(statusSheet, status);
+    showToast?.(
+      status === 'none' ? 'Hh. ' + h.id + ' marked no response' : 'Hh. ' + h.id + ' marked ' + status
+    );
+    setStatusSheet(null);
   };
 
   const meStatusText =
@@ -101,7 +110,7 @@ export default function Checkin() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }}>Safety check-in</h2>
         </div>
@@ -147,7 +156,7 @@ export default function Checkin() {
           <div className="card me-card">
             <div className="avatar">{user?.initials || 'RG'}</div>
             <div style={{ fontWeight: 600, fontSize: 15 }}>
-              {user?.name || 'Ruzel G.'} — Household #{user?.household || '142'}
+              {user?.name || 'Ruzel G.'} — Household #{user?.household}
             </div>
             <div className="me-status" style={{ color: meStatusColor }}>{meStatusText}</div>
             <div className="status-btns">
@@ -225,6 +234,50 @@ export default function Checkin() {
           ? 'You can tap a household to update its status directly — for rescue/response duty.'
           : 'Kagawad Reyes can see this board live to know who may need assistance.'}
       </p>
+
+      {/* In-page status sheet (replaces window.prompt) */}
+      {statusSheet !== null && households[statusSheet] && (
+        <div className="sheet-scrim" onClick={() => setStatusSheet(null)}>
+          <div
+            className="sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label={'Set status for household ' + households[statusSheet].id}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sheet-title">
+              Hh. {households[statusSheet].id}
+            </div>
+            <div className="small muted" style={{ marginBottom: 14 }}>
+              Set this household&apos;s check-in status
+            </div>
+            <button className="btn btn-safe btn-block" onClick={() => applyStatus('safe')}>
+              Safe
+            </button>
+            <button
+              className="btn btn-danger btn-block"
+              style={{ marginTop: 8 }}
+              onClick={() => applyStatus('help')}
+            >
+              Needs help
+            </button>
+            <button
+              className="btn btn-ghost btn-block"
+              style={{ marginTop: 8 }}
+              onClick={() => applyStatus('none')}
+            >
+              No response
+            </button>
+            <button
+              className="btn btn-ghost btn-block"
+              style={{ marginTop: 8 }}
+              onClick={() => setStatusSheet(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

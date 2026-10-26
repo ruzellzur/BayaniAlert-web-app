@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import ResourceIcon from '../components/resourceIcon';
+import { ArrowLeftIcon } from '../components/icons';
 
 /**
  * Resource Detail Page
@@ -13,30 +15,6 @@ import { useApp } from '../context/AppContext';
  *
  * All visual rules live in src/styles/prototype.css.
  */
-const CAT_ICONS = {
-  power: <path d="M13 2 3 14h7l-1 8 11-14h-8z" />,
-  water: <path d="M12 3s6 7 6 11a6 6 0 1 1-12 0c0-4 6-11 6-11Z" />,
-  tools: (
-    <>
-      <path d="M14 7l3 3-8 8-3.5.5.5-3.5 8-8Z" />
-      <path d="M17 4l3 3" />
-    </>
-  ),
-  firstaid: (
-    <>
-      <rect x="3" y="7" width="18" height="12" rx="2" />
-      <path d="M12 10v6M9 13h6" />
-    </>
-  ),
-  transport: (
-    <>
-      <rect x="3" y="10" width="18" height="7" rx="2" />
-      <circle cx="7.5" cy="18.5" r="1.5" />
-      <circle cx="16.5" cy="18.5" r="1.5" />
-    </>
-  ),
-};
-
 export default function ResourceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -56,7 +34,7 @@ export default function ResourceDetail() {
               aria-label="Go back"
               style={{ padding: '8px 10px' }}
             >
-              ←
+              <ArrowLeftIcon />
             </button>
             <h2 style={{ fontSize: 17 }}>Item details</h2>
           </div>
@@ -75,8 +53,6 @@ export default function ResourceDetail() {
     .join('')
     .toUpperCase()
     .slice(0, 2);
-  const sharedCount = (resourceId % 12) + 1;
-
   const handleRequest = () => {
     if (requestItem) requestItem(resource.id);
     showToast?.('Request sent to ' + ownerName);
@@ -93,7 +69,7 @@ export default function ResourceDetail() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }}>Item details</h2>
         </div>
@@ -102,9 +78,7 @@ export default function ResourceDetail() {
       {/* Hero */}
       <div className="detail-hero">
         <span className={'res-ic cat-' + resource.cat}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            {CAT_ICONS[resource.cat] || CAT_ICONS.tools}
-          </svg>
+          <ResourceIcon category={resource.cat} />
         </span>
         <div>
           <div style={{ fontWeight: 600, fontSize: 17 }}>{resource.name}</div>
@@ -130,7 +104,7 @@ export default function ResourceDetail() {
         <span className="avatar">{ownerInitials}</span>
         <div>
           <div style={{ fontWeight: 600, fontSize: 13.5 }}>{ownerName}</div>
-          <div className="muted small">Member since 2022 · {sharedCount} items shared</div>
+          <div className="muted small">Neighbor in your barangay</div>
         </div>
       </div>
 

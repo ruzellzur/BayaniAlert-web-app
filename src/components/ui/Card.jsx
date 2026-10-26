@@ -23,7 +23,8 @@ const Card = forwardRef(({
 }, ref) => {
   const classes = [
     'card',
-    variant !== 'default' ? `card-${variant}` : '',
+    variant === 'elevated' ? 'card-elevated' : '',
+    variant === 'interactive' ? 'card-interactive' : '',
     interactive || onClick ? 'card-interactive' : '',
     className,
   ]

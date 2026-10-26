@@ -1,0 +1,360 @@
+<title>BayaniAlert Prototype Gallery</title>
+
+<style>
+  :root{
+    --bg:#f6f4ef;
+    --panel:#ffffff;
+    --panel-2:#fbfaf7;
+    --ink:#1c2420;
+    --ink-soft:#5d6b63;
+    --line:#e2ded4;
+    --accent:#1f6f4a;
+    --accent-soft:#e3f1e8;
+    --warn:#a8560f;
+    --warn-soft:#fbeee0;
+    --admin:#4a3b8f;
+    --admin-soft:#ece8fa;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(28,36,32,.05), 0 8px 24px -12px rgba(28,36,32,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#121614;
+      --panel:#1a201d;
+      --panel-2:#202722;
+      --ink:#e8ece9;
+      --ink-soft:#9aa8a0;
+      --line:#2c3531;
+      --accent:#63c893;
+      --accent-soft:#1d332a;
+      --warn:#e0a165;
+      --warn-soft:#33261a;
+      --admin:#a99cf0;
+      --admin-soft:#262138;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#121614;
+    --panel:#1a201d;
+    --panel-2:#202722;
+    --ink:#e8ece9;
+    --ink-soft:#9aa8a0;
+    --line:#2c3531;
+    --accent:#63c893;
+    --accent-soft:#1d332a;
+    --warn:#e0a165;
+    --warn-soft:#33261a;
+    --admin:#a99cf0;
+    --admin-soft:#262138;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .page{max-width:1240px;margin:0 auto;padding:32px 20px 64px}
+
+  header.top{margin-bottom:26px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--accent);background:var(--accent-soft);
+    padding:5px 10px;border-radius:999px;margin-bottom:12px;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  h1{
+    font-size:clamp(26px,3.6vw,40px);line-height:1.12;margin:0 0 10px;
+    letter-spacing:-.02em;font-weight:800;
+  }
+  h1 span{color:var(--ink-soft);font-weight:600}
+  .lede{max-width:62ch;margin:0;color:var(--ink-soft);font-size:15px}
+
+  .facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .fact{
+    font-size:12.5px;padding:6px 11px;border-radius:999px;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink-soft);
+  }
+  .fact b{color:var(--ink);font-weight:700}
+
+  .layout{display:grid;grid-template-columns:1fr 420px;gap:26px;align-items:start;margin-top:30px}
+  @media (max-width:980px){ .layout{grid-template-columns:1fr} }
+
+  .group{margin-bottom:26px}
+  .group-head{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;flex-wrap:wrap}
+  .group-head h2{font-size:13px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin:0;color:var(--ink-soft)}
+  .group-head .rule{flex:1;height:1px;background:var(--line);min-width:24px}
+  .group-head .count{font-size:11.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+
+  .screen-card{
+    all:unset;box-sizing:border-box;display:block;cursor:pointer;
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px 13px;transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .screen-card:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-1px)}
+  .screen-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .screen-card[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft)}
+  .screen-card .id{
+    display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:11px;color:var(--ink-soft);margin-bottom:3px;
+  }
+  .screen-card .nm{display:block;font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .screen-card .ds{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:3px}
+
+  .badge{
+    display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;
+    text-transform:uppercase;padding:2px 7px;border-radius:6px;margin-top:8px;
+  }
+  .b-tab{background:var(--panel-2);color:var(--ink-soft);border:1px solid var(--line)}
+  .b-admin{background:var(--admin-soft);color:var(--admin)}
+  .b-auth{background:var(--warn-soft);color:var(--warn)}
+
+  .viewer{position:sticky;top:20px}
+  @media (max-width:980px){ .viewer{position:static;order:-1} }
+
+  .phone{
+    background:var(--panel);border:1px solid var(--line);border-radius:22px;
+    padding:10px;box-shadow:var(--shadow);
+  }
+  .phone-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:2px 6px 9px;font-size:12px;color:var(--ink-soft);
+  }
+  .phone-bar .now{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:11.5px;color:var(--ink);font-weight:600;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .phone-bar button{
+    all:unset;cursor:pointer;font-size:11.5px;font-weight:700;color:var(--accent);
+    padding:3px 8px;border-radius:7px;border:1px solid var(--line);
+  }
+  .phone-bar button:hover{background:var(--accent-soft)}
+  .phone-bar button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+  .frame-wrap{
+    position:relative;width:100%;aspect-ratio:400 / 780;
+    border-radius:15px;overflow:hidden;background:#fff;border:1px solid var(--line);
+  }
+  .frame-wrap iframe{width:100%;height:100%;border:0;display:block}
+  .fallback{
+    position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;gap:10px;
+    padding:22px;background:var(--panel-2);color:var(--ink-soft);font-size:12.5px;
+  }
+  .fallback.show{display:flex}
+  .fallback code{
+    display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:9px 10px;font-size:11.5px;color:var(--ink);overflow-x:auto;white-space:pre;
+  }
+
+  .note{
+    margin-top:12px;padding:12px 13px;border-radius:var(--radius);
+    background:var(--panel);border:1px solid var(--line);font-size:12.5px;color:var(--ink-soft);
+  }
+  .note b{color:var(--ink)}
+  .note + .note{margin-top:8px}
+  .note ul{margin:6px 0 0;padding-left:17px}
+  .note li{margin:2px 0}
+
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:12.5px}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+</style>
+
+<div class="page">
+  <header class="top">
+    <span class="eyebrow"><span class="dot"></span>Prototype walkthrough</span>
+    <h1>BayaniAlert <span>— 20 screens, one map</span></h1>
+    <p class="lede">
+      The standalone prototype is a single-page vanilla build: every screen is a
+      <code>&lt;section class="screen"&gt;</code> and one function, <code>go(id)</code>, decides which one is visible.
+      Pick a screen on the left to load it in the frame.
+    </p>
+    <div class="facts">
+      <span class="fact"><b>20</b> screens</span>
+      <span class="fact"><b>3</b> roles · resident / official / admin</span>
+      <span class="fact"><b>2</b> shells · sidebar + mobile tabbar</span>
+      <span class="fact">state key <b>bayanialert_state</b></span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main id="screens"></main>
+
+    <aside class="viewer">
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="now" id="now">screen-welcome</span>
+          <button id="reload" type="button">Reload frame</button>
+        </div>
+        <div class="frame-wrap">
+          <iframe id="frame" src="proto/index.html" title="BayaniAlert prototype preview" loading="eager"></iframe>
+          <div class="fallback" id="fallback">
+            <b style="color:var(--ink);font-size:13px">The live embed didn’t initialise here.</b>
+            <span>This page’s sandbox can block the prototype’s storage. It runs fine from disk — from the project root:</span>
+            <code>node prototype-src/serve.mjs ./prototype-src/bayanialert-prototype 5177</code>
+            <span>then open <b style="color:var(--ink)">http://127.0.0.1:5177/</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>How navigation is wired.</b> <code>go(id)</code> shows one screen and then marks the matching shell tab active
+        through <code>tabMap</code> — sub-screens light up their parent: resourceDetail, listResource, myRequests and thread
+        all belong to the <b>Board</b> tab; evacDetail belongs to <b>Map</b>; weatherHistory to <b>Home</b>; directory to <b>Profile</b>.
+      </div>
+      <div class="note">
+        <b>Login routing.</b>
+        <ul>
+          <li>resident → <code>home</code></li>
+          <li>official → <code>announcements</code> + <code>body.role-official</code></li>
+          <li>admin → <code>adminApprovals</code> (swaps in the admin sidebar and tabbar)</li>
+        </ul>
+      </div>
+      <div class="note">
+        <b>Same state as the React app.</b> Both builds persist to <code>localStorage['bayanialert_state']</code>,
+        so a stale session in one shows up as a logged-in user in the other.
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    Source: <code>D:\download\bayanialert-prototype</code> · copied to <code>prototype-src/bayanialert-prototype</code> ·
+    screens listed in document order from <code>index.html</code>.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var SCREENS = [
+    { group: 'Onboarding', items: [
+      { id: 'welcome', name: 'Welcome', desc: 'Splash, brand promise, entry buttons.', badge: 'auth' },
+      { id: 'login', name: 'Log in', desc: 'Role switch + household ID.', badge: 'auth' },
+      { id: 'register', name: 'Register', desc: 'Resident / official sign-up form.', badge: 'auth' }
+    ]},
+    { group: 'Resident flow', items: [
+      { id: 'home', name: 'Home', desc: 'Safety check-in, announcements, weather.', badge: 'tab: home' },
+      { id: 'board', name: 'Resource board', desc: 'Borrow / lend items, category chips.', badge: 'tab: board' },
+      { id: 'resourceDetail', name: 'Resource detail', desc: 'One item, owner, request action.', badge: 'board' },
+      { id: 'thread', name: 'Message thread', desc: 'Chat with the item owner.', badge: 'board' },
+      { id: 'listResource', name: 'List a resource', desc: 'Form to share an item.', badge: 'board' },
+      { id: 'myRequests', name: 'My requests', desc: 'Sent vs received, accept / decline.', badge: 'board' },
+      { id: 'map', name: 'Evacuation map', desc: 'Centers near you with capacity.', badge: 'tab: map' },
+      { id: 'evacDetail', name: 'Evacuation center', desc: 'Capacity bar, amenities, directions.', badge: 'map' },
+      { id: 'checkin', name: 'Check in', desc: 'Household check-in flow.', badge: 'tab: checkin' },
+      { id: 'announcements', name: 'Announcements', desc: 'Barangay feed; officials can post.', badge: 'tab: announce' },
+      { id: 'weatherHistory', name: 'Weather history', desc: 'Past typhoon signals and notes.', badge: 'home' },
+      { id: 'profile', name: 'Profile', desc: 'Identity, household, settings.', badge: 'tab: profile' },
+      { id: 'editProfile', name: 'Edit profile', desc: 'Name, contact, purok.', badge: 'profile' },
+      { id: 'directory', name: 'Hotlines', desc: 'Officials + emergency contacts.', badge: 'profile' }
+    ]},
+    { group: 'Admin flow', items: [
+      { id: 'adminApprovals', name: 'Official approvals', desc: 'Approve or reject registrations.', badge: 'admin' },
+      { id: 'adminPuroks', name: 'Manage puroks', desc: 'Add and remove puroks.', badge: 'admin' },
+      { id: 'adminEvac', name: 'Manage evacuation', desc: 'Edit centers and capacity.', badge: 'admin' }
+    ]}
+  ];
+
+  var host = document.getElementById('screens');
+  var frame = document.getElementById('frame');
+  var now = document.getElementById('now');
+  var fallback = document.getElementById('fallback');
+  var reload = document.getElementById('reload');
+  var current = null;
+  var ready = false;
+
+  function badgeClass(b) {
+    if (b === 'admin') return 'badge b-admin';
+    if (b === 'auth') return 'badge b-auth';
+    return 'badge b-tab';
+  }
+
+  function badgeLabel(b) {
+    return b.indexOf('tab:') === 0 ? 'tab · ' + b.slice(5) : b;
+  }
+
+  function cardEl(s) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'screen-card';
+    b.dataset.id = s.id;
+    b.innerHTML =
+      '<span class="id">#screen-' + s.id + '</span>' +
+      '<span class="nm">' + s.name + '</span>' +
+      '<span class="ds">' + s.desc + '</span>' +
+      '<span class="' + badgeClass(s.badge) + '">' + badgeLabel(s.badge) + '</span>';
+    b.addEventListener('click', function () { show(s.id); });
+    return b;
+  }
+
+  SCREENS.forEach(function (g) {
+    var wrap = document.createElement('section');
+    wrap.className = 'group';
+    var head = document.createElement('div');
+    head.className = 'group-head';
+    head.innerHTML =
+      '<h2>' + g.group + '</h2><span class="rule"></span>' +
+      '<span class="count">' + g.items.length + '</span>';
+    var grid = document.createElement('div');
+    grid.className = 'grid';
+    g.items.forEach(function (s) { grid.appendChild(cardEl(s)); });
+    wrap.appendChild(head);
+    wrap.appendChild(grid);
+    host.appendChild(wrap);
+  });
+
+  function mark(id) {
+    var cards = host.querySelectorAll('.screen-card');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].setAttribute('aria-current', cards[i].dataset.id === id ? 'true' : 'false');
+    }
+  }
+
+  function show(id) {
+    current = id;
+    now.textContent = '#screen-' + id;
+    mark(id);
+    if (!ready) return;
+    try {
+      frame.contentWindow.go(id);
+    } catch (e) {
+      /* prototype not reachable in this sandbox; fallback already shown */
+    }
+  }
+
+  function checkReady() {
+    try {
+      var w = frame.contentWindow;
+      ready = !!(w && typeof w.go === 'function');
+    } catch (e) {
+      ready = false;
+    }
+    fallback.classList.toggle('show', !ready);
+    if (ready && current) {
+      try { frame.contentWindow.go(current); } catch (e) {}
+    }
+  }
+
+  frame.addEventListener('load', function () {
+    checkReady();
+    if (!ready) setTimeout(checkReady, 250);
+  });
+
+  reload.addEventListener('click', function () {
+    ready = false;
+    fallback.classList.remove('show');
+    frame.src = 'proto/index.html';
+  });
+
+  setTimeout(function () { if (!ready) checkReady(); }, 1200);
+})();
+</script>

@@ -1,4 +1,7 @@
+/* eslint-disable react-refresh/only-export-components -- context module intentionally exports the provider, its consumer hook, and the shared permission table */
 import { createContext, useContext, useState, useEffect } from 'react';
+
+const STORAGE_KEY = 'bayanialert_state';
 
 const AppContext = createContext(null);
 
@@ -56,63 +59,53 @@ const INITIAL_REQUESTS = [
   { item: 'Multicab for evacuation trips', owner: 'Kap. Lira · Purok 1', status: 'declined' },
 ];
 
+/**
+ * Reads persisted state once at module load so every slice can be used as a
+ * lazy `useState` initialiser — no setState-on-mount effect required.
+ */
+function loadPersisted() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch (e) {
+    console.error('Failed to load state:', e);
+    return {};
+  }
+}
+
+const persisted = loadPersisted();
+
 export function AppProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [myStatus, setMyStatus] = useState(null);
+  const [user, setUser] = useState(persisted.user ?? null);
+  const [myStatus, setMyStatus] = useState(persisted.myStatus ?? null);
   const [resources, setResources] = useState(INITIAL_RESOURCES);
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
-  const [messages, setMessages] = useState({});
+  const [requests, setRequests] = useState(persisted.requests ?? INITIAL_REQUESTS);
+  const [messages, setMessages] = useState(persisted.messages ?? {});
   const [evacCenters, setEvacCenters] = useState(INITIAL_EVACUATION_CENTERS);
-  const [announcements, setAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState(
+    persisted.announcements ?? INITIAL_ANNOUNCEMENTS
+  );
   const [puroks, setPuroks] = useState(INITIAL_PUROKS);
   const [pendingOfficials, setPendingOfficials] = useState(INITIAL_PENDING_OFFICIALS);
   const [households, setHouseholds] = useState(INITIAL_HOUSEHOLDS);
-  const [theme, setTheme] = useState('system');
+  const [theme, setTheme] = useState(persisted.theme ?? 'system');
   const [toast, setToast] = useState(null);
-
-  // Load state from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('bayanialert_state');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.user) setUser(parsed.user);
-        if (parsed.myStatus) setMyStatus(parsed.myStatus);
-        if (parsed.resources) setResources(parsed.resources);
-        if (parsed.requests) setRequests(parsed.requests);
-        if (parsed.messages) setMessages(parsed.messages);
-        if (parsed.evacCenters) setEvacCenters(parsed.evacCenters);
-        if (parsed.announcements) setAnnouncements(parsed.announcements);
-        if (parsed.puroks) setPuroks(parsed.puroks);
-        if (parsed.pendingOfficials) setPendingOfficials(parsed.pendingOfficials);
-        if (parsed.households) setHouseholds(parsed.households);
-        if (parsed.theme) setTheme(parsed.theme);
-      }
-    } catch (e) {
-      console.error('Failed to load state:', e);
-    }
-  }, []);
 
   // Save state to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('bayanialert_state', JSON.stringify({
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
         user,
         myStatus,
-        resources,
         requests,
         messages,
-        evacCenters,
         announcements,
-        puroks,
-        pendingOfficials,
-        households,
         theme,
       }));
     } catch (e) {
       console.error('Failed to save state:', e);
     }
-  }, [user, myStatus, resources, requests, messages, evacCenters, announcements, puroks, pendingOfficials, households, theme]);
+  }, [user, myStatus, requests, messages, announcements, theme]);
 
   // Apply theme
   useEffect(() => {
@@ -134,13 +127,39 @@ export function AppProvider({ children }) {
       permissions: userData.role === 'official' ? permsFor(userData.position) : null,
     };
     setUser(user);
-    showToast(`Logged in as ${userData.role === 'official' ? userData.position : 'Resident'}`);
+    showToast(
+      `Logged in as ${
+        userData.role === 'official'
+          ? userData.position
+          : userData.role === 'admin'
+            ? 'Administrator'
+            : 'Resident'
+      }`
+    );
   };
 
   const logout = () => {
     setUser(null);
     setMyStatus(null);
     showToast('Logged out');
+  };
+
+  const updateProfile = (updates) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...updates };
+      if (updates.name) {
+        next.initials =
+          updates.name
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((w) => w[0].toUpperCase())
+            .join('') || prev.initials;
+      }
+      return next;
+    });
   };
 
   const setStatus = (status) => {
@@ -282,6 +301,7 @@ export function AppProvider({ children }) {
     // Actions
     login,
     logout,
+    updateProfile,
     setStatus,
     addResource,
     requestItem,

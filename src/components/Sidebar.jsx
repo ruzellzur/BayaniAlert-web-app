@@ -53,7 +53,12 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="side-foot">
-        <div className="side-house" onClick={handleLogout}>
+        <button
+          type="button"
+          className="side-house"
+          onClick={handleLogout}
+          aria-label={'Log out of ' + user.name}
+        >
           <span className="av">{user.initials}</span>
           <div>
             <div className="nm">{user.name}</div>
@@ -61,7 +66,7 @@ export function Sidebar() {
               {user.role === 'resident' ? `Household ${user.household}` : user.position}
             </div>
           </div>
-        </div>
+        </button>
       </div>
     </aside>
   );
@@ -102,13 +107,18 @@ export function AdminSidebar() {
         ))}
       </nav>
       <div className="side-foot">
-        <div className="side-house" onClick={handleLogout}>
-          <span className="av">SA</span>
+        <button
+          type="button"
+          className="side-house"
+          onClick={handleLogout}
+          aria-label={'Log out of ' + (user.name || 'this account')}
+        >
+          <span className="av">{user.initials || 'SA'}</span>
           <div>
-            <div className="nm">System admin</div>
-            <div className="hh">Log out</div>
+            <div className="nm">{user.name || 'System admin'}</div>
+            <div className="hh">Tap to log out</div>
           </div>
-        </div>
+        </button>
       </div>
     </aside>
   );

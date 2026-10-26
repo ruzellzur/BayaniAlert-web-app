@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import ResourceIcon from '../components/resourceIcon';
+import { PlusIcon, ArrowLeftIcon } from '../components/icons';
 
 /**
  * Resource Board Page
@@ -49,17 +51,6 @@ export default function Board() {
     return matchesFilter && matches;
   });
 
-  const getCategoryIcon = (cat) => {
-    const icons = {
-      power: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2 3 14h7l-1 8 11-14h-8z"/></svg>,
-      water: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3s6 7 6 11a6 6 0 1 1-12 0c0-4 6-11 6-11Z"/></svg>,
-      tools: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 7l3 3-8 8-3.5.5.5-3.5 8-8Z"/><path d="M17 4l3 3"/></svg>,
-      firstaid: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M12 10v6M9 13h6"/></svg>,
-      transport: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="10" width="18" height="7" rx="2"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="16.5" cy="18.5" r="1.5"/></svg>,
-    };
-    return icons[cat] || icons.tools;
-  };
-
   const handleAddResource = (e) => {
     e?.preventDefault();
     if (!newResource.name.trim()) return;
@@ -86,7 +77,7 @@ export default function Board() {
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
+          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}><ArrowLeftIcon /></button>
           <h2 style={{ fontSize: 17 }}>Resource board</h2>
         </div>
         <div className="topbar-right">
@@ -103,10 +94,11 @@ export default function Board() {
       <input
         type="text"
         id="resSearch"
-        placeholder="Search items, e.g. generator, water…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        style={{ width: '100%', marginBottom: 12, padding: '11px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontSize: '13.5px' }}
+        className="search-input"
+        placeholder=" items, e.g. generator, water…"
+        aria-label=" resources"
       />
 
       {/* Add Resource Form (inline, like prototype's listResource screen) */}
@@ -187,7 +179,7 @@ export default function Board() {
               style={{ cursor: 'pointer', marginBottom: 10 }}
             >
               <span className={`res-ic cat-${resource.cat}`}>
-                {getCategoryIcon(resource.cat)}
+                <ResourceIcon category={resource.cat} />
               </span>
               <div className="res-body">
                 <div className="name">{resource.name}</div>
@@ -213,9 +205,9 @@ export default function Board() {
         className="btn btn-accent btn-block add-resource-btn"
         onClick={() => setShowAddForm(!showAddForm)}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ width: 18, height: 18 }}>
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <span style={{ display: 'inline-flex', width: 18, height: 18 }}>
+          <PlusIcon />
+        </span>
         {showAddForm ? 'Cancel' : 'List a resource'}
       </button>
     </section>

@@ -29,7 +29,7 @@ export default function Layout() {
         <Outlet />
 
         {/* Toast (styling: .toast / .toast.show in prototype.css) */}
-        {toast && <div className="toast show">{toast}</div>}
+        {toast && <div className="toast">{toast}</div>}
 
         {/* Mobile bottom nav */}
         {isAuthed && !isAdmin && <BottomNav />}

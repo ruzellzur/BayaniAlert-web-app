@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 
 /**
@@ -172,14 +172,9 @@ export default function Register() {
           <div className="field">
             <label>Purok / Zone</label>
             <select value={purok} onChange={(e) => setPurok(e.target.value)} disabled={loading}>
-              {(puroks.length > 0 ? puroks : [
-                { name: 'Purok 1' },
-                { name: 'Purok 2' },
-                { name: 'Purok 3' },
-                { name: 'Purok 4' },
-              ]).map((p, i) => (
-                <option key={i} value={p.name} selected={p.name === 'Purok 3'}>
-                  {p.name}
+              {(puroks.length > 0 ? puroks : ['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4']).map((p) => (
+                <option key={p} value={p}>
+                  {p}
                 </option>
               ))}
             </select>
@@ -246,7 +241,7 @@ export default function Register() {
             <label>Position</label>
             <select value={position} onChange={(e) => setPosition(e.target.value)} disabled={loading}>
               {POSITIONS.map((pos) => (
-                <option key={pos} value={pos} selected={pos === 'Kagawad'}>
+                <option key={pos} value={pos}>
                   {pos}
                 </option>
               ))}
@@ -256,14 +251,9 @@ export default function Register() {
             <label>Assigned purok / zone</label>
             <select value={zone} onChange={(e) => setZone(e.target.value)} disabled={loading}>
               <option value="All puroks">All puroks</option>
-              {(puroks.length > 0 ? puroks : [
-                { name: 'Purok 1' },
-                { name: 'Purok 2' },
-                { name: 'Purok 3' },
-                { name: 'Purok 4' },
-              ]).map((p, i) => (
-                <option key={i} value={p.name} selected={p.name === 'Purok 3'}>
-                  {p.name}
+              {(puroks.length > 0 ? puroks : ['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4']).map((p) => (
+                <option key={p} value={p}>
+                  {p}
                 </option>
               ))}
             </select>

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeftIcon } from '../components/icons';
 
 /**
  * Weather & Alerts Page
@@ -59,7 +60,7 @@ export default function WeatherHistory() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }}>Weather &amp; alerts</h2>
         </div>

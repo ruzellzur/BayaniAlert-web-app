@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { ArrowLeftIcon } from '../components/icons';
 
 /**
  * Household / Profile Page
@@ -42,7 +43,7 @@ export default function Profile() {
   const permLabels = [];
   if (perms.announce) permLabels.push('Announcements');
   if (perms.evac) permLabels.push('Evacuation centers');
-  if (perms.approve) permLabels.push('Officer approvals');
+  if (perms.rescue) permLabels.push('Rescue / response');
 
   const handleLogout = () => {
     if (window.confirm('Log out of BayaniAlert?')) {
@@ -62,7 +63,7 @@ export default function Profile() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }}>Household</h2>
         </div>
@@ -75,7 +76,7 @@ export default function Profile() {
           <div>
             <div style={{ fontWeight: 600, fontSize: 15.5 }}>{residentName}</div>
             <div className="muted small">
-              Household #{user?.householdId || '142'} · {user?.purok || 'Purok 3'}
+              Household #{user?.household || '142'} · {user?.purok || 'Purok 3'}
             </div>
           </div>
         </div>

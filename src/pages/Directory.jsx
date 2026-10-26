@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { PhoneIcon, ArrowLeftIcon } from '../components/icons';
 
 /**
  * Barangay Hotlines Page
@@ -13,23 +14,6 @@ import { useApp } from '../context/AppContext';
  *
  * All visual rules live in src/styles/prototype.css.
  */
-const SEARCH_STYLE = {
-  width: '100%',
-  marginBottom: 14,
-  padding: '11px 14px',
-  borderRadius: 12,
-  border: '1.5px solid var(--border)',
-  background: 'var(--surface)',
-  color: 'var(--ink)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13.5,
-};
-
-const PHONE_ICON = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
-  </svg>
-);
 
 const OFFICIALS = [
   { av: 'EL', nm: 'Brgy. Captain Elena Lira', role: 'Barangay Captain', tel: '0917 500 1001' },
@@ -70,7 +54,7 @@ export default function Directory() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }}>Barangay hotlines</h2>
         </div>
@@ -79,10 +63,11 @@ export default function Directory() {
       <input
         type="text"
         id="dir"
-        placeholder=" contacts…"
-        style={SEARCH_STYLE}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        className="search-input"
+        placeholder=" contacts…"
+        aria-label=" contacts"
       />
 
       <div className="section-label" style={{ marginTop: 0 }}>
@@ -102,7 +87,7 @@ export default function Directory() {
               <div className="role">{c.role}</div>
             </div>
             <button className="dir-call" onClick={() => call(c.tel)} aria-label={'Call ' + c.tel}>
-              {PHONE_ICON}
+              <PhoneIcon />
             </button>
           </div>
         ))}
@@ -125,7 +110,7 @@ export default function Directory() {
               <div className="role">{c.role}</div>
             </div>
             <button className="dir-call" onClick={() => call(c.tel)} aria-label={'Call ' + c.tel}>
-              {PHONE_ICON}
+              <PhoneIcon />
             </button>
           </div>
         ))}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { ArrowLeftIcon } from '../components/icons';
 
 /**
  * My Requests Page
@@ -14,24 +15,6 @@ import { useApp } from '../context/AppContext';
  *
  * All visual rules live in src/styles/prototype.css.
  */
-const SEARCH_STYLE = {
-  width: '100%',
-  marginBottom: 12,
-  padding: '11px 14px',
-  borderRadius: 12,
-  border: '1.5px solid var(--border)',
-  background: 'var(--surface)',
-  color: 'var(--ink)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13.5,
-};
-
-const BASE_SENT = [
-  { item: 'Gasoline-powered generator', owner: 'Mang Tonio · Purok 3', status: 'pending' },
-  { item: 'First aid kit (family size)', owner: 'Nurse Bel · Purok 2', status: 'accepted' },
-  { item: 'Multicab for evacuation trips', owner: 'Kap. Lira · Purok 1', status: 'declined' },
-];
-
 function statusTag(status) {
   if (status === 'accepted') return <span className="tag tag-accepted">Accepted</span>;
   if (status === 'declined') return <span className="tag tag-declined">Declined</span>;
@@ -48,7 +31,7 @@ export default function MyRequests() {
   ]);
 
   const q = query.trim().toLowerCase();
-  const sentItems = (requests || []).concat(BASE_SENT).filter(
+  const sentItems = (requests || []).filter(
     (r) =>
       !q ||
       (r.item || '').toLowerCase().includes(q) ||
@@ -74,7 +57,7 @@ export default function MyRequests() {
             aria-label="Go back"
             style={{ padding: '8px 10px' }}
           >
-            ←
+            <ArrowLeftIcon />
           </button>
           <h2 style={{ fontSize: 17 }}>My requests</h2>
         </div>
@@ -93,10 +76,11 @@ export default function MyRequests() {
       <input
         type="text"
         id="req"
-        placeholder=" your requests…"
-        style={SEARCH_STYLE}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        className="search-input"
+        placeholder=" requests…"
+        aria-label=" requests"
       />
 
       {/* Sent list */}

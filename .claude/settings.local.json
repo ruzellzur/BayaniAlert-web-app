@@ -51,7 +51,17 @@
       "PowerShell($p='D:\\\\download\\\\bayanialert-prototype\\\\bayanialert-prototype\\\\index.html'; $l=[System.IO.File]::ReadAllLines\\($p\\); Write-Output \\('TOTAL=' + $l.Count\\); for\\($i=57;$i -lt 130;$i++\\){ Write-Output \\(\\('{0,4}: {1}' -f \\($i+1\\), $l[$i]\\)\\) })",
       "PowerShell($css=[System.IO.File]::ReadAllLines\\('C:\\\\Users\\\\ruzel\\\\OneDrive\\\\Desktop\\\\BayaniAlert-Web-App\\\\src\\\\styles\\\\prototype.css'\\); for\\($i=0;$i -lt $css.Count;$i++\\){ if\\($css[$i] -match '\\\\.welcome|\\\\.guest-info|\\\\.value-row|\\\\.value\\\\b|\\\\.dir-item|\\\\.dir-call|\\\\.welcome-cta'\\){ Write-Output \\(\\('{0,4}: {1}' -f \\($i+1\\), $css[$i]\\)\\) } })",
       "PowerShell($p='D:\\\\download\\\\bayanialert-prototype\\\\bayanialert-prototype\\\\script.js'; $t=[System.IO.File]::ReadAllText\\($p\\); $i=$t.IndexOf\\('guestEvacListWrap'\\); Write-Output \\('idx=' + $i\\); if\\($i -ge 0\\){ $s=[Math]::Max\\(0,$i-900\\); $len=[Math]::Min\\(2400,$t.Length-$s\\); Write-Output $t.Substring\\($s,$len\\) })",
-      "PowerShell($p='C:\\\\Users\\\\ruzel\\\\OneDrive\\\\Desktop\\\\BayaniAlert-Web-App\\\\src\\\\context\\\\AppContext.jsx'; $t=[System.IO.File]::ReadAllText\\($p\\); $i=$t.IndexOf\\('evacCenters'\\); Write-Output \\('idx=' + $i\\); if\\($i -ge 0\\){ $len=[Math]::Min\\(1400,$t.Length-$i\\); Write-Output $t.Substring\\($i,$len\\) })"
+      "PowerShell($p='C:\\\\Users\\\\ruzel\\\\OneDrive\\\\Desktop\\\\BayaniAlert-Web-App\\\\src\\\\context\\\\AppContext.jsx'; $t=[System.IO.File]::ReadAllText\\($p\\); $i=$t.IndexOf\\('evacCenters'\\); Write-Output \\('idx=' + $i\\); if\\($i -ge 0\\){ $len=[Math]::Min\\(1400,$t.Length-$i\\); Write-Output $t.Substring\\($i,$len\\) })",
+      "PowerShell(npx eslint src 2>&1 | Select-Object -Last 100)",
+      "Bash(grep -n '-input\\\\|-input' src/styles/prototype.css)",
+      "PowerShell(Copy-Item *)",
+      "PowerShell(Get-Content *)",
+      "Bash(grep -rn '-field' src/)",
+      "Bash(echo \"SCRIPT_EXIT=$?\")",
+      "Bash(cd *)",
+      "Bash(echo \"NOTE=$?\")",
+      "PowerShell(Out-Null *)",
+      "PowerShell(Get-ChildItem *)"
     ]
   }
 }
