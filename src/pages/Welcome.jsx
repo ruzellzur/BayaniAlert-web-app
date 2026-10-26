@@ -149,7 +149,9 @@ export default function Welcome() {
         }
         .hero {
           padding: 54px 26px 30px;
-          background: var(--grad-primary);
+          background: radial-gradient(120% 90% at 15% -10%, rgba(226,154,59,0.35), transparent 60%),
+                      radial-gradient(80% 60% at 100% 100%, rgba(110,143,199,0.22), transparent 60%),
+                      var(--grad-primary);
           color: #fff;
           position: relative;
           min-height: 340px;
@@ -184,7 +186,10 @@ export default function Welcome() {
         }
         .hero h1 i {
           font-style: italic;
-          color: #F0B95E;
+          background: linear-gradient(120deg, var(--accent-2), var(--accent) 70%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
         }
         .hero p {
           color: #C9D3E3;
@@ -218,7 +223,10 @@ export default function Welcome() {
           font-family: var(--font-display);
           font-size: 20px;
           font-weight: 600;
-          color: var(--accent);
+          background: linear-gradient(120deg, var(--accent-2), var(--cool));
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
         }
         .value .lbl {
           font-size: 11px;

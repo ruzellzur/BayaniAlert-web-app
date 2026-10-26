@@ -497,6 +497,7 @@ export default function Home() {
           justify-content: center;
           background: var(--grad-accent);
           color: #fff;
+          box-shadow: 0 4px 10px rgba(226,154,59,0.28);
         }
         .quick svg {
           width: 19px;

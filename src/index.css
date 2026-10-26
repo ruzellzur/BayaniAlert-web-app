@@ -23,7 +23,8 @@
   --cool: #4A6FA5;
   --cool-2: #6E5BB5;
   --border: #DCE3DC;
-  --card-shadow: none;
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow: 0 4px 16px rgba(0,0,0,0.1);
   --font-display: 'Fraunces', serif;
   --font-body: 'Work Sans', sans-serif;
   --radius: 18px;
@@ -60,7 +61,8 @@
     --accent-soft: #2A2113;
     --accent-track: #4A3717;
     --ladder-ink: #F2D9A8;
-    --card-shadow: none;
+    --card-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    --shadow: 0 6px 20px rgba(0,0,0,0.3);
     /* Dark mode gradients */
     --grad-primary: linear-gradient(135deg, #15233A 0%, #1C2E48 100%);
     --grad-accent: linear-gradient(135deg, #D88B29 0%, #F7C878 100%);
@@ -105,6 +107,7 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
+  box-shadow: var(--card-shadow);
 }
 
 /* Buttons */

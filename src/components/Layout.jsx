@@ -210,9 +210,27 @@ export default function Layout() {
           padding: 18px;
           color: #fff;
           background: var(--grad-primary);
-          border: 1px solid transparent;
+          box-shadow: var(--shadow);
           position: relative;
           overflow: hidden;
+        }
+        .alert-card::after {
+          content: "";
+          position: absolute;
+          right: -30px;
+          top: -30px;
+          width: 140px;
+          height: 140px;
+          background: radial-gradient(circle, rgba(226,154,59,0.35), transparent 70%);
+        }
+        .alert-card::before {
+          content: "";
+          position: absolute;
+          left: -20px;
+          bottom: -40px;
+          width: 120px;
+          height: 120px;
+          background: radial-gradient(circle, rgba(110,143,199,0.28), transparent 70%);
         }
         .alert-top {
           display: flex;
@@ -221,11 +239,12 @@ export default function Layout() {
         }
         .signal-badge {
           background: var(--grad-accent);
-          color: #fff;
+          color: var(--accent-ink);
           font-weight: 700;
           font-size: 12.5px;
           padding: 6px 11px;
           border-radius: 10px;
+          box-shadow: 0 4px 12px rgba(226,154,59,0.35);
         }
         .alert-card h3 {
           color: #fff;
@@ -253,9 +272,10 @@ export default function Layout() {
         .cap-bar {
           height: 9px;
           border-radius: 999px;
-          background: var(--accent-track);
+          background: var(--surface-alt);
           overflow: hidden;
           margin-top: 10px;
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.10);
         }
         .cap-fill {
           height: 100%;
