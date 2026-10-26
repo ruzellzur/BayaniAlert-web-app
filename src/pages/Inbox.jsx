@@ -143,8 +143,8 @@ export default function Inbox() {
           font-weight: 600;
           padding: 4px 9px;
           border-radius: 999px;
-          background: var(--grad-accent);
-          color: #fff;
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
         }
         .inbox-search {
           position: relative;
@@ -206,8 +206,8 @@ export default function Inbox() {
           width: 40px;
           height: 40px;
           border-radius: 11px;
-          background: var(--grad-cool);
-          color: #fff;
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
           display: flex;
           align-items: center;
           justify-content: center;

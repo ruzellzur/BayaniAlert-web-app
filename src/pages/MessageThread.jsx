@@ -327,7 +327,7 @@ const THREAD_CSS = `
     overflow-wrap: anywhere;
   }
   .msg-user .msg-bubble {
-    background: var(--grad-primary);
+    background: var(--strong);
     color: var(--on-strong);
     border-bottom-right-radius: 4px;
   }

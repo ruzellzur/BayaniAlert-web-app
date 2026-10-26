@@ -128,8 +128,8 @@ export default function ResourceDetail() {
           width: 40,
           height: 40,
           borderRadius: 12,
-          background: 'var(--grad-cool)',
-          color: '#fff',
+          background: 'var(--accent-soft)',
+          color: 'var(--ladder-ink)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -186,18 +186,18 @@ export default function ResourceDetail() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--grad-cool);
-          color: #fff;
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
         }
         .res-ic svg {
           width: 23px;
           height: 23px;
         }
-        .res-ic.cat-power { background: var(--grad-accent); }
-        .res-ic.cat-water { background: linear-gradient(135deg, #5FA8D3, #4A90B8); }
-        .res-ic.cat-tools { background: linear-gradient(135deg, #7B8794, #5C6370); }
-        .res-ic.cat-medicine { background: var(--grad-danger); }
-        .res-ic.cat-transport { background: var(--grad-safe); }
+        .res-ic.cat-power { background: var(--accent-soft); color: var(--ladder-ink); }
+        .res-ic.cat-water { background: var(--surface-alt); color: var(--cool); }
+        .res-ic.cat-tools { background: var(--surface-alt); color: var(--ink-soft); }
+        .res-ic.cat-medicine { background: var(--danger-bg); color: var(--danger); }
+        .res-ic.cat-transport { background: var(--safe-bg); color: var(--safe); }
         .section-label {
           display: flex;
           justify-content: space-between;

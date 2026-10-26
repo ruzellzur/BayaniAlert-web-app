@@ -19,7 +19,7 @@ function dotIcon(color, label, size) {
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     popupAnchor: [0, -size / 2],
-    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);color:#fff;font:700 ${Math.round(size * 0.5)}px/${size - 4}px sans-serif;text-align:center;">${label}</div>`,
+    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid #fff;color:#fff;font:700 ${Math.round(size * 0.5)}px/${size - 4}px sans-serif;text-align:center;">${label}</div>`,
   });
 }
 
