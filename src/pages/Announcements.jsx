@@ -137,7 +137,7 @@ export default function Announcements() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
-              width: '100%', marginBottom: 12, padding: '11px 14px', borderRadius: 12,
+              width: '100%', margin: '12px 0', padding: '14px', borderRadius: 12,
               border: '1.5px solid var(--border)', background: 'var(--surface)',
               color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: 13.5,
             }}

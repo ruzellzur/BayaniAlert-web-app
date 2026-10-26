@@ -209,7 +209,7 @@ export default function Board() {
   const [geoMsg, setGeoMsg] = useState('');
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter board-screen">
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
@@ -442,7 +442,7 @@ export default function Board() {
               <button className="modal-close" onClick={closeListModal}>×</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="form-grid" style={{ padding: '0 0 20px' }}>
+            <form onSubmit={handleSubmit} className="form-grid">
               <div className="field full">
                 <label>Item name</label>
                 <input
@@ -530,12 +530,27 @@ export default function Board() {
       )}
 
       <style>{`
+        .screen-enter {
+          min-width: 0;
+        }
+        .board-screen {
+          padding: 2px 20px 100px;
+        }
         .topbar {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          flex-wrap: wrap;
           gap: 10px;
-          padding: 18px 20px 14px;
+          padding: 18px 0 14px;
+        }
+        .topbar-right {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-left: auto;
         }
         .brgy-pill {
           font-size: 12px;
@@ -589,6 +604,7 @@ export default function Board() {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          flex-wrap: wrap;
           gap: 12px;
           padding: 10px 0;
           border-top: 1px solid var(--border);
@@ -676,6 +692,8 @@ export default function Board() {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
           margin-top: 10px;
         }
         .dist {
@@ -705,7 +723,8 @@ export default function Board() {
         .add-resource-btn {
           flex-shrink: 0;
           margin-top: 12px;
-          padding-top: 12px;
+          padding-top: 9px;
+          padding-bottom: 9px;
           border-top: 1px solid var(--border);
         }
 
@@ -736,16 +755,18 @@ export default function Board() {
           align-items: center;
           justify-content: center;
           z-index: 100;
-          padding: 20px;
+          padding: 12px;
           animation: fadeIn 0.2s ease;
         }
         .modal-content {
           background: var(--surface);
           border-radius: 20px;
-          width: 100%;
+          width: min(100%, 480px);
           max-width: 480px;
+          min-width: 0;
           max-height: 90vh;
           overflow-y: auto;
+          overflow-x: hidden;
           box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
           animation: slideUp 0.25s ease;
         }
@@ -753,8 +774,12 @@ export default function Board() {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          gap: 12px;
           padding: 20px 20px 16px;
           border-bottom: 1px solid var(--border);
+        }
+        .modal-header h2 {
+          min-width: 0;
         }
         .modal-close {
           width: 32px;
@@ -774,7 +799,19 @@ export default function Board() {
           background: var(--border);
         }
         .modal-content .form-grid {
-          padding: 20px;
+          grid-template-columns: minmax(0, 1fr);
+          padding: clamp(16px, 5vw, 25px);
+        }
+        .modal-content .form-grid > * {
+          min-width: 0;
+        }
+        .modal-content .row.between {
+          flex-wrap: wrap;
+        }
+        .modal-content textarea,
+        .modal-content input {
+          max-width: 100%;
+        }
         }
 
         @keyframes fadeIn {
@@ -787,24 +824,33 @@ export default function Board() {
         }
 
         @media (min-width: 900px) {
+          .board-screen {
+            padding-bottom: 24px;
+          }
           .topbar {
             padding: 26px 0 20px;
           }
           .screen-enter {
+            width: 100%;
             max-width: 1180px;
+            margin-left: auto;
+            margin-right: auto;
           }
           #resList {
             display: grid !important;
             grid-template-columns: repeat(2, 1fr);
             gap: 14px;
             align-content: start;
+            flex: 0 0 auto;
+            overflow: visible;
           }
           .add-resource-btn {
             max-width: 320px;
             margin-left: auto;
             margin-right: auto;
             border-top: none;
-            padding-top: 0;
+            padding-top: 14px;
+            padding-bottom: 14px;
           }
         }
       `}</style>

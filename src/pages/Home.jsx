@@ -116,15 +116,15 @@ export default function Home() {
         <div className="dash-col">
           {/* Weather advisory (read-only; TODO: let officials post alerts) */}
           <div className="alert-card" onClick={() => navigate('/weather-history')} style={{ cursor: 'pointer' }}>
-            <div className="alert-top">
-              <div style={{ minWidth: 0 }}>
+            <div className="alert-top home-alert-top">
+              <div className="home-alert-content">
                 <div className="small" style={{ color: '#B9C4DA' }}>
                   Weather advisory{weather.alerts.length > 1 ? ` · ${weather.alerts.length} active` : ''}
                 </div>
                 <h3>{weatherTitle}</h3>
                 {top?.body && <p className="alert-body">{top.body}</p>}
               </div>
-              <span className="signal-badge">{top ? SEVERITY_LABEL[top.severity] : 'CLEAR'}</span>
+              <span className="signal-badge home-alert-status">{top ? SEVERITY_LABEL[top.severity] : 'CLEAR'}</span>
             </div>
             {top && (
               <div className="alert-meta">
@@ -275,6 +275,19 @@ export default function Home() {
       </div>
 
       <style>{`
+        .home-alert-top {
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .home-alert-content {
+          flex: 1 1 200px;
+          min-width: 0;
+        }
+        .home-alert-status {
+          flex: 0 0 auto;
+          align-self: center;
+          white-space: nowrap;
+        }
         .topbar {
           display: flex;
           align-items: center;

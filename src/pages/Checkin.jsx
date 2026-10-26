@@ -246,7 +246,7 @@ export default function Checkin() {
           align-items: center;
           justify-content: space-between;
           gap: 10px;
-          padding: 18px 20px 14px;
+          padding: 18px 0 14px;
         }
         .me-card { text-align: center; padding: 22px 16px; }
         .me-card .avatar {

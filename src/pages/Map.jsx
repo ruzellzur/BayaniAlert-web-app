@@ -69,12 +69,12 @@ export default function Map() {
   return (
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
       {/* Topbar */}
-      <div className="topbar">
-        <div className="row" style={{ gap: 12 }}>
+      <div className="topbar map-topbar">
+        <div className="row">
           <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>Evacuation & flood map</h2>
+          <h2 className="map-topbar-title">Evacuation & flood map</h2>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={locate}>Locate me</button>
+        <button className="btn btn-ghost btn-sm map-locate-btn" onClick={locate}>Locate me</button>
       </div>
 
       {evacError && <div className="map-error">{evacError}</div>}
@@ -119,7 +119,7 @@ export default function Map() {
 
         <div>
           {/* Evacuation centers, nearest first */}
-          <div className="section-label" style={{ marginTop: 0 }}>
+          <div className="section-label map-centers-title">
             <h3>{you ? 'Nearest evacuation centers' : 'Evacuation centers'}</h3>
           </div>
 
@@ -167,9 +167,29 @@ export default function Map() {
         .topbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 18px 20px 14px;
+          justify-content: flex-start;
+          flex-wrap: wrap;
+          gap: 12px;
+          padding: 18px 0 14px;
+        }
+        .map-topbar {
+          justify-content: flex-start;
+          flex-wrap: nowrap;
+          gap: 12px;
+        }
+        .map-topbar > .row {
+          flex: 0 1 auto;
+          min-width: 0;
+          gap: 8px;
+        }
+        .map-topbar-title {
+          min-width: 0;
+          font-size: 17px;
+          line-height: 1.2;
+        }
+        .map-locate-btn {
+          flex: 0 0 auto;
+          white-space: nowrap;
         }
         .map-error {
           margin-bottom: 12px;
@@ -182,6 +202,12 @@ export default function Map() {
         }
         .map-grid {
           display: block;
+        }
+        .map-grid > div + div {
+          margin-top: 28px;
+        }
+        .map-centers-title {
+          margin-top: 0;
         }
         .map-wrap {
           position: relative;
@@ -235,6 +261,15 @@ export default function Map() {
             grid-template-columns: 1.4fr 1fr;
             gap: 26px;
             align-items: start;
+          }
+          .map-grid > div + div {
+            margin-top: 0;
+          }
+          .map-grid > div {
+            min-width: 0;
+          }
+          .map-centers-title {
+            min-height: 32px;
           }
         }
       `}</style>

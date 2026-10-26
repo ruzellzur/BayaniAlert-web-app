@@ -148,7 +148,7 @@ export default function MessageThread() {
   // ---- render ---------------------------------------------------------------
   if (status === 'loading') {
     return (
-      <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+      <div className="screen-enter" style={{ padding: '2px 20px 8px' }}>
         <Topbar title="Messages" onBack={goBack} />
         <p className="muted small" style={{ textAlign: 'center', marginTop: 40 }}>Loading…</p>
         <style>{THREAD_CSS}</style>
@@ -158,7 +158,7 @@ export default function MessageThread() {
 
   if (status === 'notfound' || !other) {
     return (
-      <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+      <div className="screen-enter" style={{ padding: '2px 20px 8px' }}>
         <Topbar title="Messages" onBack={goBack} />
         <div className="card" style={{ marginTop: 20, textAlign: 'center' }}>
           <p className="muted">Conversation not found</p>
@@ -172,7 +172,7 @@ export default function MessageThread() {
   }
 
   return (
-    <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
+    <div className="screen-enter" style={{ padding: '2px 20px 8px' }}>
       <Topbar title={other.name} sub={other.position} onBack={goBack} />
 
       <div className="thread-body">
@@ -275,13 +275,16 @@ const THREAD_CSS = `
   }
   .thread-body {
     display: flex;
+    flex: 1 1 0;
     flex-direction: column;
     gap: 8px;
-    min-height: 260px;
+    min-height: 0;
+    overflow-y: auto;
     padding: 4px 2px 12px;
   }
   .msg-day {
     align-self: center;
+    flex-shrink: 0;
     font-size: 11px;
     font-weight: 600;
     color: var(--ink-soft);
@@ -292,6 +295,7 @@ const THREAD_CSS = `
   }
   .msg-topic {
     align-self: center;
+    flex-shrink: 0;
     max-width: 90%;
     font-size: 11.5px;
     font-weight: 600;
@@ -309,6 +313,7 @@ const THREAD_CSS = `
   .msg {
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
     max-width: 75%;
   }
   .msg-user { align-self: flex-end; align-items: flex-end; }
@@ -338,10 +343,14 @@ const THREAD_CSS = `
   }
   .thread-compose {
     position: sticky;
-    /* sit above the mobile tab bar */
     bottom: calc(68px + env(safe-area-inset-bottom, 0px));
     background: var(--bg);
-    padding: 8px 0;
+    padding: 3px 0;
+  }
+  @media (max-width: 899px) {
+    .thread-compose {
+      padding-bottom: 1px;
+    }
   }
   .thread-ctx {
     display: flex;
@@ -393,6 +402,9 @@ const THREAD_CSS = `
 
   @media (min-width: 900px) {
     .mobile-back { display: none; }
-    .thread-compose { bottom: 0; }
+    .thread-compose {
+      bottom: 12px;
+      padding: 8px 0;
+    }
   }
 `;

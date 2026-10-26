@@ -195,7 +195,7 @@ export default function Profile() {
           align-items: center;
           justify-content: space-between;
           gap: 10px;
-          padding: 18px 20px 14px;
+          padding: 18px 0 14px;
         }
         .prof-head {
           display: flex;

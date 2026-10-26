@@ -263,7 +263,10 @@ export default function WeatherHistory() {
           align-items: center;
           justify-content: space-between;
           gap: 10px;
-          padding: 18px 20px 14px;
+          padding: 18px 0 14px;
+        }
+        .topbar .mobile-back {
+          margin-left: -12px;
         }
 
         /* Shared weather card */
