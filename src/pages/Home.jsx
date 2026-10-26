@@ -332,8 +332,8 @@ export default function Home() {
           width: 36px;
           height: 36px;
           border-radius: 11px;
-          background: var(--grad-cool);
-          color: #fff;
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
           display: none;
           align-items: center;
           justify-content: center;
@@ -378,7 +378,7 @@ export default function Home() {
           color: var(--ink);
           cursor: pointer;
           text-align: center;
-          transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+          transition: transform 0.15s ease, border-color 0.15s ease;
         }
         .quick .ic {
           width: 38px;
@@ -387,9 +387,8 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--grad-accent);
+          background: var(--accent);
           color: #fff;
-          box-shadow: 0 4px 10px rgba(226,154,59,0.28);
         }
         .quick svg {
           width: 19px;
@@ -471,15 +470,15 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--grad-cool);
-          color: #fff;
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
         }
         .res-ic svg {
           width: 21px;
           height: 21px;
         }
         .res-ic.cat-power {
-          background: var(--grad-accent);
+          background: var(--accent-soft);
         }
         .res-body {
           flex: 1;

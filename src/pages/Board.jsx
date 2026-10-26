@@ -598,7 +598,7 @@ export default function Board() {
           font-size: 11.5px;
           text-align: center;
           color: #fff;
-          background: var(--grad-accent);
+          background: var(--accent);
         }
         .incoming-row {
           display: flex;
@@ -648,27 +648,32 @@ export default function Board() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--grad-cool);
-          color: #fff;
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
         }
         .res-ic svg {
           width: 21px;
           height: 21px;
         }
         .res-ic.cat-power {
-          background: var(--grad-accent);
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
         }
         .res-ic.cat-water {
-          background: linear-gradient(135deg, #6FA8D8, var(--cool) 65%, #274670);
+          background: var(--surface-alt);
+          color: var(--cool);
         }
         .res-ic.cat-tools {
-          background: var(--grad-cool);
+          background: var(--surface-alt);
+          color: var(--ink-soft);
         }
         .res-ic.cat-medicine {
-          background: var(--grad-danger);
+          background: var(--danger-bg);
+          color: var(--danger);
         }
         .res-ic.cat-transport {
-          background: var(--grad-safe);
+          background: var(--safe-bg);
+          color: var(--safe);
         }
         .res-body {
           flex: 1;
@@ -741,7 +746,6 @@ export default function Board() {
           font-weight: 500;
           color: #fff;
           background: rgba(20, 24, 33, 0.92);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
           animation: slideUp 0.2s ease;
         }
 
@@ -750,7 +754,6 @@ export default function Board() {
           position: fixed;
           inset: 0;
           background: rgba(0, 0, 0, 0.6);
-          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -767,7 +770,7 @@ export default function Board() {
           max-height: 90vh;
           overflow-y: auto;
           overflow-x: hidden;
-          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+          border: 1px solid var(--border);
           animation: slideUp 0.25s ease;
         }
         .modal-header {

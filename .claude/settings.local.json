@@ -17,7 +17,26 @@
       "Bash(curl -s http://127.0.0.1:5500/bayanialert-prototype/)",
       "Bash(curl -s \"http://127.0.0.1:5500/bayanialert-prototype/index.html\")",
       "Bash(grep -A 200 \"// SAMPLE DATA\")",
-      "Bash(curl -s http://localhost:5175)"
+      "Bash(curl -s http://localhost:5175)",
+      "Read(//c/Users/ruzel/.claude/skills/**)",
+      "Read(//c/Users/ruzel/.claude/plugins/**)",
+      "Read(//c/Users/ruzel/.claude/**)",
+      "PowerShell(Get-ChildItem *)",
+      "Bash(node \"C:/Users/ruzel/.agents/skills/design-taste-frontend/scripts/draw.mjs\" --list sectors)",
+      "Bash(cd *)",
+      "Bash(node \"C:/Users/ruzel/.claude/skills/design-taste-frontend/scripts/lint.mjs\" --app src)",
+      "Bash(node \"C:/Users/ruzel/.claude/skills/design-taste-frontend/scripts/inspect.mjs\" --app http://localhost:5173/ --out .taste-skill/before)",
+      "Bash(npx playwright *)",
+      "Bash(playwright --version)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
+      "Bash(node \"C:/Users/ruzel/.claude/skills/design-taste-frontend/scripts/draw.mjs\" --app --list styles)",
+      "Bash(node \"C:/Users/ruzel/.claude/skills/design-taste-frontend/scripts/draw.mjs\" --app --list kinds)",
+      "Bash(node \"C:/Users/ruzel/.claude/skills/design-taste-frontend/scripts/draw.mjs\" --app --list screens)",
+      "Bash(npx vite *)",
+      "Bash(node \"C:/Users/ruzel/.claude/skills/design-taste-frontend/scripts/inspect.mjs\" --app)",
+      "Bash(node \"C:/Users/ruzel/.claude/skills/design-taste-frontend/scripts/inspect.mjs\" --help)",
+      "Bash(node \"C:/Users/ruzel/.claude/skills/design-taste-frontend/scripts/inspect.mjs\" \"http://localhost:4173/\" --app --out \".taste-skill/shots\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4173/)"
     ]
   }
 }

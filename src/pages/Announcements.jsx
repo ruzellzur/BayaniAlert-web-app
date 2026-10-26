@@ -197,15 +197,14 @@ export default function Announcements() {
         .cap-bar {
           height: 9px;
           border-radius: 999px;
-          background: var(--surface-alt);
+          background: var(--accent-track);
           overflow: hidden;
           margin-top: 10px;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.10);
         }
         .cap-fill {
           height: 100%;
           border-radius: 999px;
-          background: var(--grad-safe);
+          background: var(--safe);
         }
         .post {
           padding: 14px 0;
@@ -255,7 +254,7 @@ export default function Announcements() {
         .role-switch button.active {
           background: var(--surface);
           color: var(--ink);
-          box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+          border: 1px solid var(--border);
         }
         textarea.compose {
           width: 100%;

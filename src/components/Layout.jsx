@@ -81,7 +81,6 @@ export default function Layout() {
             height: calc(100dvh - 64px);
             border-radius: 32px;
             overflow: hidden;
-            box-shadow: 0 30px 60px rgba(15,25,45,0.18);
             border: 1px solid var(--border);
           }
           body:not(.authed) .app {
@@ -139,7 +138,6 @@ export default function Layout() {
           opacity: 0;
           pointer-events: none;
           transition: all 0.25s ease;
-          box-shadow: 0 10px 24px rgba(0,0,0,0.25);
           z-index: 30;
         }
         .toast.show {
@@ -211,28 +209,10 @@ export default function Layout() {
           border-radius: 20px;
           padding: 18px;
           color: #fff;
-          background: var(--grad-primary);
-          box-shadow: var(--shadow);
+          background: var(--strong);
+          border: 1px solid var(--strong);
           position: relative;
           overflow: hidden;
-        }
-        .alert-card::after {
-          content: "";
-          position: absolute;
-          right: -30px;
-          top: -30px;
-          width: 140px;
-          height: 140px;
-          background: radial-gradient(circle, rgba(226,154,59,0.35), transparent 70%);
-        }
-        .alert-card::before {
-          content: "";
-          position: absolute;
-          left: -20px;
-          bottom: -40px;
-          width: 120px;
-          height: 120px;
-          background: radial-gradient(circle, rgba(110,143,199,0.28), transparent 70%);
         }
         .alert-top {
           display: flex;
@@ -240,13 +220,12 @@ export default function Layout() {
           align-items: flex-start;
         }
         .signal-badge {
-          background: var(--grad-accent);
-          color: var(--accent-ink);
+          background: var(--accent);
+          color: #fff;
           font-weight: 700;
           font-size: 12.5px;
           padding: 6px 11px;
           border-radius: 10px;
-          box-shadow: 0 4px 12px rgba(226,154,59,0.35);
         }
         .alert-card h3 {
           color: #fff;
@@ -274,15 +253,14 @@ export default function Layout() {
         .cap-bar {
           height: 9px;
           border-radius: 999px;
-          background: var(--surface-alt);
+          background: var(--accent-track);
           overflow: hidden;
           margin-top: 10px;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.10);
         }
         .cap-fill {
           height: 100%;
           border-radius: 999px;
-          background: var(--grad-safe);
+          background: var(--safe);
         }
 
         .chip-row {
@@ -307,9 +285,9 @@ export default function Layout() {
           white-space: nowrap;
         }
         .chip.active {
-          background: var(--grad-primary);
-          color: var(--on-strong);
-          border-color: transparent;
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
+          border-color: var(--accent-track);
         }
 
         .stack {

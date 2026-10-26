@@ -207,15 +207,14 @@ export default function Profile() {
           width: 56px;
           height: 56px;
           border-radius: 16px;
-          background: var(--grad-primary);
-          color: #fff;
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
           display: flex;
           align-items: center;
           justify-content: center;
           font-family: var(--font-display);
           font-weight: 600;
           font-size: 20px;
-          box-shadow: 0 6px 16px rgba(27,42,74,0.25);
         }
         .list-item {
           display: flex;
