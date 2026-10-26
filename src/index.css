@@ -73,7 +73,8 @@
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; padding: 0; }
 body {
-  background: var(--bg);
+  background: var(--wash), var(--bg);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -104,6 +105,7 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
+  box-shadow: var(--card-shadow);
 }
 
 /* Buttons */
@@ -120,12 +122,12 @@ a { color: inherit; text-decoration: none; }
   gap: 8px;
   transition: transform 0.15s ease, filter 0.15s ease;
 }
-.btn:active { transform: scale(0.97); filter: brightness(0.96); }
-.btn-primary { background: var(--strong); color: var(--on-strong); }
-.btn-accent { background: var(--accent); color: var(--on-accent); }
+.btn:active { transform: scale(0.97); filter: brightness(0.98); }
+.btn-primary { background: var(--grad-primary); color: var(--on-strong); box-shadow: 0 6px 16px rgba(27,42,74,0.28); }
+.btn-accent { background: var(--grad-accent); color: var(--on-accent); box-shadow: 0 6px 16px rgba(226,154,59,0.35); }
 .btn-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
-.btn-safe { background: var(--safe); color: #fff; }
-.btn-danger { background: var(--danger); color: #fff; }
+.btn-safe { background: var(--grad-safe); color: #fff; box-shadow: 0 6px 16px rgba(63,125,88,0.32); }
+.btn-danger { background: var(--grad-danger); color: #fff; box-shadow: 0 6px 16px rgba(193,68,60,0.32); }
 .btn-block { width: 100%; }
 .btn-sm { padding: 8px 12px; font-size: 13px; border-radius: 10px; }
 
@@ -146,7 +148,7 @@ a { color: inherit; text-decoration: none; }
   cursor: pointer;
   white-space: nowrap;
 }
-.chip.active { background: var(--accent-soft); color: var(--ladder-ink); border-color: var(--accent-track); }
+.chip.active { background: var(--grad-primary); color: var(--on-strong); border-color: transparent; }
 .chip-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; }
 .chip-row::-webkit-scrollbar { display: none; }
 
@@ -217,12 +219,13 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent);
+  background: var(--grad-accent);
   color: #fff;
+  box-shadow: 0 4px 10px rgba(226,154,59,0.28);
 }
 .quick svg { width: 19px; height: 19px; }
 @media (hover: hover) {
-  .quick:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .quick:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(226,154,59,0.18); }
 }
 
 /* Section Labels */
@@ -274,19 +277,29 @@ textarea.compose {
   border-radius: 20px;
   padding: 18px;
   color: #fff;
-  background: var(--strong);
-  border: 1px solid var(--strong);
+  background: var(--grad-primary);
+  box-shadow: var(--shadow);
   position: relative;
   overflow: hidden;
 }
+.alert-card::after {
+  content: "";
+  position: absolute;
+  right: -30px;
+  top: -30px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(226,154,59,0.35), transparent 70%);
+}
 .alert-top { display: flex; justify-content: space-between; align-items: flex-start; }
 .signal-badge {
-  background: var(--accent);
-  color: #fff;
+  background: var(--grad-accent);
+  color: var(--on-accent);
   font-weight: 700;
   font-size: 12.5px;
   padding: 6px 11px;
   border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(226,154,59,0.35);
 }
 .alert-card h3 { color: #fff; font-size: 19px; margin-top: 12px; font-weight: 600; }
 .alert-meta { display: flex; gap: 16px; margin-top: 14px; }
@@ -310,15 +323,15 @@ textarea.compose {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-soft);
-  color: var(--ladder-ink);
+  background: var(--grad-cool);
+  color: #fff;
 }
 .res-ic svg { width: 21px; height: 21px; }
-.res-ic.cat-power { background: var(--accent-soft); color: var(--ladder-ink); }
-.res-ic.cat-water { background: var(--surface-alt); color: var(--cool); }
-.res-ic.cat-tools { background: var(--surface-alt); color: var(--ink-soft); }
-.res-ic.cat-firstaid { background: var(--danger-bg); color: var(--danger); }
-.res-ic.cat-transport { background: var(--safe-bg); color: var(--safe); }
+.res-ic.cat-power { background: var(--grad-accent); }
+.res-ic.cat-water { background: linear-gradient(135deg, #6FA8D8, var(--cool) 65%, #274670); }
+.res-ic.cat-tools { background: var(--grad-cool); }
+.res-ic.cat-firstaid { background: var(--grad-danger); }
+.res-ic.cat-transport { background: var(--grad-safe); }
 .res-body { flex: 1; min-width: 0; }
 .res-body .name { font-weight: 600; font-size: 14.5px; }
 .res-body .owner { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
@@ -326,8 +339,8 @@ textarea.compose {
 .dist { font-size: 11.5px; color: var(--ink-soft); }
 
 /* Capacity Bar */
-.cap-bar { height: 9px; border-radius: 999px; background: var(--accent-track); overflow: hidden; margin-top: 10px; }
-.cap-fill { height: 100%; border-radius: 999px; background: var(--safe); }
+.cap-bar { height: 9px; border-radius: 999px; background: var(--surface-alt); overflow: hidden; margin-top: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.10); }
+.cap-fill { height: 100%; border-radius: 999px; background: var(--grad-safe); }
 
 /* List Item */
 .list-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid var(--border); font-size: 13.5px; font-weight: 600; }
@@ -341,8 +354,8 @@ textarea.compose {
   width: 40px;
   height: 40px;
   border-radius: 11px;
-  background: var(--accent-soft);
-  color: var(--ladder-ink);
+  background: var(--grad-cool);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -513,7 +526,9 @@ textarea.compose {
     flex-direction: column;
     justify-content: center;
     padding: 60px;
-    background: var(--strong);
+    background: radial-gradient(120% 90% at 15% -10%, rgba(226,154,59,0.35), transparent 60%),
+                radial-gradient(90% 70% at 100% 100%, rgba(110,143,199,0.25), transparent 60%),
+                var(--grad-primary);
     color: #fff;
   }
 
@@ -538,7 +553,10 @@ textarea.compose {
 
   .auth-visual h2 i {
     font-style: italic;
-    color: var(--accent-2);
+    background: linear-gradient(120deg, var(--accent-2), var(--accent) 70%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .auth-visual p {

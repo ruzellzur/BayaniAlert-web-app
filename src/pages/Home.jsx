@@ -1,4 +1,5 @@
 import { Navigate, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useAnnouncements } from '../hooks/useAnnouncements';
 import { useCheckinBoard, timeAgo } from '../hooks/useCheckIns';
@@ -48,6 +49,7 @@ const Empty = ({ children, danger }) => (
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const isOfficial = user?.role === 'official';
   const barangayId = user?.barangayId ?? null;
@@ -86,6 +88,49 @@ export default function Home() {
         ? top.title
         : 'No active weather alerts';
 
+  // Notification overview: all unread/active items
+  const notifications = [];
+
+  // Weather alerts
+  if (weather.alerts.length > 0) {
+    weather.alerts.forEach(alert => {
+      notifications.push({
+        type: 'weather',
+        icon: '🌧️',
+        title: alert.title,
+        time: formatWhen(alert.issued_at),
+        action: () => navigate('/weather-history')
+      });
+    });
+  }
+
+  // New announcements (pinned or today)
+  const recentAnn = ann.announcements.filter(a => {
+    if (a.pinned) return true;
+    const ageHours = (Date.now() - new Date(a.created_at)) / 3600000;
+    return ageHours < 24;
+  });
+  if (recentAnn.length > 0) {
+    notifications.push({
+      type: 'announcement',
+      icon: '📢',
+      title: `${recentAnn.length} new announcement${recentAnn.length > 1 ? 's' : ''}`,
+      time: timeAgo(recentAnn[0].created_at),
+      action: () => navigate('/announcements')
+    });
+  }
+
+  // Help requests (officials only)
+  if (isOfficial && helpCount > 0) {
+    notifications.push({
+      type: 'help',
+      icon: '🆘',
+      title: `${helpCount} household${helpCount > 1 ? 's' : ''} need help`,
+      time: 'Now',
+      action: () => navigate('/checkin', { state: { filter: 'help' } })
+    });
+  }
+
   const getCategoryIcon = (cat) => {
     const icons = {
       power: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2 3 14h7l-1 8 11-14h-8z"/></svg>,
@@ -105,6 +150,56 @@ export default function Home() {
       <div className="topbar">
         <Brand />
         <div className="topbar-right">
+          {/* Notification Bell */}
+          <div className="notif-bell-wrapper">
+            <button
+              className="notif-bell"
+              onClick={() => setShowNotifications(!showNotifications)}
+              aria-label="Notifications"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              {notifications.length > 0 && <span className="notif-badge">{notifications.length}</span>}
+            </button>
+
+            {/* Notification Dropdown */}
+            {showNotifications && (
+              <>
+                <div className="notif-backdrop" onClick={() => setShowNotifications(false)} />
+                <div className="notif-dropdown">
+                  <div className="notif-header">
+                    <h3>Notifications</h3>
+                    <button onClick={() => setShowNotifications(false)}>✕</button>
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div className="notif-empty">All caught up! 🎉</div>
+                  ) : (
+                    <div className="notif-list">
+                      {notifications.map((notif, i) => (
+                        <div
+                          key={i}
+                          className="notif-item"
+                          onClick={() => {
+                            notif.action();
+                            setShowNotifications(false);
+                          }}
+                        >
+                          <span className="notif-icon">{notif.icon}</span>
+                          <div className="notif-content">
+                            <div className="notif-title">{notif.title}</div>
+                            <div className="notif-time">{notif.time}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
           {user?.barangayName && <span className="brgy-pill">{user.barangayName}</span>}
           <div className="top-avatar" onClick={() => navigate('/profile')}>
             <span>{user?.initials}</span>
