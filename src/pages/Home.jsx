@@ -1,7 +1,7 @@
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAnnouncements } from '../hooks/useAnnouncements';
-import { useCheckinBoard, timeAgo } from '../hooks/useCheckins';
+import { useCheckinBoard, timeAgo } from '../hooks/useCheckIns';
 import { useWeatherAlerts, SEVERITY_LABEL } from '../hooks/useWeatherAlerts';
 import { useNearbyResources } from '../hooks/useNearbyResources';
 import { formatDistance } from '../utils/geo';
@@ -16,6 +16,7 @@ function formatWhen(iso) {
 }
 
 const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const SOURCE_LABEL = { 'open-meteo': 'Open-Meteo', barangay: 'Barangay' };
 
 function AnnPreview({ a }) {
   return (
@@ -105,12 +106,6 @@ export default function Home() {
         <Brand />
         <div className="topbar-right">
           {user?.barangayName && <span className="brgy-pill">{user.barangayName}</span>}
-          <button className="icon-btn" onClick={() => alert('No new notifications')} aria-label="Notifications">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.7 21a2 2 0 0 1-3.4 0"/>
-            </svg>
-          </button>
           <div className="top-avatar" onClick={() => navigate('/profile')}>
             <span>{user?.initials}</span>
           </div>
@@ -134,7 +129,7 @@ export default function Home() {
             {top && (
               <div className="alert-meta">
                 <div>Issued<strong>{formatWhen(top.issued_at)}</strong></div>
-                <div>Source<strong>{capitalize(top.source)}</strong></div>
+                <div>Source<strong>{SOURCE_LABEL[top.source] ?? capitalize(top.source)}</strong></div>
                 <div>Expires<strong>{top.expires_at ? formatWhen(top.expires_at) : 'Until lifted'}</strong></div>
               </div>
             )}
@@ -320,22 +315,6 @@ export default function Home() {
           align-items: center;
           gap: 10px;
         }
-        .icon-btn {
-          width: 36px;
-          height: 36px;
-          border-radius: 11px;
-          border: 1px solid var(--border);
-          background: var(--surface);
-          display: none;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          color: var(--ink-soft);
-        }
-        .icon-btn svg {
-          width: 17px;
-          height: 17px;
-        }
         .top-avatar {
           width: 36px;
           height: 36px;
@@ -510,7 +489,6 @@ export default function Home() {
           .topbar .brand {
             display: none;
           }
-          .icon-btn,
           .top-avatar {
             display: flex;
           }

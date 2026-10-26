@@ -9,6 +9,11 @@ export const SEVERITY_LABEL = {
   critical: 'CRITICAL',
 };
 
+// How often an open dashboard asks the server to re-check the forecast.
+// The weather-sync function throttles itself (once / 20 min per barangay),
+// so extra calls are cheap no-ops.
+const SYNC_EVERY_MS = 30 * 60 * 1000;
+
 // Read-only for now. TODO: officials posting alerts (the table is already writable via can_do 'announce').
 export function useWeatherAlerts(barangayId) {
   const [rows, setRows] = useState([]);
@@ -49,8 +54,21 @@ export function useWeatherAlerts(barangayId) {
       setLoading(false);
     };
 
+    // Ask the edge function to check the forecast and insert any new alerts.
+    // Failure is non-fatal: we still show whatever is already in the table.
+    const sync = async () => {
+      const { data, error: err } = await supabase.functions.invoke('weather-sync');
+      if (cancelled) return;
+      if (err) {
+        console.warn('weather-sync:', err.message ?? err);
+        return;
+      }
+      if (data?.inserted > 0) load(); // realtime will usually do this too
+    };
+
     setLoading(true);
-    load();
+    load().then(sync); // show existing alerts first, then check for new ones
+    const syncTimer = setInterval(sync, SYNC_EVERY_MS);
 
     // No row filter on purpose: DELETE events only carry the primary key.
     const channel = supabase
@@ -60,6 +78,7 @@ export function useWeatherAlerts(barangayId) {
 
     return () => {
       cancelled = true;
+      clearInterval(syncTimer);
       supabase.removeChannel(channel);
     };
   }, [barangayId]);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext'; // toast still lives here
-import { useMyCheckin, useCheckinBoard, timeAgo, CHECKIN_WINDOW_HOURS } from '../hooks/useCheckins';
+import { useMyCheckin, useCheckinBoard, timeAgo, CHECKIN_WINDOW_HOURS } from '../hooks/useCheckIns';
 
 const STATUS_LABEL = { safe: 'Checked in safe', help: 'Needs help', none: 'No response' };
 
