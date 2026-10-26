@@ -29,6 +29,12 @@
   --radius: 18px;
   --strong: #1B2A4A;
   --on-strong: #ffffff;
+  /* Gradients restored per user preference */
+  --grad-primary: linear-gradient(135deg, #1B2A4A 0%, #2C4266 100%);
+  --grad-accent: linear-gradient(135deg, #E29A3B 0%, #F0B84A 100%);
+  --grad-safe: linear-gradient(135deg, #3F7D58 0%, #57A473 100%);
+  --grad-danger: linear-gradient(135deg, #C1443C 0%, #DB6A55 100%);
+  --grad-cool: linear-gradient(135deg, #4A6FA5 0%, #6E5BB5 100%);
   color-scheme: light;
 }
 
@@ -55,6 +61,12 @@
     --accent-track: #4A3717;
     --ladder-ink: #F2D9A8;
     --card-shadow: none;
+    /* Dark mode gradients */
+    --grad-primary: linear-gradient(135deg, #15233A 0%, #1C2E48 100%);
+    --grad-accent: linear-gradient(135deg, #D88B29 0%, #F7C878 100%);
+    --grad-safe: linear-gradient(135deg, #5FAE7B 0%, #7FC499 100%);
+    --grad-danger: linear-gradient(135deg, #E2665C 0%, #EC8A7E 100%);
+    --grad-cool: linear-gradient(135deg, #6E8FC7 0%, #9482D6 100%);
     color-scheme: dark;
   }
 }
