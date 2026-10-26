@@ -495,7 +495,7 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--accent);
+          background: var(--grad-accent);
           color: #fff;
         }
         .quick svg {
@@ -578,15 +578,15 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
+          background: var(--grad-cool);
+          color: #fff;
         }
         .res-ic svg {
           width: 21px;
           height: 21px;
         }
         .res-ic.cat-power {
-          background: var(--accent-soft);
+          background: var(--grad-accent);
         }
         .res-body {
           flex: 1;

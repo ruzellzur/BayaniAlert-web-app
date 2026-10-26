@@ -209,8 +209,8 @@ export default function Layout() {
           border-radius: 20px;
           padding: 18px;
           color: #fff;
-          background: var(--strong);
-          border: 1px solid var(--strong);
+          background: var(--grad-primary);
+          border: 1px solid transparent;
           position: relative;
           overflow: hidden;
         }
@@ -220,7 +220,7 @@ export default function Layout() {
           align-items: flex-start;
         }
         .signal-badge {
-          background: var(--accent);
+          background: var(--grad-accent);
           color: #fff;
           font-weight: 700;
           font-size: 12.5px;
@@ -260,7 +260,7 @@ export default function Layout() {
         .cap-fill {
           height: 100%;
           border-radius: 999px;
-          background: var(--safe);
+          background: var(--grad-safe);
         }
 
         .chip-row {

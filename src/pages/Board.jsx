@@ -598,7 +598,7 @@ export default function Board() {
           font-size: 11.5px;
           text-align: center;
           color: #fff;
-          background: var(--accent);
+          background: var(--grad-accent);
         }
         .incoming-row {
           display: flex;
@@ -648,32 +648,27 @@ export default function Board() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
+          background: var(--grad-cool);
+          color: #fff;
         }
         .res-ic svg {
           width: 21px;
           height: 21px;
         }
         .res-ic.cat-power {
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
+          background: var(--grad-accent);
         }
         .res-ic.cat-water {
-          background: var(--surface-alt);
-          color: var(--cool);
+          background: linear-gradient(135deg, #6FA8D8, var(--cool) 65%, #274670);
         }
         .res-ic.cat-tools {
-          background: var(--surface-alt);
-          color: var(--ink-soft);
+          background: var(--grad-cool);
         }
         .res-ic.cat-medicine {
-          background: var(--danger-bg);
-          color: var(--danger);
+          background: var(--grad-danger);
         }
         .res-ic.cat-transport {
-          background: var(--safe-bg);
-          color: var(--safe);
+          background: var(--grad-safe);
         }
         .res-body {
           flex: 1;

@@ -207,8 +207,8 @@ export default function Profile() {
           width: 56px;
           height: 56px;
           border-radius: 16px;
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
+          background: var(--grad-primary);
+          color: #fff;
           display: flex;
           align-items: center;
           justify-content: center;

@@ -118,7 +118,7 @@ export default function EvacDetail() {
             className="cap-fill"
             style={{
               width: `${Math.min(100, ratio * 100)}%`,
-              background: closed ? 'var(--border)' : ratio > 0.9 ? 'var(--danger)' : 'var(--safe)',
+              background: closed ? 'var(--border)' : ratio > 0.9 ? 'var(--grad-danger)' : 'var(--grad-safe)',
             }}
           ></div>
         </div>

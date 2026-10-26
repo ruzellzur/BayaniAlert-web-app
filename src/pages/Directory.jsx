@@ -191,8 +191,8 @@ export default function Directory() {
           width: 40px;
           height: 40px;
           border-radius: 12px;
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
+          background: var(--grad-cool);
+          color: #fff;
           display: flex;
           align-items: center;
           justify-content: center;

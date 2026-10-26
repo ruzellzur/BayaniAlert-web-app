@@ -204,7 +204,7 @@ export default function Announcements() {
         .cap-fill {
           height: 100%;
           border-radius: 999px;
-          background: var(--safe);
+          background: var(--grad-safe);
         }
         .post {
           padding: 14px 0;

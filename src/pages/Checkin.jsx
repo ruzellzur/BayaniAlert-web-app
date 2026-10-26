@@ -40,8 +40,8 @@ export default function Checkin() {
   const selected = board.households.find((h) => h.id === selectedId) ?? null;
 
   const statColors = {
-    safe: 'var(--safe)',
-    help: 'var(--danger)',
+    safe: 'var(--grad-safe)',
+    help: 'var(--grad-danger)',
     none: 'var(--ink-soft)',
   };
 
@@ -254,8 +254,8 @@ export default function Checkin() {
           height: 58px;
           border-radius: 50%;
           margin: 0 auto 12px;
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
+          background: var(--grad-cool);
+          color: #fff;
           display: flex;
           align-items: center;
           justify-content: center;

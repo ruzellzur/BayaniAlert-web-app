@@ -122,11 +122,11 @@ a { color: inherit; text-decoration: none; }
   transition: transform 0.15s ease, filter 0.15s ease;
 }
 .btn:active { transform: scale(0.97); filter: brightness(0.96); }
-.btn-primary { background: var(--strong); color: var(--on-strong); }
-.btn-accent { background: var(--accent); color: var(--on-accent); }
+.btn-primary { background: var(--grad-primary); color: var(--on-strong); }
+.btn-accent { background: var(--grad-accent); color: var(--on-accent); }
 .btn-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
-.btn-safe { background: var(--safe); color: #fff; }
-.btn-danger { background: var(--danger); color: #fff; }
+.btn-safe { background: var(--grad-safe); color: #fff; }
+.btn-danger { background: var(--grad-danger); color: #fff; }
 .btn-block { width: 100%; }
 .btn-sm { padding: 8px 12px; font-size: 13px; border-radius: 10px; }
 
@@ -218,7 +218,7 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent);
+  background: var(--grad-accent);
   color: #fff;
 }
 .quick svg { width: 19px; height: 19px; }

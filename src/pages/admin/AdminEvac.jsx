@@ -318,7 +318,7 @@ const selectedBarangay = isAdmin
                           width: `${Math.min(100, ratio * 100)}%`,
                           background: center.status === 'closed'
                             ? 'var(--border)'
-                            : ratio > 0.9 ? 'var(--danger)' : 'var(--safe)',
+                            : ratio > 0.9 ? 'var(--grad-danger)' : 'var(--grad-safe)',
                         }}
                       ></div>
                     </div>

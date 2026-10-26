@@ -149,7 +149,7 @@ export default function Welcome() {
         }
         .hero {
           padding: 54px 26px 30px;
-          background: var(--strong);
+          background: var(--grad-primary);
           color: #fff;
           position: relative;
           min-height: 340px;
@@ -247,8 +247,8 @@ export default function Welcome() {
           width: 40px;
           height: 40px;
           border-radius: 11px;
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
+          background: var(--grad-cool);
+          color: #fff;
           display: flex;
           align-items: center;
           justify-content: center;
