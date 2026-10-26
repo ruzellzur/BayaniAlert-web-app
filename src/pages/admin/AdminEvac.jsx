@@ -650,6 +650,7 @@ const selectedBarangay = isAdmin
           font-weight: 500;
           color: #fff;
           background: rgba(20, 24, 33, 0.92);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
         }
 
         /* Modal */
@@ -657,6 +658,7 @@ const selectedBarangay = isAdmin
           position: fixed;
           inset: 0;
           background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -671,7 +673,7 @@ const selectedBarangay = isAdmin
           max-width: 480px;
           max-height: 90vh;
           overflow-y: auto;
-          border: 1px solid var(--border);
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
           animation: slideUp 0.25s ease;
         }
         .modal-header {

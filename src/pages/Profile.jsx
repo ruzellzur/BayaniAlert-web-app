@@ -215,6 +215,7 @@ export default function Profile() {
           font-family: var(--font-display);
           font-weight: 600;
           font-size: 20px;
+          box-shadow: 0 6px 16px rgba(27,42,74,0.25);
         }
         .list-item {
           display: flex;

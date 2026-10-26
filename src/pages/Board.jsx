@@ -749,6 +749,7 @@ export default function Board() {
           position: fixed;
           inset: 0;
           background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -765,7 +766,7 @@ export default function Board() {
           max-height: 90vh;
           overflow-y: auto;
           overflow-x: hidden;
-          border: 1px solid var(--border);
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
           animation: slideUp 0.25s ease;
         }
         .modal-header {

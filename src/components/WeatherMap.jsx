@@ -212,9 +212,9 @@ export default function WeatherMap({ center, barangayName }) {
           width: 150px;
           padding: 7px 9px 6px;
           border-radius: 10px;
-          background: rgba(255,255,255,0.94);
-          border: 1px solid var(--border);
+          background: rgba(255,255,255,0.9);
           color: #1B2A4A;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.18);
           font-size: 11px;
           pointer-events: none;
         }
@@ -234,8 +234,9 @@ export default function WeatherMap({ center, barangayName }) {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: var(--accent);
+          background: #1B2A4A;
           border: 3px solid #fff;
+          box-shadow: 0 0 0 2px #E29A3B, 0 2px 6px rgba(0,0,0,0.4);
         }
         @media (min-width: 900px) { .wxmap { height: 440px; } }
       `}</style>

@@ -21,7 +21,9 @@ const SIDEBAR_CSS = `
     display: none;
     width: 252px;
     flex-shrink: 0;
-    background: var(--surface);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-alt) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-right: 1px solid var(--border);
     flex-direction: column;
     padding: 22px 16px 18px;
@@ -89,8 +91,9 @@ const SIDEBAR_CSS = `
     background: var(--surface-alt);
   }
   .side-link.active {
-    background: var(--accent-soft);
-    color: var(--ladder-ink);
+    background: var(--grad-primary);
+    color: var(--on-strong);
+    box-shadow: 0 4px 14px rgba(27,42,74,0.25);
   }
   .side-link.active svg {
     stroke: var(--accent);
@@ -194,8 +197,8 @@ const TABBAR_CSS = `
     height: 21px;
   }
   .tab.active {
-    background: var(--accent-soft);
-    color: var(--ladder-ink);
+    background: linear-gradient(180deg, rgba(226,154,59,0.14), transparent);
+    color: var(--accent);
   }
   .tab.active svg {
     stroke: var(--accent);

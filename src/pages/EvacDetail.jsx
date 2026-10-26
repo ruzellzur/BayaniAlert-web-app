@@ -269,6 +269,7 @@ export default function EvacDetail() {
           font-weight: 500;
           color: #fff;
           background: rgba(20, 24, 33, 0.92);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
         }
 
         @media (min-width: 900px) {

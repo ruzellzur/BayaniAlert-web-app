@@ -305,9 +305,9 @@ export default function Layout() {
           white-space: nowrap;
         }
         .chip.active {
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
-          border-color: var(--accent-track);
+          background: var(--grad-primary);
+          color: var(--on-strong);
+          border-color: transparent;
         }
 
         .stack {

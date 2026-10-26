@@ -254,7 +254,7 @@ export default function Checkin() {
           height: 58px;
           border-radius: 50%;
           margin: 0 auto 12px;
-          background: var(--grad-cool);
+          background: var(--grad-primary);
           color: #fff;
           display: flex;
           align-items: center;
@@ -262,6 +262,7 @@ export default function Checkin() {
           font-family: var(--font-display);
           font-weight: 600;
           font-size: 20px;
+          box-shadow: 0 6px 16px rgba(27,42,74,0.25);
         }
         .me-status { font-size: 13px; color: var(--ink-soft); margin-top: 4px; }
         .me-note {
@@ -330,7 +331,7 @@ export default function Checkin() {
           color: var(--ink);
           border-radius: 20px 20px 0 0;
           padding: 20px;
-          border-top: 1px solid var(--border);
+          box-shadow: 0 -8px 30px rgba(0,0,0,0.2);
         }
         .sheet-status {
           display: inline-block;
