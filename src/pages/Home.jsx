@@ -710,11 +710,13 @@ export default function Home() {
           z-index: 998;
         }
         .notif-dropdown {
-          position: absolute;
-          top: calc(100% + 8px);
-          right: 0;
-          width: 320px;
-          max-width: calc(100vw - 40px);
+          /* Mobile: centered in the viewport, just under the sticky topbar */
+          position: fixed;
+          top: 72px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: calc(100vw - 32px);
+          max-width: 380px;
           background: var(--surface);
           border: 1px solid var(--border);
           border-radius: 16px;
@@ -837,6 +839,16 @@ export default function Home() {
           }
           .topbar-brgy {
             display: inline-block; /* desktop: pill takes the left slot */
+          }
+          .notif-dropdown {
+            /* Desktop: back to a dropdown anchored under the bell */
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            left: auto;
+            transform: none;
+            width: 320px;
+            max-width: calc(100vw - 40px);
           }
           .dash-grid {
             display: grid;
