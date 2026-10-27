@@ -9,22 +9,25 @@
 
 const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast';
 
-export const GRID_N = 5;        // 5 x 5 points
-export const GRID_SPAN = 0.4;   // degrees each side of the center (~44 km)
-export const HOURS_AHEAD = 24;  // slider range
+export const GRID_NX = 9;        // columns (longitude)
+export const GRID_NY = 5;        // rows (latitude)  -> 45 points per fetch
+export const SPAN_LNG = 30;      // degrees each side of the center (60° wide)
+export const SPAN_LAT = 11;      // degrees each side of the center (22° tall)
+export const HOURS_AHEAD = 24;
 const CACHE_MS = 20 * 60 * 1000;
 
 // Row 0 is the northern edge, column 0 the western edge.
 export function gridPoints(center) {
   const [lat, lng] = center;
-  const step = (2 * GRID_SPAN) / (GRID_N - 1);
+  const stepLat = (2 * SPAN_LAT) / (GRID_NY - 1);
+  const stepLng = (2 * SPAN_LNG) / (GRID_NX - 1);
   const pts = [];
-  for (let i = 0; i < GRID_N; i++) {
-    for (let j = 0; j < GRID_N; j++) {
+  for (let i = 0; i < GRID_NY; i++) {
+    for (let j = 0; j < GRID_NX; j++) {
       pts.push({
         i, j,
-        lat: +(lat + GRID_SPAN - i * step).toFixed(4),
-        lng: +(lng - GRID_SPAN + j * step).toFixed(4),
+        lat: +(lat + SPAN_LAT - i * stepLat).toFixed(4),
+        lng: +(lng - SPAN_LNG + j * stepLng).toFixed(4),
       });
     }
   }
@@ -32,8 +35,8 @@ export function gridPoints(center) {
 }
 
 export const gridBounds = (center) => [
-  [center[0] - GRID_SPAN, center[1] - GRID_SPAN],
-  [center[0] + GRID_SPAN, center[1] + GRID_SPAN],
+  [center[0] - SPAN_LAT, center[1] - SPAN_LNG],
+  [center[0] + SPAN_LAT, center[1] + SPAN_LNG],
 ];
 
 export function parseGrid(pts, json) {
@@ -44,7 +47,8 @@ export function parseGrid(pts, json) {
   let start = times.findIndex((t) => t.slice(0, 13) >= nowKey);
   if (start < 0) start = 0;
   return {
-    n: GRID_N,
+    nx: GRID_NX,
+    ny: GRID_NY, 
     start,
     count: Math.max(1, Math.min(HOURS_AHEAD, times.length - start)),
     times,
@@ -54,8 +58,7 @@ export function parseGrid(pts, json) {
 
 export async function fetchWeatherGrid(center, signal) {
   const pts = gridPoints(center);
-  const key = `wxgrid:${center[0].toFixed(3)},${center[1].toFixed(3)}`;
-
+  const key = `wxgrid3:${center[0].toFixed(3)},${center[1].toFixed(3)}`;
   try {
     const cached = JSON.parse(sessionStorage.getItem(key) || 'null');
     if (cached && Date.now() - cached.ts < CACHE_MS) return parseGrid(pts, cached.json);
@@ -113,7 +116,7 @@ export const readValue = (point, layer, idx) => point.h[FIELD[layer]]?.[idx] ?? 
 
 // n x n matrix of one layer at one hour (row 0 = north)
 export function layerMatrix(grid, layer, idx) {
-  const m = Array.from({ length: grid.n }, () => Array(grid.n).fill(0));
+  const m = Array.from({ length: grid.ny }, () => Array(grid.nx).fill(0));
   grid.points.forEach((p) => { m[p.i][p.j] = readValue(p, layer, idx); });
   return m;
 }
@@ -138,15 +141,16 @@ export function colorAt(ramp, v) {
 
 // Smooth bilinear upsample of the n x n matrix into RGBA pixels (W x H).
 export function fillImageData(data, W, H, m, ramp) {
-  const n = m.length;
-  const smooth = (t) => t * t * (3 - 2 * t); // removes visible creases at grid lines
+  const ny = m.length;
+  const nx = m[0].length;
+  const smooth = (t) => t * t * (3 - 2 * t);
   for (let py = 0; py < H; py++) {
-    const gy = (py / (H - 1)) * (n - 1);
-    const i0 = Math.min(Math.floor(gy), n - 2);
+    const gy = (py / (H - 1)) * (ny - 1);
+    const i0 = Math.min(Math.floor(gy), ny - 2);
     const fy = smooth(gy - i0);
     for (let px = 0; px < W; px++) {
-      const gx = (px / (W - 1)) * (n - 1);
-      const j0 = Math.min(Math.floor(gx), n - 2);
+      const gx = (px / (W - 1)) * (nx - 1);
+      const j0 = Math.min(Math.floor(gx), nx - 2);
       const fx = smooth(gx - j0);
       const top = m[i0][j0] * (1 - fx) + m[i0][j0 + 1] * fx;
       const bot = m[i0 + 1][j0] * (1 - fx) + m[i0 + 1][j0 + 1] * fx;
