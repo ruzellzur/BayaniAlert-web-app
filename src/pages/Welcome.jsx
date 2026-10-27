@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { directionsUrl } from '../utils/geo';
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ export default function Welcome() {
                       {center.distLabel} · {center.cap} / {center.max} capacity
                     </div>
                   </div>
-                  <button className="btn btn-primary btn-sm" onClick={() => alert('Directions would open here')}>
+                  <button className="btn btn-primary btn-sm" onClick={() => window.open(directionsUrl(center.location), '_blank')}>
                     Directions
                   </button>
                 </div>

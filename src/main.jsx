@@ -34,7 +34,7 @@ import { MessagesProvider } from './context/MessagesContext';
 function ProtectedRoute({ children, adminOnly = false, allowNoHousehold = false }) {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/" replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/home" replace />;
   if (user.role === 'resident' && !user.household && !allowNoHousehold)
     return <Navigate to="/household-setup" replace />;
