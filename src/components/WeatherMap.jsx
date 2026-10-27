@@ -7,8 +7,10 @@ import {
 } from '../utils/weatherGrid';
 
 const LAYERS = ['rain', 'cloud', 'temp', 'wind'];
-const ZOOM = 9;
-const IMG = 120; // overlay resolution (px); the browser smooths it up
+const MAX_ZOOM = 12;   // was 12
+const ZOOM = 9;       // was 9 (default view; must be <= MAX_ZOOM)
+const IMG_W = 260;   // overlay resolution, matches the wide data area
+const IMG_H = 100;
 
 // "Now", "Today 3 PM", "Tomorrow 1 AM"  (times are local ISO strings)
 function whenLabel(times, start, k) {
@@ -30,6 +32,8 @@ export default function WeatherMap({ center, barangayName }) {
   const overlayRef = useRef(null);
   const homeRef = useRef(null);
   const canvasRef = useRef(null);
+  const centerRef = useRef(center);
+  centerRef.current = center;
 
   const [grid, setGrid] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | ready | error
@@ -38,12 +42,13 @@ export default function WeatherMap({ center, barangayName }) {
 
   // ---- create the map once --------------------------------------------------
   useEffect(() => {
-    const map = L.map(elRef.current, {
-      minZoom: 7,
-      maxZoom: 12,
-      scrollWheelZoom: false,          // don't hijack page scrolling
-      dragging: !L.Browser.mobile,     // one-finger drag scrolls the page on phones; pinch still zooms
-    }).setView(center, ZOOM);
+  const map = L.map(elRef.current, {
+    maxZoom: MAX_ZOOM,               // was minZoom: 7, maxZoom: 12
+    maxBoundsViscosity: 1,           // hard stop at the edge of the data
+    scrollWheelZoom: false,
+    dragging: !L.Browser.mobile,
+  }).setView(center, ZOOM);
+  applyLimits(map, center);
 
     // Same OpenStreetMap tiles as the Map page (no API key needed)
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -53,8 +58,10 @@ export default function WeatherMap({ center, barangayName }) {
 
     mapRef.current = map;
 
-    const ro = new ResizeObserver(() => map.invalidateSize());
-    ro.observe(elRef.current);
+    const ro = new ResizeObserver(() => {
+      map.invalidateSize();
+      applyLimits(map, centerRef.current);
+    });
 
     return () => {
       ro.disconnect();
@@ -70,8 +77,8 @@ export default function WeatherMap({ center, barangayName }) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    map.setView(center, ZOOM);
-    if (!homeRef.current) {
+    applyLimits(map, center);
+    map.setView(center, ZOOM);    if (!homeRef.current) {
       const icon = L.divIcon({
         className: '',
         iconSize: [18, 18],
@@ -108,12 +115,12 @@ export default function WeatherMap({ center, barangayName }) {
     // color overlay
     if (!canvasRef.current) {
       canvasRef.current = document.createElement('canvas');
-      canvasRef.current.width = IMG;
-      canvasRef.current.height = IMG;
+      canvasRef.current.width = IMG_W;
+      canvasRef.current.height = IMG_H;
     }
     const ctx = canvasRef.current.getContext('2d');
-    const img = ctx.createImageData(IMG, IMG);
-    fillImageData(img.data, IMG, IMG, layerMatrix(grid, layer, idx), RAMPS[layer]);
+    const img = ctx.createImageData(IMG_W, IMG_H);
+    fillImageData(img.data, IMG_W, IMG_H, layerMatrix(grid, layer, idx), RAMPS[layer]);
     ctx.putImageData(img, 0, 0);
     const url = canvasRef.current.toDataURL('image/png');
     if (!overlayRef.current) {
@@ -123,6 +130,13 @@ export default function WeatherMap({ center, barangayName }) {
       overlayRef.current.setBounds(bounds);
     }
   }, [grid, layer, k, center]);
+
+  function applyLimits(map, center) {
+    const bounds = L.latLngBounds(gridBounds(center));
+    map.setMaxBounds(bounds);
+    map.setMinZoom(0); // reset first so getBoundsZoom isn't clamped by an old value
+    map.setMinZoom(Math.min(map.getBoundsZoom(bounds, true), MAX_ZOOM - 1));
+  }
 
   const ramp = RAMPS[layer];
   const mid = ramp.stops[Math.floor(ramp.stops.length / 2)][0];
