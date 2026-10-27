@@ -1,9 +1,13 @@
 import { Outlet } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { Sidebar, AdminSidebar, BottomNav, AdminBottomNav } from './Sidebar';
 
 export default function Layout() {
-  const { user, toast } = useApp();
+  const { user, loading } = useAuth();
+  const { toast } = useApp();
+
+  if (loading) return null;
 
   const isAdmin = user?.role === 'admin';
   const isAuthed = !!user;

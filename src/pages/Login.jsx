@@ -2,16 +2,20 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Brand from '../components/Brand';
+import { useAuth, normalizePhone, isValidPhone } from '../context/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useApp();
+  const { signIn } = useAuth();
   const [role, setRole] = useState('resident');
   const [idValue, setIdValue] = useState('');
   const [password, setPassword] = useState('');
-  const [position, setPosition] = useState('Kagawad');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const [position, setPosition] = useState('Kagawad');
 
   const positions = [
     'Barangay Captain',
@@ -22,55 +26,39 @@ export default function Login() {
     'Rescue/Response Team',
   ];
 
-  const getIdLabel = () => {
-    if (role === 'resident') return 'Household number or mobile';
-    if (role === 'official') return 'Official ID or mobile';
-    return 'Admin username';
-  };
+  const getIdLabel = () => (role === 'admin' ? 'Admin username' : 'Mobile number');
+  const getIdPlaceholder = () => (role === 'admin' ? 'e.g. adminjuan' : 'e.g. 0917 123 4567');
 
-  const getIdPlaceholder = () => {
-    if (role === 'resident') return 'e.g. 0917 123 4567';
-    if (role === 'official') return 'e.g. BRGY-2024-0113';
-    return 'e.g. admin.sanisidro';
-  };
+const validate = () => {
+  const newErrors = {};
+  if (!idValue.trim()) {
+    newErrors.idValue = role === 'admin' ? 'Username is required' : 'Mobile number is required';
+  } else if (role !== 'admin' && !isValidPhone(normalizePhone(idValue))) {
+    newErrors.idValue = 'Enter a valid mobile number, e.g. 09171234567';
+  }
+  if (!password.trim()) newErrors.password = 'Password is required';
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
 
-  const validate = () => {
-    const newErrors = {};
-    if (!idValue.trim()) {
-      newErrors.idValue = role === 'admin' ? 'Username is required' : role === 'official' ? 'Official ID is required' : 'Household number is required';
-    }
-    if (!password.trim()) {
-      newErrors.password = 'Password is required';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (submitting || !validate()) return;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
+  setFormError('');
+  setSubmitting(true);
+  const result = await signIn(idValue, password);
+  setSubmitting(false);
 
-    const userData = {
-      role,
-      name: role === 'resident' ? 'Ruzel G.' : role === 'official' ? 'Mario Reyes' : 'System Admin',
-      initials: role === 'resident' ? 'RG' : role === 'official' ? 'MR' : 'SA',
-      household: role === 'resident' ? '142' : null,
-      purok: 'Purok 3',
-      position: role === 'official' ? position : null,
-      officeContact: role === 'official' ? '0917 500 1042' : null,
-      officialName: role === 'official' ? `${position} Mario Reyes` : null,
-    };
+  if (result.error) {
+    setFormError(result.error);   // wrong password, pending approval, or rejected
+    return;
+  }
 
-    login(userData);
-
-    if (role === 'admin') {
-      navigate('/admin/approvals');
-    } else if (role === 'official') {
-      navigate('/announcements');
-    } else {
-      navigate('/home');
-    }
-  };
+  // Route by the REAL role from the database, not the tab that was selected
+  const dest = { admin: '/admin/approvals', official: '/announcements' }[result.user.role] || '/home';
+  navigate(dest);
+};
 
   return (
     <section className="screen active" id="screen-login">
@@ -151,7 +139,10 @@ export default function Login() {
             {errors.password && <span className="error-text">{errors.password}</span>}
           </div>
         </div>
-        <button className="btn btn-accent btn-block" onClick={handleSubmit}>Log in</button>
+          {formError && <p className="error-text" style={{ marginBottom: 10 }}>{formError}</p>}
+          <button className="btn btn-accent btn-block" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? 'Logging in…' : 'Log in'}
+          </button>
         <p className="auth-switch">New to BayaniAlert? <a onClick={() => navigate('/register')}>Create a household account</a></p>
       </div>
     </section>

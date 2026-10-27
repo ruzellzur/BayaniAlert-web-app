@@ -1,43 +1,79 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import { useAnnouncements, useEvacCapacity } from '../hooks/useAnnouncements';
+
+function timeAgo(iso) {
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hr ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  return new Date(iso).toLocaleDateString();
+}
 
 export default function Announcements() {
   const navigate = useNavigate();
-  const { user, announcements, addAnnouncement, deleteAnnouncement, evacCenters } = useApp();
+  const { user } = useAuth();           // real user now, not the AppContext placeholder
+  const { showToast } = useApp();       // toast still lives in AppContext
+
+  const barangayId = user?.barangayId ?? null;
+  const canAnnounce = !!user?.permissions?.announce && !!barangayId;
+
+  const { announcements, loading, error, post, remove, togglePin } = useAnnouncements(barangayId);
+  const capacity = useEvacCapacity(barangayId);
+
   const [search, setSearch] = useState('');
-  const [view, setView] = useState(user?.role === 'official' ? 'official' : 'resident');
-  const [composeText, setComposeText] = useState('');
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [pinned, setPinned] = useState(false);
+  const [posting, setPosting] = useState(false);
 
-  const isOfficial = user?.role === 'official';
-  const canAnnounce = user?.permissions?.announce;
-
-  // Combine user announcements with base announcements
-  const allAnnouncements = [
-    ...announcements,
-    { who: 'Kagawad Reyes', time: '25 min ago', text: 'Evacuation center at San Isidro Elementary is now open. Bring your family ID and essentials.', color: 'danger' },
-    { who: 'Brgy. Captain Lira', time: '2 hr ago', text: 'Free rubber boots and candles available at the covered court while supplies last.', color: 'accent' },
-    { who: 'Kagawad Reyes', time: 'Yesterday', text: 'Please clear drainage canals near your homes before Friday. Bagyo is expected to strengthen over the weekend.', color: 'safe' },
-  ];
-
-  const filteredAnnouncements = allAnnouncements.filter(a =>
-    !search || a.text.toLowerCase().includes(search.toLowerCase()) || a.who.toLowerCase().includes(search.toLowerCase())
+  const q = search.trim().toLowerCase();
+  const filtered = announcements.filter((a) =>
+    !q ||
+    a.title.toLowerCase().includes(q) ||
+    a.body.toLowerCase().includes(q) ||
+    a.who.toLowerCase().includes(q)
   );
 
-  const handlePost = () => {
-    if (!composeText.trim()) {
-      alert('Write something to post first');
+  const handlePost = async () => {
+    if (!title.trim() || !body.trim()) {
+      showToast('Add a title and a message first');
       return;
     }
-    addAnnouncement(composeText.trim());
-    setComposeText('');
+    setPosting(true);
+    const res = await post({ title: title.trim(), body: body.trim(), pinned, userId: user.id });
+    setPosting(false);
+    if (res.error) {
+      showToast(res.error);
+      return;
+    }
+    setTitle('');
+    setBody('');
+    setPinned(false);
+    showToast('Announcement posted');
   };
 
-  const e0 = evacCenters[0] || { cap: 0, max: 400 };
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this announcement?')) return;
+    const res = await remove(id);
+    showToast(res.error || 'Announcement removed');
+  };
+
+  const handlePin = async (a) => {
+    const res = await togglePin(a.id, !a.pinned);
+    if (res.error) showToast(res.error);
+  };
+
+  const pct = capacity?.capacity ? Math.min(100, (capacity.occupancy / capacity.capacity) * 100) : 0;
 
   return (
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
-      {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
           <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
@@ -47,85 +83,99 @@ export default function Announcements() {
 
       <div className="ann-grid">
         <div>
-          {/* Role Switcher */}
-          <div className="role-switch">
-            <button className={view === 'resident' ? 'active' : ''} onClick={() => setView('resident')}>Resident view</button>
-            <button className={view === 'official' ? 'active' : ''} onClick={() => setView('official')}>Official view</button>
-          </div>
-
-          {/* Capacity Widget */}
+          {/* Capacity widget */}
           <div className="card">
             <div className="row between">
               <span style={{ fontWeight: 600, fontSize: '13.5px' }}>Evacuation center capacity</span>
-              <span className="small muted">{e0.cap} / {e0.max}</span>
+              <span className="small muted">
+                {capacity?.centers ? `${capacity.occupancy} / ${capacity.capacity}` : '—'}
+              </span>
             </div>
             <div className="cap-bar">
-              <div className="cap-fill" style={{ width: `${(e0.cap / e0.max) * 100}%` }}></div>
+              <div className="cap-fill" style={{ width: `${pct}%` }}></div>
             </div>
+            {capacity && capacity.centers === 0 && (
+              <p className="small muted" style={{ marginTop: 8 }}>No evacuation centers are open right now.</p>
+            )}
           </div>
 
-          {/* Compose Form (Officials Only) */}
-          {view === 'official' && canAnnounce && (
+          {/* Compose (officials with announce permission) */}
+          {canAnnounce && (
             <div style={{ marginTop: 16 }}>
               <div className="card stack">
+                <input
+                  className="compose-title"
+                  type="text"
+                  maxLength={120}
+                  placeholder="Title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
                 <textarea
                   className="compose"
                   rows={3}
                   placeholder="Post an update for the barangay…"
-                  value={composeText}
-                  onChange={(e) => setComposeText(e.target.value)}
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
                 />
-                <button className="btn btn-accent btn-block" onClick={handlePost}>Post announcement</button>
+                <label className="small" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
+                  Pin to top
+                </label>
+                <button className="btn btn-accent btn-block" onClick={handlePost} disabled={posting}>
+                  {posting ? 'Posting…' : 'Post announcement'}
+                </button>
               </div>
             </div>
           )}
         </div>
 
         <div>
-          {/* Search */}
           <input
             type="text"
             placeholder="Search announcements…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
-              width: '100%',
-              marginBottom: 12,
-              padding: '11px 14px',
-              borderRadius: 12,
-              border: '1.5px solid var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--ink)',
-              fontFamily: 'var(--font-body)',
-              fontSize: 13.5
+              width: '100%', marginBottom: 12, padding: '11px 14px', borderRadius: 12,
+              border: '1.5px solid var(--border)', background: 'var(--surface)',
+              color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: 13.5,
             }}
           />
 
-          {/* Announcement Feed */}
           <div className="card" id="annFeed">
-            {filteredAnnouncements.length === 0 ? (
-              <p className="small muted" style={{ textAlign: 'center', padding: '14px 0' }}>No announcements match your search.</p>
+            {!barangayId ? (
+              <p className="small muted" style={{ textAlign: 'center', padding: '14px 0' }}>
+                Your account isn't linked to a barangay, so there's nothing to show.
+              </p>
+            ) : loading ? (
+              <p className="small muted" style={{ textAlign: 'center', padding: '14px 0' }}>Loading…</p>
+            ) : error ? (
+              <p className="small" style={{ textAlign: 'center', padding: '14px 0', color: 'var(--danger)' }}>{error}</p>
+            ) : filtered.length === 0 ? (
+              <p className="small muted" style={{ textAlign: 'center', padding: '14px 0' }}>
+                {announcements.length === 0 ? 'No announcements yet.' : 'No announcements match your search.'}
+              </p>
             ) : (
-              filteredAnnouncements.map((ann, i) => (
-                <div key={i} className="post">
+              filtered.map((a) => (
+                <div key={a.id} className="post">
                   <div className="post-head">
-                    <span className="who">{ann.who}</span>
-                    <span className="time">{ann.time}</span>
-                    {i < announcements.length && canAnnounce && (
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--danger)', padding: '4px 8px', marginLeft: 'auto' }}
-                        onClick={() => {
-                          if (confirm('Delete this announcement?')) {
-                            deleteAnnouncement(i);
-                          }
-                        }}
-                      >
-                        Delete
-                      </button>
+                    <span className="who">{a.who}</span>
+                    <span className="time">{timeAgo(a.created_at)}</span>
+                    {a.pinned && <span className="pin-badge">📌 Pinned</span>}
+                    {canAnnounce && (
+                      <span style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+                        <button className="btn btn-ghost btn-sm" style={{ padding: '4px 8px' }} onClick={() => handlePin(a)}>
+                          {a.pinned ? 'Unpin' : 'Pin'}
+                        </button>
+                        <button className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)', padding: '4px 8px' }} onClick={() => handleDelete(a.id)}>
+                          Delete
+                        </button>
+                      </span>
                     )}
                   </div>
-                  <p>{ann.text}</p>
+                  <p style={{ fontWeight: 600, marginBottom: 2 }}>{a.title}</p>
+                  <p>{a.body}</p>
                 </div>
               ))
             )}
@@ -219,6 +269,20 @@ export default function Announcements() {
           color: var(--ink);
         }
 
+        .compose-title {
+        width: 100%;
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-family: var(--font-body);
+        font-size: 13.5px;
+        background: var(--surface);
+        color: var(--ink);
+        }
+      
+        .pin-badge { font-size: 11px; color: var(--ink-soft); }
+        }
+
         @media (min-width: 900px) {
           .topbar {
             padding: 26px 0 20px;
@@ -233,7 +297,7 @@ export default function Announcements() {
             position: sticky;
             top: 100px;
           }
-        }
+
       `}</style>
     </div>
   );

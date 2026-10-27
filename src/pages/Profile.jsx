@@ -1,62 +1,95 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext'; // theme still lives in the mock
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, cycleTheme, theme, logout } = useApp();
+  const { user, signOut } = useAuth();
+  const { cycleTheme, theme } = useApp();
 
   const isOfficial = user?.role === 'official';
-  const canAnnounce = user?.permissions?.announce;
-  const canEvac = user?.permissions?.evac;
+  const isAdmin = user?.role === 'admin';
+  const isResident = !isOfficial && !isAdmin;
+
+  const perms = isOfficial ? user?.permissions : null;
+  const canAnnounce = !!perms?.announce;
+  const canEvac = !!perms?.evac;
+  const canRescue = !!perms?.rescue;
 
   const themeLabels = { system: 'System', light: 'Light', dark: 'Dark' };
 
-  const handleLogout = () => {
-    if (confirm('Log out of BayaniAlert?')) {
-      logout();
-      navigate('/');
-    }
+  const handleLogout = async () => {
+    if (!confirm('Log out of BayaniAlert?')) return;
+    await signOut();                       // ends the Supabase session, clears user
+    navigate('/', { replace: true });
   };
+
+  const subtitle = isAdmin
+    ? 'System administrator'
+    : isOfficial
+      ? `${user?.position || 'Official'} · ${user?.purokName || 'All puroks'}`
+      : [user?.purokName, user?.barangayName].filter(Boolean).join(' · ');
+  
+  
+  const household = user?.household ?? null;
+  const primaryContact = household?.emergency_contacts?.[0] ?? null;    
+
+  useEffect(() => {
+    if (user && user.role !== 'resident') navigate('/profile', { replace: true });
+  }, [user, navigate]);
 
   return (
     <div className="screen-enter" style={{ padding: '2px 20px 100px' }}>
       {/* Topbar */}
       <div className="topbar">
         <div className="row" style={{ gap: 12 }}>
-          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate('/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
-          <h2 style={{ fontSize: 17 }}>{isOfficial ? 'My profile' : 'Household'}</h2>
+          <button className="btn-ghost btn btn-sm mobile-back" onClick={() => navigate(isAdmin ? '/admin/approvals' : '/home')} aria-label="Go back" style={{ padding: '8px 10px' }}>←</button>
+          <h2 style={{ fontSize: 17 }}>My profile</h2>
         </div>
       </div>
 
       {/* Profile Header */}
       <div className="prof-head">
-        <div className="avatar">{user?.initials || 'RG'}</div>
+        <div className="avatar">{user?.initials}</div>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 15.5 }}>{user?.officialName || user?.name || 'Ruzel G.'}</div>
-          <div className="muted small">
-            {isOfficial
-              ? `${user?.position || 'Kagawad'} · ${user?.purok || 'Purok 3'}`
-              : `Household #${user?.household || '142'} · ${user?.purok || 'Purok 3'}`
-            }
-          </div>
+          <div style={{ fontWeight: 600, fontSize: 15.5 }}>{user?.officialName || user?.name}</div>
+          <div className="muted small">{subtitle}</div>
         </div>
       </div>
 
       {/* Info Card */}
       <div className="card" style={{ marginBottom: 16 }}>
-        {isOfficial ? (
+        {isAdmin && (
+          <>
+            <div className="list-item">
+              <span>Username</span>
+              <span className="val">{user?.username || '—'}</span>
+            </div>
+            <div className="list-item">
+              <span>Role</span>
+              <span className="val">Administrator</span>
+            </div>
+          </>
+        )}
+
+        {isOfficial && (
           <>
             <div className="list-item">
               <span>Position</span>
-              <span className="val">{user?.position || 'Kagawad'}</span>
+              <span className="val">{user?.position || '—'}</span>
+            </div>
+            <div className="list-item">
+              <span>Barangay</span>
+              <span className="val">{user?.barangayName || '—'}</span>
             </div>
             <div className="list-item">
               <span>Assigned zone</span>
-              <span className="val">{user?.purok || 'Purok 3'}</span>
+              <span className="val">{user?.purokName || 'All puroks'}</span>
             </div>
             <div className="list-item">
-              <span>Office contact</span>
-              <span className="val">{user?.officeContact || '0917 500 1042'}</span>
+              <span>Mobile number</span>
+              <span className="val">{user?.phone || '—'}</span>
             </div>
             <div className="list-item">
               <span>Permissions</span>
@@ -64,23 +97,40 @@ export default function Profile() {
                 {[
                   canAnnounce && 'Announcements',
                   canEvac && 'Evacuation centers',
+                  canRescue && 'Check-in response',
                 ].filter(Boolean).join(', ') || 'View only'}
               </span>
             </div>
           </>
-        ) : (
+        )}
+
+        {isResident && (
           <>
             <div className="list-item">
+              <span>Mobile number</span>
+              <span className="val">{user?.phone || '—'}</span>
+            </div>
+            <div className="list-item">
+              <span>Barangay</span>
+              <span className="val">{user?.barangayName || '—'}</span>
+            </div>
+            <div className="list-item">
+              <span>Purok</span>
+              <span className="val">{user?.purokName || '—'}</span>
+            </div>
+            <div className="list-item">
               <span>Family members</span>
-              <span className="val">{user?.size || '4'}</span>
+              <span className="val">{household?.members_count ?? '—'}</span>
             </div>
             <div className="list-item">
               <span>Emergency contact</span>
-              <span className="val">{user?.contact || '0917 xxx xx42'}</span>
+              <span className="val">
+                {primaryContact ? `${primaryContact.name} · ${primaryContact.phone}` : '—'}
+              </span>
             </div>
             <div className="list-item">
               <span>Address</span>
-              <span className="val">{user?.address || 'Purok 3, Blk 6'}</span>
+              <span className="val">{household?.address || '—'}</span>
             </div>
           </>
         )}
@@ -92,9 +142,13 @@ export default function Profile() {
           <span>Barangay hotlines</span>
           <span className="val">›</span>
         </div>
-        {!isOfficial && (
-          <div className="list-item" onClick={() => navigate('/edit-profile')} style={{ cursor: 'pointer' }}>
-            <span>Edit household info</span>
+        <div className="list-item" onClick={() => navigate('/edit-profile')} style={{ cursor: 'pointer' }}>
+          <span>Edit profile</span>
+          <span className="val">›</span>
+        </div>
+        {isResident && (
+          <div className="list-item" onClick={() => navigate('/household-setup')} style={{ cursor: 'pointer' }}>
+            <span>{user?.household ? 'Edit household' : 'Set up household'}</span>
             <span className="val">›</span>
           </div>
         )}
