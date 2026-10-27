@@ -5,6 +5,8 @@ import { useAnnouncements } from '../hooks/useAnnouncements';
 import { useCheckinBoard, timeAgo } from '../hooks/useCheckIns';
 import { useWeatherAlerts, SEVERITY_LABEL } from '../hooks/useWeatherAlerts';
 import { useNearbyResources } from '../hooks/useNearbyResources';
+import { useMessages, threadPath } from '../context/MessagesContext';
+import { useResources } from '../context/ResourceContext';
 import { formatDistance } from '../utils/geo';
 import Brand from '../components/Brand';
 
@@ -59,6 +61,8 @@ export default function Home() {
   const ann = useAnnouncements(barangayId);
   const weather = useWeatherAlerts(barangayId);
   const resources = useNearbyResources(user, 3);
+  const { conversations } = useMessages(); // this user's inbox, with unread counts
+  const { incomingRequests } = useResources(); // requests other people made on my listings
 
   // Admins have no household or resident dashboard; send them to their own area.
   if (user?.role === 'admin') {
@@ -96,7 +100,6 @@ export default function Home() {
     weather.alerts.forEach(alert => {
       notifications.push({
         type: 'weather',
-        icon: '🌧️',
         title: alert.title,
         time: formatWhen(alert.issued_at),
         action: () => navigate('/weather-history')
@@ -113,7 +116,6 @@ export default function Home() {
   if (recentAnn.length > 0) {
     notifications.push({
       type: 'announcement',
-      icon: '📢',
       title: `${recentAnn.length} new announcement${recentAnn.length > 1 ? 's' : ''}`,
       time: timeAgo(recentAnn[0].created_at),
       action: () => navigate('/announcements')
@@ -124,10 +126,35 @@ export default function Home() {
   if (isOfficial && helpCount > 0) {
     notifications.push({
       type: 'help',
-      icon: '🆘',
       title: `${helpCount} household${helpCount > 1 ? 's' : ''} need help`,
       time: 'Now',
       action: () => navigate('/checkin', { state: { filter: 'help' } })
+    });
+  }
+
+  // Unread messages. `conversations` arrives sorted by last_at desc, so [0] is newest.
+  const unreadThreads = conversations.filter(c => (c.unread_count || 0) > 0);
+  if (unreadThreads.length > 0) {
+    const totalUnread = unreadThreads.reduce((n, c) => n + c.unread_count, 0);
+    const latest = unreadThreads[0];
+    notifications.push({
+      type: 'message',
+      title: totalUnread === 1
+        ? `New message from ${latest.other_name || 'a neighbor'}`
+        : `${totalUnread} unread messages`,
+      time: timeAgo(latest.last_at),
+      action: () => navigate(threadPath(latest.last_listing_id, latest.other_id))
+    });
+  }
+
+  // Requests other people made on my listings that still need my answer.
+  const pendingIncoming = incomingRequests.filter(r => r.status === 'pending');
+  if (pendingIncoming.length > 0) {
+    notifications.push({
+      type: 'request',
+      title: `${pendingIncoming.length} request${pendingIncoming.length > 1 ? 's' : ''} waiting on you`,
+      time: timeAgo(pendingIncoming[0].createdAt),
+      action: () => navigate('/requests')
     });
   }
 
@@ -149,6 +176,8 @@ export default function Home() {
       {/* Topbar */}
       <div className="topbar">
         <Brand />
+        {/* Barangay pill: desktop-only, sits in the left slot where Brand hides */}
+        {user?.barangayName && <span className="brgy-pill topbar-brgy">{user.barangayName}</span>}
         <div className="topbar-right">
           {/* Notification Bell */}
           <div className="notif-bell-wrapper">
@@ -186,7 +215,44 @@ export default function Home() {
                             setShowNotifications(false);
                           }}
                         >
-                          <span className="notif-icon">{notif.icon}</span>
+                          <span className={`notif-icon ${notif.type === 'weather' ? 'alert'
+                            : notif.type === 'announcement' ? 'announce'
+                              : notif.type === 'message' ? 'msg'
+                                : notif.type === 'request' ? 'req'
+                                  : 'help'}`}>
+                            {notif.type === 'weather' && (
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                                <path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/>
+                                <path d="M8 16h.01M8 20h.01M12 18h.01M12 22h.01M16 16h.01M16 20h.01"/>
+                              </svg>
+                            )}
+                            {notif.type === 'announcement' && (
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                              </svg>
+                            )}
+                            {notif.type === 'help' && (
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                              </svg>
+                            )}
+                            {notif.type === 'message' && (
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                              </svg>
+                            )}
+                            {notif.type === 'request' && (
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                                <rect x="8" y="2" width="8" height="4" rx="1"/>
+                                <path d="M9 13h6M9 17h4"/>
+                              </svg>
+                            )}
+                          </span>
                           <div className="notif-content">
                             <div className="notif-title">{notif.title}</div>
                             <div className="notif-time">{notif.time}</div>
@@ -200,7 +266,6 @@ export default function Home() {
             )}
           </div>
 
-          {user?.barangayName && <span className="brgy-pill">{user.barangayName}</span>}
           <div className="top-avatar" onClick={() => navigate('/profile')}>
             <span>{user?.initials}</span>
           </div>
@@ -418,24 +483,30 @@ export default function Home() {
           border-radius: 999px;
           white-space: nowrap;
         }
+        .topbar-brgy {
+          display: none; /* mobile: the pill never appears in the topbar */
+        }
         .topbar-right {
           display: flex;
           align-items: center;
           gap: 10px;
+          margin-left: auto; /* stay pinned to the right even when .brand is hidden */
         }
         .top-avatar {
           width: 36px;
           height: 36px;
           border-radius: 11px;
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
-          display: none;
+          background: var(--grad-cool);
+          color: #fff;
+          display: flex;
+          flex-shrink: 0;
           align-items: center;
           justify-content: center;
           font-family: var(--font-display);
           font-weight: 600;
           font-size: 13px;
           cursor: pointer;
+          box-shadow: 0 4px 12px rgba(111,168,216,0.28);
         }
         .dash-grid {
           display: block;
@@ -565,15 +636,16 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--accent-soft);
-          color: var(--ladder-ink);
+          background: var(--grad-accent);
+          color: #fff;
+          box-shadow: 0 4px 12px rgba(226,154,59,0.28);
         }
         .res-ic svg {
           width: 21px;
           height: 21px;
         }
         .res-ic.cat-power {
-          background: var(--accent-soft);
+          background: var(--grad-accent);
         }
         .res-body {
           flex: 1;
@@ -589,6 +661,173 @@ export default function Home() {
           margin-top: 2px;
         }
 
+        /* Notification bell */
+        .notif-bell-wrapper {
+          position: relative;
+        }
+        .notif-bell {
+          width: 36px;
+          height: 36px;
+          border-radius: 11px;
+          border: 1px solid var(--border);
+          background: var(--surface);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          position: relative;
+          transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .notif-bell:hover {
+          background: var(--surface-alt);
+          border-color: var(--accent);
+        }
+        .notif-bell svg {
+          width: 18px;
+          height: 18px;
+          color: var(--ink-soft);
+        }
+        .notif-badge {
+          position: absolute;
+          top: -4px;
+          right: -4px;
+          min-width: 18px;
+          height: 18px;
+          border-radius: 999px;
+          background: var(--danger);
+          color: #fff;
+          font-size: 10px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 4px;
+          border: 2px solid var(--bg);
+        }
+        .notif-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 998;
+        }
+        .notif-dropdown {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          width: 320px;
+          max-width: calc(100vw - 40px);
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          box-shadow: 0 12px 32px rgba(27,42,74,0.18);
+          z-index: 999;
+          overflow: hidden;
+        }
+        .notif-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 14px 16px;
+          border-bottom: 1px solid var(--border);
+          font-weight: 600;
+          font-size: 14px;
+        }
+        .notif-header h3 {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 600;
+        }
+        .notif-header button {
+          width: 26px;
+          height: 26px;
+          border: none;
+          border-radius: 8px;
+          background: var(--surface-alt);
+          color: var(--ink-soft);
+          font-size: 12px;
+          line-height: 1;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .notif-header button:hover {
+          background: var(--danger-bg);
+          color: var(--danger);
+        }
+        .notif-list {
+          max-height: 360px;
+          overflow-y: auto;
+        }
+        .notif-item {
+          display: flex;
+          gap: 12px;
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--border);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .notif-item:last-child {
+          border-bottom: none;
+        }
+        .notif-item:hover {
+          background: var(--surface-alt);
+        }
+        .notif-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          font-size: 16px;
+        }
+        .notif-icon.alert {
+          background: var(--danger-bg);
+          color: var(--danger);
+        }
+        .notif-icon svg {
+          width: 18px;
+          height: 18px;
+        }
+        .notif-icon.announce {
+          background: var(--grad-accent);
+          color: #fff;
+        }
+        .notif-icon.help {
+          background: rgba(111,168,216,0.15);
+          color: var(--cool);
+        }
+        .notif-icon.msg {
+          background: var(--grad-cool);
+          color: #fff;
+        }
+        .notif-icon.req {
+          background: var(--accent-soft);
+          color: var(--ladder-ink);
+        }
+        .notif-content {
+          flex: 1;
+          min-width: 0;
+        }
+        .notif-title {
+          font-weight: 600;
+          font-size: 13px;
+          line-height: 1.35;
+        }
+        .notif-time {
+          font-size: 11px;
+          color: var(--ink-soft);
+          margin-top: 2px;
+        }
+        .notif-empty {
+          padding: 32px 16px;
+          text-align: center;
+          color: var(--ink-soft);
+          font-size: 13px;
+        }
+
         @media (min-width: 900px) {
           .topbar {
             padding: 26px 44px 20px;
@@ -596,8 +835,8 @@ export default function Home() {
           .topbar .brand {
             display: none;
           }
-          .top-avatar {
-            display: flex;
+          .topbar-brgy {
+            display: inline-block; /* desktop: pill takes the left slot */
           }
           .dash-grid {
             display: grid;
