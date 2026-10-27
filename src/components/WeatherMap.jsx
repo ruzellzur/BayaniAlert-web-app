@@ -3,7 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
   fetchWeatherGrid, gridBounds, layerMatrix, fillImageData,
-  RAMPS, legendGradient,
+  RAMPS, legendGradient, nowIndex
 } from '../utils/weatherGrid';
 
 const LAYERS = ['rain', 'cloud', 'temp', 'wind'];
@@ -40,6 +40,9 @@ export default function WeatherMap({ center, barangayName }) {
   const [layer, setLayer] = useState('rain');
   const [k, setK] = useState(0); // hours from now
 
+  const start = grid ? nowIndex(grid.times, grid.offset) : 0;
+  const count = grid ? Math.max(1, Math.min(24, grid.times.length - start)) : 0;
+
   // ---- create the map once --------------------------------------------------
   useEffect(() => {
   const map = L.map(elRef.current, {
@@ -62,6 +65,7 @@ export default function WeatherMap({ center, barangayName }) {
       map.invalidateSize();
       applyLimits(map, centerRef.current);
     });
+    ro.observe(elRef.current);
 
     return () => {
       ro.disconnect();
@@ -109,7 +113,7 @@ export default function WeatherMap({ center, barangayName }) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !grid) return;
-    const idx = grid.start + k;
+    const idx = start + Math.min(k, count - 1);
     const bounds = gridBounds(center);
 
     // color overlay
@@ -129,7 +133,7 @@ export default function WeatherMap({ center, barangayName }) {
       overlayRef.current.setUrl(url);
       overlayRef.current.setBounds(bounds);
     }
-  }, [grid, layer, k, center]);
+  }, [grid, layer, k, center, start, count]);
 
   function applyLimits(map, center) {
     const bounds = L.latLngBounds(gridBounds(center));
@@ -140,6 +144,12 @@ export default function WeatherMap({ center, barangayName }) {
 
   const ramp = RAMPS[layer];
   const mid = ramp.stops[Math.floor(ramp.stops.length / 2)][0];
+
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 60000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div>
@@ -178,11 +188,11 @@ export default function WeatherMap({ center, barangayName }) {
 
       {grid && (
         <div className="wxmap-time">
-          <div className="wxmap-when">{whenLabel(grid.times, grid.start, k)}</div>
+          <div className="wxmap-when">{whenLabel(grid.times, start, k)}</div>
           <input
             type="range"
             min={0}
-            max={grid.count - 1}
+            max={count - 1}
             step={1}
             value={k}
             onChange={(e) => setK(Number(e.target.value))}

@@ -53,13 +53,19 @@ export function parseGrid(pts, json) {
     count: Math.max(1, Math.min(HOURS_AHEAD, times.length - start)),
     times,
     points: pts.map((p, idx) => ({ ...p, h: json[idx].hourly })),
+    offset: first.utc_offset_seconds ?? 0,
   };
+}
+
+export function nowIndex(times, offset) {
+  const nowKey = new Date(Date.now() + offset * 1000).toISOString().slice(0, 13);
+  const i = times.findIndex((t) => t.slice(0, 13) >= nowKey);
+  return i < 0 ? 0 : i;
 }
 
 export async function fetchWeatherGrid(center, signal) {
   const pts = gridPoints(center);
-  const key = `wxgrid3:${center[0].toFixed(3)},${center[1].toFixed(3)}`;
-  try {
+  const key = `wxgrid5:${center[0].toFixed(3)},${center[1].toFixed(3)}`;  try {
     const cached = JSON.parse(sessionStorage.getItem(key) || 'null');
     if (cached && Date.now() - cached.ts < CACHE_MS) return parseGrid(pts, cached.json);
   } catch { /* storage unavailable: just fetch */ }
@@ -68,7 +74,7 @@ export async function fetchWeatherGrid(center, signal) {
     `${OPEN_METEO}?latitude=${pts.map((p) => p.lat).join(',')}` +
     `&longitude=${pts.map((p) => p.lng).join(',')}` +
     '&hourly=temperature_2m,precipitation,cloud_cover,wind_speed_10m,weather_code,is_day' +
-    '&forecast_days=2&timezone=auto&wind_speed_unit=kmh';
+    '&forecast_days=2&timezone=Asia%2FManila&wind_speed_unit=kmh';
   const res = await fetch(url, { signal });
   if (!res.ok) throw new Error(`Open-Meteo ${res.status}`);
   let json = await res.json();
