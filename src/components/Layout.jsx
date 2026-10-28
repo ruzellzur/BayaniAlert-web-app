@@ -18,10 +18,17 @@ const PAGE_TITLES = {
   '/admin/approvals': 'Admin Approvals',
   '/admin/puroks': 'Admin Puroks',
   '/admin/evac': 'Admin Evacuation Centers',
+  '/resource/:id': 'Resource',
+  '/evac/:id': 'Evacuation Center',
+  '/evac-detail/:id': 'Evacuation Details',
+  '/message/:id': 'Message',
+  '/message-thread/:id': 'Message Thread',
+  '/evacs/:id': 'Evacuation Centers',
+  '/messages/:id': 'Messages',
 };
 
 const friendlyPage = (path) => {
-  const key = path.replace(/\/(evac|resource|evac-detail|message|evacs|messages)\/[^\/]+$/, '/$1');
+  const key = path.replace(/\/(evac|resource|evac-detail|message|evacs|messages)\/[^\/]+$/, '/$1/:id');
   return PAGE_TITLES[key] ?? PAGE_TITLES[path] ?? 'Page';
 };
 
@@ -40,10 +47,9 @@ export default function Layout() {
           </div>
           <div className="loading-spinner-container">
             <div className="loading-spinner">
-              <div className="spinner-inner">
-                <div className="spinner-gradient"></div>
-                <div className="spinner-dot"></div>
-              </div>
+              <div className="spinner-outer"></div>
+              <div className="spinner-gradient"></div>
+              <div className="spinner-dot"></div>
             </div>
           </div>
           <p className="loading-text">Loading {friendlyPage(location.pathname)}...</p>
