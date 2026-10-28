@@ -1,0 +1,74 @@
+- generic [ref=e5]:
+  - generic [ref=e7]:
+    - text: Barangay San Isidro
+    - heading "Kapag may bagyo, magkasama tayo." [level=1] [ref=e8]: Kapag may bagyo,magkasama tayo.
+    - paragraph [ref=e9]: Weather alerts, shared supplies, and safety check-ins for every household in the barangay — in one place.
+  - generic [ref=e15]:
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Live
+        - generic [ref=e19]: Weather alerts
+      - generic [ref=e20]:
+        - generic [ref=e21]: 1-tap
+        - generic [ref=e22]: Safety check-in
+      - generic [ref=e23]:
+        - generic [ref=e24]: Shared
+        - generic [ref=e25]: Supplies board
+    - generic [ref=e26]:
+      - button "Get started" [ref=e27] [cursor=pointer]
+      - button "I already have an account" [ref=e28] [cursor=pointer]
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - heading "Right now in Barangay San Isidro" [level=3] [ref=e31]
+        - generic [ref=e32] [cursor=pointer]: Guest view — no account needed
+      - generic [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]: Weather advisory
+            - heading "Signal No. 2 — Heavy rain expected tonight" [level=3] [ref=e37]
+          - generic [ref=e38]: SIG 2
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - text: Rainfall
+            - strong [ref=e41]: 42mm/hr
+          - generic [ref=e42]:
+            - text: Wind
+            - strong [ref=e43]: 65 km/h
+          - generic [ref=e44]:
+            - text: Updated
+            - strong [ref=e45]: 6:40 PM
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - heading "Evacuation centers" [level=3] [ref=e49]
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]: San Isidro Elementary School
+              - generic [ref=e53]: 0.6 km · 210 / 400 capacity
+            - button "Directions" [ref=e54] [cursor=pointer]
+          - generic [ref=e55]:
+            - generic [ref=e56]:
+              - generic [ref=e57]: Purok 4 Covered Court
+              - generic [ref=e58]: 1.2 km · 90 / 150 capacity
+            - button "Directions" [ref=e59] [cursor=pointer]
+        - generic [ref=e60]:
+          - heading "Emergency hotlines" [level=3] [ref=e62]
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - generic [ref=e65]: FR
+              - generic [ref=e66]:
+                - generic [ref=e67]: Fire & Rescue
+                - generic [ref=e68]: 24/7 hotline
+              - button "Call 911" [ref=e69] [cursor=pointer]
+            - generic [ref=e72]:
+              - generic [ref=e73]: EL
+              - generic [ref=e74]:
+                - generic [ref=e75]: Brgy. Captain Elena Lira
+                - generic [ref=e76]: Barangay hotline
+              - button "Call 0917 500 1001" [ref=e77] [cursor=pointer]
+            - generic [ref=e80]:
+              - generic [ref=e81]: PN
+              - generic [ref=e82]:
+                - generic [ref=e83]: PNP Community Precinct
+                - generic [ref=e84]: Police assistance
+              - button "Call 117" [ref=e85] [cursor=pointer]
+      - paragraph [ref=e88]: Sign in for the resource board, safety check-in, and neighbor messaging.

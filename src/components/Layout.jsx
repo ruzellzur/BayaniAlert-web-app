@@ -7,7 +7,26 @@ export default function Layout() {
   const { user, loading } = useAuth();
   const { toast } = useApp();
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-container">
+          <div className="loading-brand">
+            <span className="word">Bayani</span>
+            <span className="word">Alert</span>
+          </div>
+          <div className="loading-spinner-container">
+            <div className="loading-spinner">
+              <div className="spinner-inner">
+                <div className="spinner-gradient"></div>
+                <div className="spinner-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const isAdmin = user?.role === 'admin';
   const isAuthed = !!user;

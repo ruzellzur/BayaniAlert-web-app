@@ -78,7 +78,9 @@ export function AuthProvider({ children }) {
 
   // Loads the profile for a signed-in auth user. Pending/rejected accounts
   // are signed straight back out and get a message instead of a session.
-  const hydrate = useCallback(async (authUser) => {
+  // attemptedRole = the role tab the user logged in from ('resident' | 'official' | 'admin').
+  // If it doesn't match the DB role, sign out and refuse the session.
+  const hydrate = useCallback(async (authUser, attemptedRole) => {
     const { data: p, error } = await supabase
       .from('profiles')
       .select('*, barangay:barangays(name, center_lat, center_lng), purok:puroks(name), household:households(*, emergency_contacts(*))')      .eq('id', authUser.id)
@@ -102,6 +104,22 @@ export function AuthProvider({ children }) {
       };
     }
 
+    // ---- role-tab validation ----
+    // Block logging in with the wrong role tab before setUser() ever runs.
+    const expectedRole = p.role; // 'resident' | 'official' | 'admin'
+    if (attemptedRole && attemptedRole !== expectedRole) {
+      await supabase.auth.signOut();
+      setUser(null);
+      return {
+        error:
+          attemptedRole === 'admin'
+            ? 'Wrong username. Use admin credentials for Administrator tab.'
+            : attemptedRole === 'official'
+              ? 'These credentials are for a Resident account, not a Barangay official. Try the Resident tab or contact your barangay hall.'
+              : 'These credentials are for a Barangay official, not a Resident. Try the Barangay official tab or contact your barangay hall.',
+      };
+    }
+
     const u = shapeUser(p);
     setUser(u);
     return { user: u };
@@ -114,27 +132,39 @@ export function AuthProvider({ children }) {
 
   // Restore a saved session on page load.
   useEffect(() => {
+    const start = Date.now();
     supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) await hydrate(data.session.user);
-      setLoading(false);
+      try {
+        if (data.session) await hydrate(data.session.user);
+      } catch (err) {
+        console.error('hydrate error:', err);
+      }
+      // Ensure the loading screen is visible for at least 500ms so it
+      // isn't a flash the user never perceives.
+      const elapsed = Date.now() - start;
+      const delay = Math.max(0, 500 - elapsed);
+      setTimeout(() => setLoading(false), delay);
     });
 
     // Never await Supabase calls inside this callback (can deadlock).
     // Sign-in/sign-up call hydrate() themselves, so only handle sign-out here.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') setUser(null);
+      if (event === 'SIGNED_OUT') {
+      setUser(null);
+      setLoading(false); // user explicitly signed out, hide loading screen
+    }
     });
     return () => sub.subscription.unsubscribe();
   }, [hydrate]);
 
   // identifier = phone number (resident/official) or username (admin)
-  const signIn = async (identifier, password) => {
+  const signIn = async (identifier, password, attemptedRole) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: toEmail(identifier),
       password,
     });
     if (error) return { error: 'Incorrect phone number/username or password.' };
-    return hydrate(data.user);
+    return hydrate(data.user, attemptedRole);
   };
 
   // role: 'resident' | 'official'. Returns { user } for residents,

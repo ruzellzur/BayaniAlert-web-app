@@ -47,13 +47,16 @@ const handleSubmit = async (e) => {
 
   setFormError('');
   setSubmitting(true);
-  const result = await signIn(idValue, password);
+  const result = await signIn(idValue, password, role);
   setSubmitting(false);
 
   if (result.error) {
     setFormError(result.error);   // wrong password, pending approval, or rejected
     return;
   }
+
+  // Role validation is now handled in AuthContext.hydrate(), which will sign out and show a clear error
+  // if the login tab (role) doesn't match the database-assigned role.
 
   // Route by the REAL role from the database, not the tab that was selected
   const dest = { admin: '/admin/approvals', official: '/announcements' }[result.user.role] || '/home';

@@ -32,8 +32,8 @@ import { EvacProvider } from './context/EvacContext';
 import { MessagesProvider } from './context/MessagesContext';
 
 function ProtectedRoute({ children, adminOnly = false, allowNoHousehold = false }) {
-  const { user, loading } = useAuth();
-  if (loading) return null;
+  const { user } = useAuth();
+
   if (!user) return <Navigate to="/" replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/home" replace />;
   if (user.role === 'resident' && !user.household && !allowNoHousehold)
@@ -42,9 +42,7 @@ function ProtectedRoute({ children, adminOnly = false, allowNoHousehold = false 
 }
 
 function PublicRoute({ children }) {
-  const { user, loading } = useAuth();
-
-  if (loading) return null;            // wait for the saved session check
+  const { user } = useAuth();
   if (user) {
     return <Navigate to="/home" replace />;
   }
@@ -53,9 +51,7 @@ function PublicRoute({ children }) {
 }
 
 function AppRoutes() {
-  const { user, loading } = useAuth();
-
-  if (loading) return null;            // wait for the saved session check
+  const { user } = useAuth();
 
   // Add authenticated class to body
   if (user) {
