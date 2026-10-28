@@ -1,11 +1,34 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { Sidebar, AdminSidebar, BottomNav, AdminBottomNav } from './Sidebar';
 
+const PAGE_TITLES = {
+  '/': 'Login',
+  '/checkin': 'Check-in',
+  '/map': 'Evacuation Map',
+  '/home': 'Home',
+  '/announcements': 'Announcements',
+  '/profile': 'Profile',
+  '/messages': 'Messages',
+  '/my-requests': 'My Requests',
+  '/edit-profile': 'Edit Profile',
+  '/directory': 'Directory',
+  '/weather-history': 'Weather History',
+  '/admin/approvals': 'Admin Approvals',
+  '/admin/puroks': 'Admin Puroks',
+  '/admin/evac': 'Admin Evacuation Centers',
+};
+
+const friendlyPage = (path) => {
+  const key = path.replace(/\/(evac|resource|evac-detail|message|evacs|messages)\/[^\/]+$/, '/$1');
+  return PAGE_TITLES[key] ?? PAGE_TITLES[path] ?? 'Page';
+};
+
 export default function Layout() {
   const { user, loading } = useAuth();
   const { toast } = useApp();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -23,6 +46,7 @@ export default function Layout() {
               </div>
             </div>
           </div>
+          <p className="loading-text">Loading {friendlyPage(location.pathname)}...</p>
         </div>
       </div>
     );
